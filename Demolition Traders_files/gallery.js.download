@@ -1,0 +1,43 @@
+// JavaScript Document
+
+	$(document).ready(function() {
+		"use strict";
+	
+		// Open service images in magnific popup
+		if($.fn.magnificPopup) {
+			//
+			$(".gallery a.gallery-item-popup").magnificPopup({
+				type:'image',
+				gallery:{enabled:true},
+				image: {
+				 	titleSrc: function(item) {
+						//
+						var title 	= item.el.attr('title');
+						var caption = item.el.data('caption');
+						
+						if(caption !== '') {
+							//
+							return '<strong>'+title+'</strong><br/><span class="small">'+caption+'</span>';
+						}
+						else {
+							return title;
+						}
+					}
+				}
+			});	
+		}
+		
+		// Open service images in colorbox
+		else if($.fn.colorbox) { 
+			//
+			$(".gallery a.gallery-item-popup").colorbox({photo:true},function() { 
+				var titleheight = $("#cboxTitle").height(); 
+				$("#colorbox").height($("#colorbox").height() + titleheight); 
+				$("#cboxWrapper").height($("#cboxWrapper").height() + titleheight); 
+				$("#cboxMiddleLeft").height($("#cboxMiddleLeft").height() + titleheight); 
+				$("#cboxMiddleRight").height($("#cboxMiddleRight").height() + titleheight); 
+				$("#cboxContent").height($("#cboxContent").height() + titleheight); 
+				$("#cboxLoadedContent").height($("#cboxLoadedContent").height() + titleheight); 
+			});
+		}
+	});

@@ -1,0 +1,1310 @@
+<?php
+session_start();
+
+// Check if user is admin
+$isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
+
+if (!isset($_SESSION['user_id']) || !$isAdmin) {
+    header('Location: ../admin-login.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Management - Demolition Traders</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        <?php include 'admin-style.css'; ?>
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <?php include 'sidebar.php'; ?>
+
+        <main class="main-content">
+            <?php include 'topbar.php'; ?>
+
+<!-- Orders Management Content -->
+<div class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">All Orders</h2>
+        <button class="btn btn-primary" onclick="loadOrders()">
+            <i class="fas fa-sync"></i> Refresh
+        </button>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="search-orders" placeholder="Search by order ID, customer name..." onkeyup="searchOrders()">
+        <select id="filter-status" class="form-control" style="max-width: 250px;" onchange="loadOrders()">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="processing">Processing</option>
+            <option value="ready">Ready to Ship</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+        </select>
+    </div>
+
+    <div class="table-container">
+        <table id="orders-table">
+            <thead>
+                <tr>
+                    <th onclick="sortTable('id')" style="cursor: pointer;" title="Click to sort">
+                        Order ID <span id="sort-icon-id" class="sort-icon">↕</span>
+                    </th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th onclick="sortTable('total')" style="cursor: pointer;" title="Click to sort">
+                        Total <span id="sort-icon-total" class="sort-icon">↕</span>
+                    </th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="orders-tbody">
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px;">
+                        <div class="spinner"></div>
+                        <p>Loading orders...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal" id="order-modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Order Details</h3>
+            <button class="close-modal" onclick="closeOrderModal()">&times;</button>
+        </div>
+        <div id="order-details-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading order details...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal" id="status-modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Update Order Status</h3>
+            <button class="close-modal" onclick="closeStatusModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 20px;">Update status for Order <strong id="status-order-id"></strong></p>
+            
+            <div class="form-group">
+                <label for="new-status">Select New Status:</label>
+                <select id="new-status" class="form-control" style="width: 100%;">
+                    <option value="pending">Pending - Order received, awaiting processing</option>
+                    <option value="paid">Paid - Payment confirmed</option>
+                    <option value="processing">Processing - Order is being prepared</option>
+                    <option value="ready">Ready to Ship - Packed and ready</option>
+                    <option value="shipped">Shipped - Order dispatched</option>
+                    <option value="delivered">Delivered - Order received by customer</option>
+                    <option value="cancelled">Cancelled - Order cancelled</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="status-note">Add Note (Optional):</label>
+                <textarea id="status-note" class="form-control" rows="3" placeholder="Enter any notes about this status change..."></textarea>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeStatusModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveOrderStatus()">
+                    <i class="fas fa-check"></i> Update Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global variables for sorting
+let currentSortColumn = 'date';
+let currentSortDirection = 'desc';
+let allOrders = [];
+
+// Load orders
+async function loadOrders() {
+    const tbody = document.getElementById('orders-tbody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading orders...</p></td></tr>';
+
+    try {
+        const status = document.getElementById('filter-status').value;
+        let url = '/demolitiontraders/backend/api/index.php?request=orders';
+        if (status) url += `&status=${status}`;
+
+        console.log('Fetching orders from:', url);
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        const text = await response.text();
+        console.log('Response text:', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: red;">Invalid JSON response. Check console.</td></tr>';
+            return;
+        }
+        
+        console.log('Parsed data:', data);
+
+        if (data.error) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: red;">Error: ${data.error}</td></tr>`;
+            return;
+        }
+
+        // Handle both array and object with data property
+        const orders = Array.isArray(data) ? data : (data.data || []);
+        
+        if (!orders || orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No orders found</td></tr>';
+            allOrders = [];
+            return;
+        }
+
+        // Store orders globally and apply current sort
+        allOrders = orders;
+        applySortAndRender();
+    } catch (error) {
+        console.error('Error loading orders:', error);
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: red;">Error loading orders</td></tr>';
+    }
+}
+
+// Sort table
+function sortTable(column) {
+    if (currentSortColumn === column) {
+        // Toggle direction if same column
+        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        // New column, default to descending
+        currentSortColumn = column;
+        currentSortDirection = 'desc';
+    }
+    
+    applySortAndRender();
+}
+
+// Apply sort and render
+function applySortAndRender() {
+    if (!allOrders || allOrders.length === 0) return;
+    
+    // Sort the orders
+    const sortedOrders = [...allOrders].sort((a, b) => {
+        let aVal, bVal;
+        
+        switch(currentSortColumn) {
+            case 'id':
+                aVal = parseInt(a.id);
+                bVal = parseInt(b.id);
+                break;
+            case 'total':
+                aVal = parseFloat(a.total_amount);
+                bVal = parseFloat(b.total_amount);
+                break;
+            case 'date':
+                aVal = new Date(a.created_at).getTime();
+                bVal = new Date(b.created_at).getTime();
+                break;
+            default:
+                return 0;
+        }
+        
+        // Compare values
+        return currentSortDirection === 'asc' 
+            ? aVal - bVal
+            : bVal - aVal;
+    });
+    
+    // Update sort icons
+    updateSortIcons();
+    
+    // Render sorted orders
+    renderOrders(sortedOrders);
+}
+
+// Update sort icons
+function updateSortIcons() {
+    // Reset all icons
+    document.querySelectorAll('.sort-icon').forEach(icon => {
+        icon.innerHTML = '↕';
+        icon.style.opacity = '0.3';
+    });
+    
+    // Highlight active column
+    const activeIcon = document.getElementById(`sort-icon-${currentSortColumn}`);
+    if (activeIcon) {
+        activeIcon.innerHTML = currentSortDirection === 'asc' ? '↑' : '↓';
+        activeIcon.style.opacity = '1';
+    }
+}
+
+// Render orders
+function renderOrders(orders) {
+    const tbody = document.getElementById('orders-tbody');
+    
+    tbody.innerHTML = orders.map(order => {
+            // Parse billing address to get customer info
+            let customerName = 'Guest';
+            let customerEmail = order.guest_email || '';
+            
+            try {
+                const billing = JSON.parse(order.billing_address || '{}');
+                customerName = `${billing.first_name || ''} ${billing.last_name || ''}`.trim() || 'Guest';
+                customerEmail = billing.email || order.guest_email || '';
+            } catch (e) {
+                console.error('Failed to parse billing address:', e);
+            }
+            
+            // Get badge colors
+            const badgeColors = {
+                'pending': { bg: '#ffc107', color: '#000' },
+                'paid': { bg: '#28a745', color: 'white' },
+                'processing': { bg: '#17a2b8', color: 'white' },
+                'ready': { bg: '#6f42c1', color: 'white' },
+                'shipped': { bg: '#007bff', color: 'white' },
+                'delivered': { bg: '#20c997', color: 'white' },
+                'cancelled': { bg: '#dc3545', color: 'white' }
+            };
+            
+            // Handle empty string as 'pending'
+            const orderStatus = order.status && order.status.trim() !== '' ? order.status : 'pending';
+            const statusColor = badgeColors[orderStatus] || { bg: '#6c757d', color: 'white' };
+            const statusText = orderStatus.toUpperCase();
+            
+            console.log('Order status:', order.status, 'Normalized:', orderStatus, 'Text:', statusText);
+            
+            return `
+            <tr>
+                <td><strong>#${order.id}</strong></td>
+                <td>${customerName}<br><small>${customerEmail}</small></td>
+                <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                <td><strong>$${parseFloat(order.total_amount).toFixed(2)}</strong></td>
+                <td>
+                    <div onclick="updateOrderStatus(${order.id})" style="cursor: pointer !important; display: inline-block !important; padding: 6px 12px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase !important; background-color: ${statusColor.bg} !important; color: ${statusColor.color} !important; line-height: normal !important; white-space: nowrap !important; text-align: center !important; vertical-align: middle !important; min-width: 80px !important;" title="Click to change status">${statusText}</div>
+                </td>
+                <td>${order.payment_method || 'N/A'}</td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn btn-primary btn-sm" onclick="viewOrder(${order.id})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="printOrder(${order.id}, '${orderStatus}')" title="Print Invoice/Receipt">
+                            <i class="fas fa-print"></i>
+                        </button>
+                        ${orderStatus === 'paid' || orderStatus === 'delivered' || orderStatus === 'completed' ? `
+                        <button class="btn btn-info btn-sm" onclick="sendReceipt(${order.id})" title="Send Receipt Email">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        ` : ''}
+                        ${orderStatus === 'pending' || orderStatus === 'processing' || orderStatus === 'ready' || orderStatus === 'shipped' || orderStatus === 'refunded' || orderStatus === 'cancelled' ? `
+                        <button class="btn btn-secondary btn-sm" onclick="sendTaxInvoice(${order.id})" title="Send Tax Invoice Email">
+                            <i class="fas fa-file-invoice"></i>
+                        </button>
+                        ` : ''}
+                        <button class="btn btn-warning btn-sm" onclick="updateOrderStatus(${order.id})" title="Update Status">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        }).join('');
+}
+
+// Search orders
+function searchOrders() {
+    const search = document.getElementById('search-orders').value.toLowerCase();
+    const rows = document.querySelectorAll('#orders-tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(search) ? '' : 'none';
+    });
+}
+
+// View order details
+async function viewOrder(id) {
+    const modal = document.getElementById('order-modal');
+    const content = document.getElementById('order-details-content');
+    
+    modal.classList.add('active');
+    content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading order details...</p></div>';
+
+    try {
+        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`);
+        const order = await response.json();
+
+        // Parse billing and shipping addresses
+        let billing = {};
+        let shipping = {};
+        
+        try {
+            billing = JSON.parse(order.billing_address || '{}');
+        } catch (e) {
+            console.error('Failed to parse billing address:', e);
+        }
+        
+        try {
+            shipping = JSON.parse(order.shipping_address || '{}');
+        } catch (e) {
+            console.error('Failed to parse shipping address:', e);
+        }
+
+        // Format customer name
+        const customerName = `${billing.first_name || ''} ${billing.last_name || ''}`.trim() || 'Guest';
+        const customerEmail = billing.email || order.guest_email || 'N/A';
+        const customerPhone = billing.phone || 'N/A';
+
+        // Format shipping address
+        const shippingAddress = shipping.address 
+            ? `${shipping.address}${shipping.city ? ', ' + shipping.city : ''}${shipping.postcode ? ' ' + shipping.postcode : ''}`
+            : 'Same as billing address';
+
+        content.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <h4>Order #${order.id}</h4>
+                <p><strong>Order Number:</strong> ${order.order_number}</p>
+                <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+                <p><strong>Status:</strong> <span class="badge badge-${order.status}">${(order.status || 'pending').toUpperCase()}</span></p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h4>Customer Information</h4>
+                <p><strong>Name:</strong> ${customerName}</p>
+                <p><strong>Email:</strong> ${customerEmail}</p>
+                <p><strong>Phone:</strong> ${customerPhone}</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h4>Billing Address</h4>
+                <p>${billing.address || 'N/A'}</p>
+                ${billing.city ? `<p>${billing.city}${billing.postcode ? ' ' + billing.postcode : ''}</p>` : ''}
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h4>Shipping Address</h4>
+                <p>${shipping.address || billing.address || 'N/A'}</p>
+                ${(shipping.city || billing.city) ? `<p>${shipping.city || billing.city}${(shipping.postcode || billing.postcode) ? ' ' + (shipping.postcode || billing.postcode) : ''}</p>` : ''}
+            </div>
+
+            <div class="order-items">
+                <h4>Order Items</h4>
+                ${order.items ? order.items.map(item => `
+                    <div class="order-item">
+                        <div>
+                            <strong>${item.product_name}</strong><br>
+                            <small>SKU: ${item.sku}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div>Qty: ${item.quantity}</div>
+                            <div><strong>$${parseFloat(item.unit_price * item.quantity).toFixed(2)}</strong></div>
+                        </div>
+                    </div>
+                `).join('') : '<p>No items</p>'}
+            </div>
+
+            <div class="order-summary">
+                <div class="order-summary-row">
+                    <strong>Subtotal:</strong>
+                    <span>$${parseFloat(order.subtotal || 0).toFixed(2)}</span>
+                </div>
+                <div class="order-summary-row">
+                    <strong>Tax (GST):</strong>
+                    <span>$${parseFloat(order.tax_amount || 0).toFixed(2)}</span>
+                </div>
+                <div class="order-summary-row">
+                    <strong>Shipping:</strong>
+                    <span>$${parseFloat(order.shipping_amount || 0).toFixed(2)}</span>
+                </div>
+                <div class="order-summary-row" style="font-size: 18px; color: #2f3192; margin-top: 10px; padding-top: 10px; border-top: 2px solid #dee2e6;">
+                    <strong>Total:</strong>
+                    <strong>$${parseFloat(order.total_amount).toFixed(2)}</strong>
+                </div>
+            </div>
+
+            ${order.customer_notes ? `
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                <h4 style="margin-bottom: 10px;">Customer Notes</h4>
+                <p>${order.customer_notes}</p>
+            </div>
+            ` : ''}
+
+            ${order.admin_notes ? `
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px;">
+                <h4 style="margin-bottom: 10px;">Admin Notes</h4>
+                <p>${order.admin_notes}</p>
+            </div>
+            ` : ''}
+
+            <div style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="closeOrderModal()">Close</button>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error loading order details:', error);
+        content.innerHTML = '<p style="color: red;">Error loading order details</p>';
+    }
+}
+
+// Close order modal
+function closeOrderModal() {
+    document.getElementById('order-modal').classList.remove('active');
+}
+
+// Get status icon
+function getStatusIcon(status) {
+    const icons = {
+        'pending': '📋',
+        'paid': '💰',
+        'processing': '⚙️',
+        'ready': '📦',
+        'shipped': '🚚',
+        'delivered': '✅',
+        'cancelled': '❌'
+    };
+    return icons[status] || '📋';
+}
+
+// Update order status - open modal
+let currentOrderId = null;
+
+async function updateOrderStatus(id) {
+    currentOrderId = id;
+    document.getElementById('status-order-id').textContent = `#${id}`;
+    
+    // Get current order status
+    try {
+        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`);
+        const order = await response.json();
+        document.getElementById('new-status').value = order.status;
+    } catch (error) {
+        console.error('Error fetching order:', error);
+    }
+    
+    document.getElementById('status-note').value = '';
+    document.getElementById('status-modal').classList.add('active');
+}
+
+// Close status modal
+function closeStatusModal() {
+    document.getElementById('status-modal').classList.remove('active');
+    currentOrderId = null;
+}
+
+// Save order status
+async function saveOrderStatus() {
+    if (!currentOrderId) {
+        console.error('No order ID set');
+        alert('Error: No order selected');
+        return;
+    }
+    
+    const newStatus = document.getElementById('new-status').value;
+    const note = document.getElementById('status-note').value;
+    
+    if (!newStatus) {
+        alert('Please select a status');
+        return;
+    }
+    
+    try {
+        console.log('Updating order:', currentOrderId, 'to status:', newStatus);
+        
+        const requestBody = { 
+            status: newStatus
+        };
+        
+        if (note && note.trim() !== '') {
+            requestBody.note = note;
+        }
+        
+        console.log('Request body:', requestBody);
+        
+        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${currentOrderId}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        console.log('Update response status:', response.status);
+        console.log('Update response ok:', response.ok);
+        
+        const text = await response.text();
+        console.log('Update response text:', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            console.error('Response was not valid JSON:', text);
+            alert('Error: Invalid response from server. Check console for details.');
+            return;
+        }
+
+        console.log('Parsed response data:', data);
+
+        if (response.ok && !data.error) {
+            closeStatusModal();
+            loadOrders();
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Order status updated successfully to ${newStatus.toUpperCase()}!`;
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 3000);
+        } else {
+            const errorMsg = data.error || data.message || 'Unknown error occurred';
+            console.error('Update failed:', errorMsg);
+            alert('Error updating order status: ' + errorMsg);
+        }
+    } catch (error) {
+        console.error('Update error:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+// Print order
+async function printOrder(id, status) {
+    try {
+        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`);
+        const order = await response.json();
+        
+        // Parse addresses
+        let billing = {};
+        try {
+            billing = JSON.parse(order.billing_address || '{}');
+        } catch (e) {
+            console.error('Failed to parse billing address:', e);
+        }
+        
+        // Determine if this is a paid order (Receipt) or pending (Tax Invoice)
+        const isPaid = status === 'paid' || status === 'delivered' || status === 'completed';
+        
+        // Create print window
+        const printWindow = window.open('', '', 'width=800,height=600');
+        
+        // Generate print content based on status
+        const printContent = isPaid ? generateReceipt(order, billing) : generateTaxInvoice(order, billing);
+        
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        // Wait for content to load then print
+        setTimeout(() => {
+            printWindow.print();
+        }, 250);
+    } catch (error) {
+        console.error('Error printing order:', error);
+        alert('Error printing order: ' + error.message);
+    }
+}
+
+// Generate Tax Invoice (for pending orders)
+function generateTaxInvoice(order, billing) {
+    const customerName = `${billing.first_name || ''} ${billing.last_name || ''}`.trim() || 'Guest';
+    const orderDate = new Date(order.created_at);
+    
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Tax Invoice - Order #${order.order_number}</title>
+            <style>
+                @page {
+                    size: A4;
+                    margin: 20mm;
+                }
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+                body {
+                    font-family: Arial, sans-serif;
+                    max-width: 210mm;
+                    margin: 0 auto;
+                    padding: 20px;
+                    font-size: 11pt;
+                    line-height: 1.4;
+                }
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    border-bottom: 3px solid #2f3192;
+                    padding-bottom: 20px;
+                    margin-bottom: 30px;
+                }
+                .company-info {
+                    flex: 1;
+                }
+                .company-name {
+                    font-size: 24pt;
+                    font-weight: bold;
+                    color: #2f3192;
+                    margin-bottom: 10px;
+                }
+                .company-details {
+                    font-size: 10pt;
+                    line-height: 1.6;
+                }
+                .invoice-info {
+                    text-align: right;
+                }
+                .invoice-title {
+                    font-size: 28pt;
+                    font-weight: bold;
+                    color: #2f3192;
+                    margin-bottom: 10px;
+                }
+                .invoice-meta {
+                    font-size: 10pt;
+                }
+                .bill-to-section {
+                    margin: 30px 0;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-left: 4px solid #2f3192;
+                }
+                .bill-to-title {
+                    font-weight: bold;
+                    font-size: 12pt;
+                    margin-bottom: 10px;
+                    color: #2f3192;
+                }
+                .items-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 30px 0;
+                }
+                .items-table thead {
+                    background: #2f3192;
+                    color: white;
+                }
+                .items-table th {
+                    padding: 12px;
+                    text-align: left;
+                    font-weight: bold;
+                }
+                .items-table td {
+                    padding: 12px;
+                    border-bottom: 1px solid #dee2e6;
+                }
+                .items-table tr:hover {
+                    background: #f8f9fa;
+                }
+                .text-right {
+                    text-align: right;
+                }
+                .totals-section {
+                    margin-top: 30px;
+                    display: flex;
+                    justify-content: flex-end;
+                }
+                .totals-box {
+                    width: 300px;
+                }
+                .total-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #dee2e6;
+                }
+                .grand-total {
+                    font-size: 18pt;
+                    font-weight: bold;
+                    background: #2f3192;
+                    color: white;
+                    padding: 15px;
+                    margin-top: 10px;
+                }
+                .gst-breakdown {
+                    margin-top: 20px;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                }
+                .gst-breakdown h4 {
+                    margin: 0 0 10px 0;
+                    color: #2f3192;
+                }
+                .payment-info {
+                    margin: 40px 0;
+                    padding: 20px;
+                    background: #fff3cd;
+                    border: 2px solid #ffc107;
+                    border-radius: 5px;
+                }
+                .payment-info h4 {
+                    margin: 0 0 15px 0;
+                    color: #856404;
+                }
+                .bank-details {
+                    display: grid;
+                    grid-template-columns: 150px 1fr;
+                    gap: 8px;
+                    font-size: 10pt;
+                }
+                .bank-details strong {
+                    color: #856404;
+                }
+                .terms {
+                    margin-top: 40px;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-top: 2px solid #dee2e6;
+                    font-size: 9pt;
+                    line-height: 1.6;
+                }
+                .terms h4 {
+                    margin: 0 0 15px 0;
+                    color: #2f3192;
+                }
+                .footer {
+                    margin-top: 30px;
+                    text-align: center;
+                    font-size: 9pt;
+                    color: #6c757d;
+                    border-top: 2px solid #dee2e6;
+                    padding-top: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="company-info">
+                    <div class="company-name">Demolition Traders</div>
+                    <div class="company-details">
+                        249 Kahikatea Drive<br>
+                        Hamilton 3204<br>
+                        Phone: 07-847-4989<br>
+                        Email: admin@demolitiontraders.co.nz<br>
+                        <strong>GST Number: 45-514-609</strong>
+                    </div>
+                </div>
+                <div class="invoice-info">
+                    <div class="invoice-title">TAX INVOICE</div>
+                    <div class="invoice-meta">
+                        <strong>Invoice #:</strong> ${order.order_number}<br>
+                        <strong>Date:</strong> ${orderDate.toLocaleDateString('en-NZ')}<br>
+                        <strong>Time:</strong> ${orderDate.toLocaleTimeString('en-NZ')}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bill-to-section">
+                <div class="bill-to-title">BILL TO:</div>
+                <strong>${customerName}</strong><br>
+                ${billing.address || ''}<br>
+                ${billing.city || ''} ${billing.postcode || ''}<br>
+                Email: ${billing.email || order.guest_email || 'N/A'}<br>
+                Phone: ${billing.phone || 'N/A'}
+            </div>
+            
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Description</th>
+                        <th style="width: 15%;">SKU</th>
+                        <th style="width: 10%;" class="text-right">Qty</th>
+                        <th style="width: 12%;" class="text-right">Unit Price</th>
+                        <th style="width: 13%;" class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.items.map(item => `
+                        <tr>
+                            <td><strong>${item.product_name}</strong></td>
+                            <td>${item.sku}</td>
+                            <td class="text-right">${item.quantity}</td>
+                            <td class="text-right">$${parseFloat(item.unit_price).toFixed(2)}</td>
+                            <td class="text-right"><strong>$${parseFloat(item.subtotal).toFixed(2)}</strong></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            
+            <div class="totals-section">
+                <div class="totals-box">
+                    <div class="grand-total">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>TOTAL AMOUNT DUE</span>
+                            <span>$${parseFloat(order.total_amount).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="gst-breakdown">
+                        <h4>GST Breakdown</h4>
+                        <div class="total-row">
+                            <span>Subtotal (excl GST):</span>
+                            <span>$${parseFloat(order.subtotal).toFixed(2)}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>GST Amount (15%):</span>
+                            <span>$${parseFloat(order.tax_amount).toFixed(2)}</span>
+                        </div>
+                        ${parseFloat(order.shipping_amount) > 0 ? `
+                        <div class="total-row">
+                            <span>Shipping:</span>
+                            <span>$${parseFloat(order.shipping_amount).toFixed(2)}</span>
+                        </div>
+                        ` : ''}
+                        <div class="total-row" style="font-weight: bold; font-size: 12pt;">
+                            <span>Total (incl GST):</span>
+                            <span>$${parseFloat(order.total_amount).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="payment-info">
+                <h4>PAYMENT INFORMATION</h4>
+                <div class="bank-details">
+                    <strong>Bank:</strong> <span>BNZ (Bank of New Zealand)</span>
+                    <strong>Account Name:</strong> <span>Demolition Traders</span>
+                    <strong>Account Number:</strong> <span>02-0341-0083457-00</span>
+                    <strong>Reference:</strong> <span>${billing.last_name || 'Customer'}</span>
+                </div>
+                <p style="margin-top: 15px; font-size: 10pt;"><strong>Please use your last name as payment reference.</strong></p>
+            </div>
+            
+            <div class="terms">
+                <h4>TERMS & CONDITIONS</h4>
+                <p><strong>Payment Terms:</strong> Payment due within 7 days of invoice date.</p>
+                <p><strong>Refund Policy:</strong> Demolition Traders Ltd offers a 30 day refund period on all goods. Goods must be returned and inspected within 30 days of original purchase date for a refund. Proof of original purchase is required as a condition of the returns policy.</p>
+                <p><strong>Returns:</strong> Goods must be returned in the original purchase condition and be unused and undamaged. Any items with scratch or scuff marks and that have been cut down or altered will not be refunded - whether in transit or during 3rd party handling.</p>
+                <p><strong>Non-Refundable Items:</strong> Items with custom liners are non-refundable. Any credit card transaction fees are non-refundable.</p>
+            </div>
+            
+            <div class="footer">
+                Thank you for your business!<br>
+                For any queries, please contact us at 07-847-4989 or info@demolitiontraders.co.nz
+            </div>
+            
+            <div class="no-print" style="margin-top: 20px; text-align: center;">
+                <button onclick="window.print()" style="padding: 15px 30px; font-size: 14px; background: #2f3192; color: white; border: none; border-radius: 5px; cursor: pointer;">Print Invoice</button>
+                <button onclick="window.close()" style="padding: 15px 30px; font-size: 14px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Close</button>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+// Generate Receipt (for paid orders)
+function generateReceipt(order, billing) {
+    const customerName = `${billing.first_name || ''} ${billing.last_name || ''}`.trim() || 'Guest';
+    const orderDate = new Date(order.created_at);
+    const paidDate = order.payment_status === 'paid' && order.updated_at ? new Date(order.updated_at) : orderDate;
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Receipt - Order #${order.order_number}</title>
+            <style>
+                @page {
+                    size: A4;
+                    margin: 20mm;
+                }
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+                body {
+                    font-family: Arial, sans-serif;
+                    max-width: 210mm;
+                    margin: 0 auto;
+                    padding: 20px;
+                    font-size: 11pt;
+                    line-height: 1.4;
+                }
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    border-bottom: 3px solid #2f3192;
+                    padding-bottom: 20px;
+                    margin-bottom: 30px;
+                }
+                .company-info {
+                    flex: 1;
+                }
+                .company-name {
+                    font-size: 24pt;
+                    font-weight: bold;
+                    color: #2f3192;
+                    margin-bottom: 10px;
+                }
+                .company-details {
+                    font-size: 10pt;
+                    line-height: 1.6;
+                }
+                .invoice-info {
+                    text-align: right;
+                }
+                .invoice-title {
+                    font-size: 28pt;
+                    font-weight: bold;
+                    color: #2f3192;
+                    margin-bottom: 10px;
+                    text-transform: uppercase;
+                }
+                .invoice-meta {
+                    font-size: 10pt;
+                }
+                .bill-to-section {
+                    margin: 30px 0;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-left: 4px solid #2f3192;
+                }
+                .bill-to-title {
+                    font-weight: bold;
+                    font-size: 12pt;
+                    margin-bottom: 10px;
+                    color: #2f3192;
+                }
+                .items-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 30px 0;
+                }
+                .items-table thead {
+                    background: #2f3192;
+                    color: white;
+                }
+                .items-table th {
+                    padding: 12px;
+                    text-align: left;
+                    font-weight: bold;
+                }
+                .items-table td {
+                    padding: 12px;
+                    border-bottom: 1px solid #dee2e6;
+                }
+                .items-table tr:hover {
+                    background: #f8f9fa;
+                }
+                .text-right {
+                    text-align: right;
+                }
+
+                .totals-section {
+                    margin-top: 30px;
+                    display: flex;
+                    justify-content: flex-end;
+                }
+                .totals-box {
+                    width: 300px;
+                }
+                .total-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #dee2e6;
+                }
+                .grand-total {
+                    font-size: 18pt;
+                    font-weight: bold;
+                    background: #2f3192;
+                    color: white;
+                    padding: 15px;
+                    margin-top: 10px;
+                }
+                .gst-breakdown {
+                    margin-top: 20px;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                }
+                .gst-breakdown h4 {
+                    margin: 0 0 10px 0;
+                    color: #2f3192;
+                }
+
+                .paid-box {
+                    margin: 40px 0;
+                    padding: 20px;
+                    background: #d4edda;
+                    border: 2px solid #28a745;
+                    border-radius: 5px;
+                    text-align: center;
+                    font-size: 14pt;
+                    font-weight: bold;
+                    color: #155724;
+                }
+
+                .terms {
+                    margin-top: 40px;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-top: 2px solid #dee2e6;
+                    font-size: 9pt;
+                    line-height: 1.6;
+                }
+                .terms h4 {
+                    margin: 0 0 15px 0;
+                    color: #2f3192;
+                }
+
+                .footer {
+                    margin-top: 30px;
+                    text-align: center;
+                    font-size: 9pt;
+                    color: #6c757d;
+                    border-top: 2px solid #dee2e6;
+                    padding-top: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="company-info">
+                    <div class="company-name">Demolition Traders</div>
+                    <div class="company-details">
+                        249 Kahikatea Drive<br>
+                        Hamilton 3204<br>
+                        Phone: 07-847-4989<br>
+                        Email: admin@demolitiontraders.co.nz<br>
+                        <strong>GST Number: 45-514-609</strong>
+                    </div>
+                </div>
+                <div class="invoice-info">
+                    <div class="invoice-title">RECEIPT</div>
+                    <div class="invoice-meta">
+                        <strong>Receipt #:</strong> ${order.order_number}<br>
+                        <strong>Date:</strong> ${paidDate.toLocaleDateString('en-NZ')}<br>
+                        <strong>Time:</strong> ${paidDate.toLocaleTimeString('en-NZ')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bill-to-section">
+                <div class="bill-to-title">CUSTOMER:</div>
+                <strong>${customerName}</strong><br>
+                ${billing.address || ''}<br>
+                ${billing.city || ''} ${billing.postcode || ''}<br>
+                Email: ${billing.email || order.guest_email || 'N/A'}<br>
+                Phone: ${billing.phone || 'N/A'}
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Description</th>
+                        <th style="width: 15%;">SKU</th>
+                        <th style="width: 10%;" class="text-right">Qty</th>
+                        <th style="width: 12%;" class="text-right">Unit Price</th>
+                        <th style="width: 13%;" class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.items.map(item => `
+                        <tr>
+                            <td><strong>${item.product_name}</strong></td>
+                            <td>${item.sku}</td>
+                            <td class="text-right">${item.quantity}</td>
+                            <td class="text-right">$${parseFloat(item.unit_price).toFixed(2)}</td>
+                            <td class="text-right"><strong>$${parseFloat(item.subtotal).toFixed(2)}</strong></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <div class="totals-section">
+                <div class="totals-box">
+                    <div class="grand-total">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>TOTAL PAID</span>
+                            <span>$${parseFloat(order.total_amount).toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <div class="gst-breakdown">
+                        <h4>GST Breakdown</h4>
+                        <div class="total-row">
+                            <span>Subtotal (excl GST):</span>
+                            <span>$${parseFloat(order.subtotal).toFixed(2)}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>GST Amount (15%):</span>
+                            <span>$${parseFloat(order.tax_amount).toFixed(2)}</span>
+                        </div>
+                        ${parseFloat(order.shipping_amount) > 0 ? `
+                        <div class="total-row">
+                            <span>Shipping:</span>
+                            <span>$${parseFloat(order.shipping_amount).toFixed(2)}</span>
+                        </div>
+                        ` : ''}
+                        <div class="total-row" style="font-weight: bold; font-size: 12pt;">
+                            <span>Total (incl GST):</span>
+                            <span>$${parseFloat(order.total_amount).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paid-box">PAID IN FULL</div>
+
+            <div class="terms">
+                <h4>TERMS & CONDITIONS</h4>
+                <p><strong>Payment Terms:</strong> Payment has been received in full for goods listed above.</p>
+                <p><strong>Refund Policy:</strong> Demolition Traders Ltd offers a 30 day refund period on all goods. Goods must be returned and inspected within 30 days of original purchase date for a refund. Proof of original purchase is required as a condition of the returns policy.</p>
+                <p><strong>Returns:</strong> Goods must be returned in the original purchase condition and be unused and undamaged. Any items with scratch or scuff marks and that have been cut down or altered will not be refunded - whether in transit or during 3rd party handling.</p>
+                <p><strong>Non-Refundable Items:</strong> Items with custom liners are non-refundable. Any credit card transaction fees are non-refundable.</p>
+            </div>
+
+            <div class="footer">
+                Thank you for your purchase!<br>
+                For any queries, please contact 07-847-4989 or info@demolitiontraders.co.nz
+            </div>
+
+            <div class="no-print" style="margin-top: 20px; text-align: center;">
+                <button onclick="window.print()" style="padding: 15px 30px; font-size: 14px; background: #2f3192; color: white; border: none; border-radius: 5px; cursor: pointer;">Print Receipt</button>
+                <button onclick="window.close()" style="padding: 15px 30px; font-size: 14px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Close</button>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+
+// Delete order
+async function deleteOrder(id) {
+    if (!confirm(`Are you sure you want to delete Order #${id}? This action cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadOrders();
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #dc3545; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            successMsg.innerHTML = `<i class="fas fa-trash"></i> Order deleted successfully!`;
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 3000);
+        } else {
+            alert('Error deleting order');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Send Receipt Email
+async function sendReceipt(id) {
+    if (!confirm(`Send receipt email for Order #${id}?`)) {
+        return;
+    }
+    
+    try {
+        // Show sending message
+        const sendingMsg = document.createElement('div');
+        sendingMsg.className = 'alert alert-info';
+        sendingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #17a2b8; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending receipt email...`;
+        document.body.appendChild(sendingMsg);
+        
+        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}/send-receipt`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        sendingMsg.remove();
+
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Receipt email sent successfully!`;
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 3000);
+        } else {
+            const error = await response.json();
+            alert('Error sending receipt: ' + (error.error || 'Unknown error'));
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Send Tax Invoice Email
+async function sendTaxInvoice(id) {
+    if (!confirm(`Send tax invoice email for Order #${id}?`)) {
+        return;
+    }
+    try {
+        const sendingMsg = document.createElement('div');
+        sendingMsg.className = 'alert alert-info';
+        sendingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #6c757d; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending tax invoice email...`;
+        document.body.appendChild(sendingMsg);
+
+        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}/send-tax-invoice`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        sendingMsg.remove();
+
+        if (response.ok) {
+            const result = await response.json();
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Tax invoice email sent successfully!`;
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 3000);
+        } else {
+            const error = await response.json();
+            alert('Error sending tax invoice: ' + (error.error || 'Unknown error'));
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Initialize
+loadOrders();
+</script>
+        </main>
+    </div>
+</body>
+</html>

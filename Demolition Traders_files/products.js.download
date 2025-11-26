@@ -1,0 +1,883 @@
+// Products JavaScript Document
+
+	$(document).ready(function() {
+		"use strict";
+
+
+		$('.product-details').tabs();
+
+
+		// Quantity input +/- buttons
+		function setQtySpinners(){
+
+			$(".product-details-buy-add-quantity, table.wishlist td.qty").each(function(){
+
+				if ($(this).hasClass('spinner') === false) {
+
+					var input = $(this).find('input');
+					var dec = $('<a href="#">-</a>').prependTo(this);
+					var inc = $('<a href="#">+</a>').appendTo(this);
+					var qty = parseInt($(input).val());
+					var interval1 = false;
+					var interval2 = false;
+
+					$([inc, dec]).on('click', function(e){
+
+						e.preventDefault();
+					});
+
+					$(dec).on('mousedown', function(){
+
+						var newQty = qty - 1;
+						if (newQty > 0) {
+
+							qty = newQty;
+							$(input).val(qty);
+
+							interval1 = setTimeout(function(){
+
+								interval2 = setInterval(function(){
+
+									newQty = qty - 1;
+									if (newQty > 0) {
+
+										qty = newQty;
+										$(input).val(qty);
+									}
+									else {
+
+										clearInterval(interval2);
+									}
+
+								}, 100);
+
+							}, 300);
+						}
+
+						return false;
+					});
+
+					$(inc).on('mousedown', function(){
+
+						qty++;
+						$(input).val(qty);
+						interval1 = setTimeout(function(){
+
+							interval2 = setInterval(function(){
+
+								qty++;
+								$(input).val(qty);
+
+							}, 100);
+
+						}, 300);
+
+						return false;
+					});
+
+					$(document.body).on('mouseup', function(e){
+
+						clearInterval(interval1);
+						clearInterval(interval2);
+					});
+
+					$([inc, dec]).on('mouseup', function(e){
+
+						e.preventDefault();
+						clearInterval(interval1);
+						clearInterval(interval2);
+					});
+
+					$(this).addClass('spinner');
+				}
+			});
+		}
+		setQtySpinners();
+
+
+		// Add to wishlist link
+		$('.wishlist-button[data-id]').on('click', function(e){
+
+			e.preventDefault();
+			var link = this;
+			var id = $(link).data('id');
+			$.ajax({
+				type: "GET",
+				url: pageRelativity+'edit/modules/products/products.ajax.php',
+				data: {
+					type: 'add-to-wishlist',
+					id: id,
+					relative: pageRelativity
+				},
+				success: function(data) {
+
+					data = $.parseJSON(data);
+					$(link).find('i').toggleClass('far').toggleClass('fas');
+					$('*[data-wishlist-count]').html(data.count);
+
+					switch(data.status){
+
+						case 'added' : {
+							//
+							$.toast('Item added to your wishlist');
+							break;
+						}
+
+						case 'removed' : {
+							//
+							$.toast('Item removed from your wishlist');
+							break;
+						}
+					}
+				}
+			});
+		});
+		$('.wishlist-button[data-alert]').on('click', function(){
+
+			var msg = $(this).data('alert');
+			alert(msg);
+		});
+
+
+		// Products carousel
+        if($.fn.owlCarousel && $('.products.owl-carousel').length > 0) {
+
+            //
+            $('.products.owl-carousel').each(function(){
+
+                var items = $(this).data("items");
+
+                var moreOptions;
+                var owlOptions = {
+                	autoplay: true,
+					autoplayTimeout: 5000,
+                    items: items,
+                    margin: 40,
+                    loop: true,
+                    itemElement: 'div',
+                    nav: true,
+                    dots: false,
+                    navText: ['<i class="fas fa-angle-left"></i>','<i class="fas fa-angle-right"></i>']
+                };
+
+                //
+                switch(items) {
+                    case 7 :
+                    case 6 : {
+                        moreOptions = {
+                            responsive:{
+                                0:{items:1,nav:false},
+                                680:{items:3,nav:false,margin:20},
+                                1200:{items:5,nav:true,margin:20}
+                            }
+                        };
+                        break;
+                    }
+                    case 5 :
+                    case 4 : {
+                        moreOptions = {
+                            responsive:{
+                                0:{items:1,nav:false},
+                                680:{items:3,nav:false,margin:20},
+                                1200:{nav:true,margin:20}
+                            }
+                        };
+                        break;
+                    }
+                    default : {
+                        moreOptions = {
+                            responsive:{
+                                0:{items:1,nav:false},
+                                680:{items:2,nav:false,margin:20},
+                                1200:{nav:true}
+                            }
+                        };
+                        break;
+                    }
+                }
+
+                // Join options
+                owlOptions = merge_options(owlOptions,moreOptions);
+
+                //
+                $(this).owlCarousel(owlOptions);
+            });
+        }
+
+
+
+		// Check for product items then match height
+		if($.fn.matchHeight && $(".products .product-item").length > 0) {
+			
+			//
+			$(".products .product-item .module-text h4").matchHeight({
+				byRow: true,
+				property: "height"
+			});
+
+			//
+			$(".products .product-item .module-text").matchHeight({
+				byRow: true,
+				property: "height"
+			});
+		}
+		
+		// Open product images in magnific popup
+		if($.fn.magnificPopup) {
+			//
+			$('a.product-details-image, a.product-details-images-img').magnificPopup({
+				type:'image'
+			});	
+		}
+		
+		// Open product images in colorbox
+		else if($.fn.colorbox) { 
+			//
+			$("a[class=\'product-details-image\'], a[class=\'product-details-images-img\']").colorbox({photo:true},function(){ 
+				var titleheight = $("#cboxTitle").height(); 
+				$("#colorbox").height($("#colorbox").height() + titleheight); 
+				$("#cboxWrapper").height($("#cboxWrapper").height() + titleheight); 
+				$("#cboxMiddleLeft").height($("#cboxMiddleLeft").height() + titleheight); 
+				$("#cboxMiddleRight").height($("#cboxMiddleRight").height() + titleheight); 
+				$("#cboxContent").height($("#cboxContent").height() + titleheight); 
+				$("#cboxLoadedContent").height($("#cboxLoadedContent").height() + titleheight); 
+			});
+		}
+		
+		
+		// Change image
+		if($(".product-details-thumbnails").length > 0) {
+			
+			//
+			$(".product-details-thumbnails a").on("click",function(event) {
+				
+				//
+				event.preventDefault();
+				
+				// Image
+				var image = $(this).data('image');
+				
+				change_product_image(image);
+			});
+		}
+		
+		
+		// Product details buy
+		if($(".product-details-buy").length > 0) {
+				
+			// Show hidden areas
+			$(".product-details-buy-price").css({display:'inline-block'});
+			$(".product-details-buy-add-quantity").show();
+			setQtySpinners();
+			
+			// Create options dropdown/dropdowns/radio buttons in product details if more than one sub part
+			if($(".product-details-buy .product-details-buy-add").length > 1) {
+				
+				// Master part
+				var master = $(".product-details-buy-options").data('masterpart');
+				
+				//
+				var displayType = 'standard';
+				//
+				if($(".product-details-buy-options").hasClass('radio-options')) {displayType = 'radio';}
+				if($(".product-details-buy-options").hasClass('dropdown-options')) {displayType = 'dropdown';}
+				
+				
+				// Create options
+				var options = new Array();
+				var optionFields = $(".product-details-buy-options").data('options');
+				var optionTitles = $(".product-details-buy-options").data('option-titles');
+				
+				// First options
+				var firstOptions = new Array();
+				
+				//
+				var price = '';
+                var stockText = '';
+				var count = 0;
+				
+				// Show hidden areas
+				$(".product-details-buy-options").show();
+				
+				// For each option
+				$(".product-details-buy .product-details-buy-add").each(function() {
+							
+					// Get part options
+					var partOptions = $(this).data('options');
+					
+					// Switch display type
+					switch(displayType) {
+						case 'radio' :
+						case 'dropdown' : {
+							
+							// Set titles of first options only
+							var title = partOptions[0];
+							
+							// Create option
+							if(firstOptions.indexOf(title) < 0) {
+								//
+								var optionsObject = {
+									master:		master,
+									recordid: 	$(this).data('recordid'),
+									title: 		title,
+									first:		partOptions[0],
+									options:	partOptions,
+								};
+								
+								// Add object to options array
+								options.push(optionsObject);
+								
+								// Add title to first options array
+								firstOptions.push(title);
+							}
+							
+							//
+							break;	
+						}
+						case 'standard' :
+						default : {
+							// Title
+							{
+								var title = '';
+								
+								// Add options to title
+								if(partOptions.length > 0) {
+									partOptions.forEach(function(item,index) {
+										//
+										title += (title !== '' && item !== '') ? ' - ' : '';
+										title += (item !== '') ? item : '';
+									});
+								}
+								
+								// Set title
+								else {
+									title += $(this).data('title');
+								}
+								
+								// Set price
+								if($(this).data('price') !== '') {
+									//
+									title += ' - '+$(this).data('price');
+									title += $(this).data('pricepost');
+								}
+								
+								// Set out of stock
+								if($(this).data('outofstock') !== '') {
+									//
+									title += ' - '+$(this).data('outofstock');
+								}
+							}
+							
+							// Create option
+							{
+								//
+								var optionsObject = {
+									master:		master,
+									recordid: 	$(this).data('recordid'),
+									title: 		title,
+									first:		partOptions[0],
+									options:	partOptions,
+								};
+								
+								// Add object to options array
+								options.push(optionsObject);
+							}
+							
+							//
+							break;
+						}
+					}
+					
+					// Set price to show
+					if(count === 0) {
+						//
+						price = get_formatted_pricing($(this));
+                        stockText = get_formatted_stock_text($(this));
+						
+						// Hide all options if display type isn't standard
+						if(displayType !== 'standard') {
+							$(this).hide();
+						}
+					}
+					else {
+						// Hide others
+						$(this).hide();
+					}
+					
+					// Hide stacked titles
+					$(this).find(".product-details-buy-add-title").hide();
+					$(this).removeClass('stacked');
+					
+					count++;
+				});
+				
+				
+				// If there are options the generate dropdowns/radio buttons
+				if(options.length > 0) {
+					
+					var html = '';
+					
+					switch(displayType) {
+						// Create radio button options
+						case 'radio' : {
+							//
+							html += '<div class="buy-radio-group '+optionFields[0]+'-option">';
+							
+							// Build title
+							html += '<span class="buy-radio-group-title">'+optionTitles[0]+'</span>';
+							
+							// Build options
+							options.forEach(function(item,index) {
+								
+								//
+								html += '<input type="radio" id="'+optionFields[0]+'-'+item.recordid+'" name="'+optionFields[0]+'-option" value="'+item.recordid+'" class="buy-radio" data-option="'+optionFields[0]+'" />';
+								html += '<label for="'+optionFields[0]+'-'+item.recordid+'">'+item.first+'</label>';
+							});
+								
+							//
+							html += '</div>';
+							
+							break;
+						}
+						// Create dropdown options
+						case 'dropdown' : {
+							//
+							html += '<div class="buy-dropdowns '+optionFields[0]+'-option">';
+							
+							// Build title
+							html += '<span class="buy-dropdowns-title">'+optionTitles[0]+'</span>';
+							
+							// Build select box
+							html += '<select name="'+optionFields[0]+'-option" class="buy-dropdown" data-option="'+optionFields[0]+'">';
+							html += '<option value="">Select...</option>';
+							
+							// Build options
+							options.forEach(function(item,index) {
+								
+								//
+								html += '<option value="'+item.recordid+'">'+item.title+'</option>';
+							});
+							
+							//
+							html += '</select>';
+								
+							//
+							html += '</div>';
+							
+							break;
+						}
+						// Create single dropdown
+						case 'standard' :
+						default : {
+							
+							// Build select box
+							html += '<select class="buy-standard" name="option">';
+							
+							// Build options
+							options.forEach(function(item,index) {
+								//
+								html += '<option value="'+item.recordid+'">'+item.title+'</option>';
+							});
+							
+							//
+							html += '</select>';
+					
+							// Add price to dom
+							$(".product-details-buy-price").html(price);
+					        $(".price-extra").html(stockText);
+							
+							break;
+						}
+					}	
+					
+					// Add dropdown to dom
+					$(".product-details-buy-options").html(html);	
+				}
+			}
+			
+			// Else show single option
+			else if($(".product-details-buy .product-details-buy-add").length === 1) {
+				
+				// Show price
+				$(".product-details-buy .product-details-buy-add").each(function() {
+					
+					//
+					var price = get_formatted_pricing($(this));
+                    var stockText = get_formatted_stock_text($(this));
+					
+					// Add price to dom
+					$(".product-details-buy-price").html(price);
+					$(".price-extra").html(stockText);
+                    
+					$(this).find(".product-details-buy-add-title .price").hide();
+                    $(".delivery-costs").show();
+				});
+			}
+			
+			
+			// On dropdowns / radio button option select
+			{
+				var currentPrice = $('.product-details-buy h2').first().text();
+				$(".product-details-buy").on("change",".buy-radio, .buy-dropdown",function() {
+					
+					// Hide all add buttons
+					$(".product-details-buy .product-details-buy-add").hide();
+					
+					//
+					var value  = $(this).val();
+					var option = $(this).data("option");
+					var displayType = ($(this).hasClass("buy-radio")) ? 'radio' : 'dropdown';
+					
+					// Get list of option title
+					var optionTitles = $(".product-details-buy-options").data('option-titles');
+					
+					// Get list of option fields
+					var optionFields = $(".product-details-buy-options").data('options');
+					var currentFound = false;
+					
+					// Delete all after current option
+					optionFields.forEach(function(item,index) {
+						//
+						if(currentFound) {
+							$("."+item+"-option").remove();
+						}
+						else if(item === option) {
+							currentFound = true;	
+						}
+					});
+					
+					// Build list of options selected
+					build_options_selected();
+					
+					// Get selected
+					var master   = $(".product-details-buy-options").data("masterpart");
+					var selected = $(".product-details-buy-options").data("selected");
+					
+					// Get available options
+					$.ajax({
+						type: "GET",
+						url: pageRelativity+'edit/modules/products/products.ajax.php',
+						dataType: "jsonp",
+						jsonp: "callback",
+						timeout: 5000,
+						data: {
+							type: 'get-product-options',
+							option: option,
+							master: master,
+							selected: selected,
+							titles: optionTitles,
+							displayType: displayType,
+							currentPrice: currentPrice,
+							relative: pageRelativity
+						},
+						success: function(data) {
+							// If data
+							if(data.count === 1 && data.itemId !== '') {
+								
+								// Show add button
+								show_add_button(data.itemId);
+							}
+							else if(data.count > 0 && data.html) {
+								// Default price
+								default_pricing();
+								//
+								$(".product-details-buy-options").append(data.html);
+								
+								// Check for single option
+								if($(".product-details-buy ."+data.option+"-option input").length === 1) {
+									
+									// Select single option
+									$(".product-details-buy ."+data.option+"-option input").prop("checked",true);
+									$(".product-details-buy ."+data.option+"-option input").trigger("change");
+								}
+							}
+							else {
+								
+							}
+						},
+						error: function(request, status, error) {
+							//
+							alert(request.responseText);
+						}
+					});
+				});
+			}
+			
+			
+			// On single dropdown select
+			{
+				$(".product-details-buy").on("change",".buy-standard",function() {
+					//
+					var itemId = $(this).val();
+					
+					// Show add button
+					show_add_button(itemId);
+				});
+			}
+
+			
+			// On quantity change
+			{
+				$(".product-details-buy-add-quantity .buy-quantity").on("change",function() {
+					
+					var value = parseInt($(this).val());
+					
+					//
+					if(!isNaN(value) && value > 0) {
+						
+						//
+						$(".buy-quantity").val(value);
+					}
+				});
+			}
+			
+			
+			// Automatically add item to cart
+			{
+				// Ajax action for product buy form
+				$(".buy-product").submit(function(event) {
+					
+					// Stop submit
+					event.preventDefault();
+					
+					// Time process
+					var start = new Date();
+					var minDelay = 1000;
+					
+					// Set button title
+					var form      = $(this);
+					var buyButton = $(form).children("input[type=submit]");
+					
+					$(buyButton).attr("value","Adding product to cart...");
+					$(buyButton).attr("disabled","disabled");
+					
+					$(".message-input").hide();
+					
+					// Get form data
+					var dataString = $(form).serialize();
+					  
+					$.ajax({  
+						type: "POST",  
+						url: pageRelativity+'edit/shop/cart.ajax.php?add=1',  
+						data: dataString,  
+						success: function(data) {
+							
+							// For timing
+							var end = new Date();
+							var timeInMilliseconds = end-start;
+							
+							// Delay till minimum time is reached
+							if(timeInMilliseconds < minDelay) {
+								setTimeout(function() {
+									add_item_to_summary_cart(data,buyButton);
+									},minDelay-timeInMilliseconds);
+							}
+							else {
+								add_item_to_summary_cart(data,buyButton);
+							}
+						},
+						error: function(request, status, error) {
+							//
+							$(form).submit();
+						}
+					});
+					
+					//
+					return false;
+				});
+			}
+		}
+	});
+	
+	
+	// Build options selected data array
+	function build_options_selected() {
+		"use strict";
+		
+		// Get display type
+		var displayType = 'standard';
+		//
+		if($(".product-details-buy-options").hasClass('radio-options')) {displayType = 'radio';}
+		if($(".product-details-buy-options").hasClass('dropdown-options')) {displayType = 'dropdown';}
+		
+		// Set options array
+		var options = [];
+		
+		switch(displayType) {
+			case 'radio' : {
+				//
+				$(".product-details-buy .buy-radio-group").each(function() {
+					//
+					var option = $(this).find("input[type=radio]:checked").val();
+					
+					// Add option to array
+					options.push(option);
+				});
+				
+				//
+				break;
+			}
+			case 'dropdown' : {
+				//
+				$(".product-details-buy .buy-dropdowns").each(function() {
+					//
+					var option = $(this).find("select").val();
+					
+					// Add option to array
+					options.push(option);
+				});
+				
+				//
+				break;
+			}
+		}
+		
+		// Update selected list
+		$(".product-details-buy-options").data("selected",options);
+	}
+	
+	
+	// Show add button
+	function show_add_button(itemId) {
+		"use strict";
+		
+		//
+		var option = $("#"+itemId);
+		var optionDelivery = $("#"+itemId+'-delivery');
+		var price  = get_formatted_pricing($(option));
+        var stockText = get_formatted_stock_text($(option));
+		
+		// Add price to dom
+		$(".product-details-buy-price").html(price);
+        $(".price-extra").html(stockText);
+		
+		// Change image
+		if($(option).data('image')) {
+			
+			change_product_image($(option).data('image'));
+		}
+		
+		// Hide all add buttons
+		$(".product-details-buy .product-details-buy-add").hide();
+		
+		// Show option add button
+		$(option).show();
+        //
+		$('.delivery-costs').hide();
+		$(optionDelivery).show();
+	}
+	
+	
+	// Change image
+	function change_product_image(image) {
+		"use strict";
+		
+		if($(".product-details-images #"+image).length > 0) {
+			// Remove current
+			$(".product-details-images .product-details-images-img").removeClass("current-image");
+			$(".product-details-thumbnails a").removeClass("current-image");
+			
+			// Change current
+			$(".product-details-images #"+image).addClass("current-image");
+			$(".product-details-thumbnails #"+image+"_thumbnail").addClass("current-image");
+		}
+	}
+	
+	
+	// Get formatted price
+	function default_pricing() {
+		"use strict";
+		
+		//
+		var price     	= '';
+		var priceVal  	= $(".product-details-buy-options").data('default-price');
+		var normalVal 	= $(".product-details-buy-options").data('default-normal');
+		var priceText	= $(".product-details-buy-options").data('default-pricetext');
+		var specialText	= $(".product-details-buy-options").data('default-specialtext');
+		var wasText   	= $(".product-details-buy-options").data('default-wastext');
+		var pricePost 	= $(".product-details-buy-options").data('default-pricepost');
+		
+		//
+		price += (priceVal !== normalVal) ? '<h4>'+specialText+'</h4>' : ((priceText !== '') ? '<h4>'+priceText+'</h4>' : '');
+		price += '<h2>'+priceVal+'<span class="price-post">'+pricePost+'</span></h2>';
+		price += (priceVal !== normalVal) ? '<span class="was">'+wasText+'<del>'+normalVal+'</del></span>' : '';	
+		
+		// Add price to dom
+		$(".product-details-buy-price").html(price);
+	}
+	
+	
+	// Get formatted price
+	function get_formatted_pricing(option) {
+		"use strict";
+		
+		//
+		var price     	= '';
+		var priceVal  	= $(option).data('price');
+		var normalVal 	= $(option).data('normal');
+		var priceText	= $(option).data('pricetext');
+		var specialText	= $(option).data('specialtext');
+		var wasText   	= $(option).data('wastext');
+		var pricePost 	= $(option).data('pricepost');
+		
+		//
+		price += (priceVal !== normalVal) ? '<h4>'+specialText+'</h4>' : ((priceText !== '') ? '<h4>'+priceText+'</h4>' : '');
+		price += '<h2>'+priceVal+'<span class="price-post">'+pricePost+'</span></h2>';
+		price += (priceVal !== normalVal) ? '<span class="was">'+wasText+'<del>'+normalVal+'</del></span>' : '';	
+		
+		//
+		return price;
+	}
+	
+	
+	// Get formatted stock text
+	function get_formatted_stock_text(option) {
+		"use strict";
+		
+		//
+		var stock     	= '';
+		var outofstock  = $(option).data('outofstock');
+		
+		//
+		stock += (outofstock != '') ? '<span>'+outofstock+'</span>' : '<span>In Stock</span>';	
+		
+		//
+		return stock;
+	}
+	
+	
+	// Add product to cart
+	function add_item_to_summary_cart(data,buyButton) {
+		"use strict";
+		
+		if(data === "error") {
+			
+			// Show error message
+			update_messages();
+			$(".message-input").show();
+			
+			$(buyButton).attr("value","Add to Cart");
+			$(buyButton).attr("disabled","");
+		}
+		else if(data !== "") {
+			
+			// Change button to added
+			$(buyButton).attr("value","Product added");
+			$(".view-cart-link").show();
+			
+			// Add to side cart
+			updateCartSummery();
+			update_messages();
+			$(".message-input").show();
+		}
+		else {
+			
+			//
+			$(".message-input").show();
+			$(buyButton).attr("value","Add to Cart");
+			$(buyButton).attr("disabled","");
+		}
+	}
+	
+	
+	

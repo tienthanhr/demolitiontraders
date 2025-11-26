@@ -1,0 +1,124 @@
+// Rototar JavaScript Document
+
+	$(document).ready(function() {
+
+		// Unslider set up
+		if($.fn.unslider && $(".unslider-holder").length > 0) {
+			
+			// For each unslider, initiate
+			$(".unslider-holder").each(function() {
+				
+				// Get options
+				var animation = $(this).data("animation");
+				var speed  = $(this).data("speed");
+				var delay  = $(this).data("delay");
+				var arrows = $(this).data("arrows");
+				var prev   = $("#image-rotator-prev").html();
+				var next   = $("#image-rotator-next").html();
+				var nav   = $(this).data("nav");
+				
+				arrows = (arrows) ? {
+						prev: '<a class="unslider-arrow prev">'+prev+'</a>',
+						next: '<a class="unslider-arrow next">'+next+'</a>',
+					} : false;
+				
+				// Get slider element
+				var slider = $(this);
+				
+				// Set on ready event
+				$(slider).on("unslider.ready",function() {
+					
+					// Set this
+					var t = $(this);
+					
+					// Reset animation			
+					$(t).find(".sliderimg:nth-child("+((animation === 'fade') ? 1 : 2)+")").addClass("reset-animation");
+					
+					// Add show slider class
+					setTimeout(function() {
+						//
+						$(t).addClass("show-unslider");
+						$(t).find(".sliderimg:nth-child("+((animation === 'fade') ? 1 : 2)+")").addClass("unslider-animate").removeClass("reset-animation");
+					},10);
+				});
+				
+				var index = (animation === 'fade') ? 'first' : 'first';
+				
+				
+				//
+				$(slider).unslider({
+					animation: animation, // fade, horizontal, vertical
+					autoplay: true,
+					infinite: true,
+					index: index,
+					speed: speed,
+					delay: delay,
+					//fluid: true,
+					arrows: arrows,
+					nav: nav
+				});
+				
+				// Set on change event
+				$(slider).on("unslider.change",function(event,index,slide,slide2) {
+					
+					// Background image
+					if($(".sliderimg.backgroundimage-container").length > 0) {
+						
+						// Backgrounds
+						$(".sliderimg.backgroundimage-container").backgroundimage('update');	
+					}
+									
+					// Remove animate for old slide and add to new
+					$(this).find(".sliderimg").removeClass("unslider-animate");
+					$(slide).addClass("unslider-animate");
+					$(slide2).addClass("unslider-animate");
+				});
+				
+				// Enable swiping
+				if($.fn.swipe) {
+					$(slider).find(".sliderimg").swipe({
+						swipeLeft: function(event, direction, distance, duration, fingerCount, fingerData) {
+							if(direction === "left") {
+								$(slider).data("unslider").next();
+							}
+						},
+						threshold:75,
+						swipeRight:function(event, direction, distance, duration, fingerCount, fingerData) {
+							if(direction === "right") {
+								$(slider).data("unslider").prev();
+							}
+						},
+						threshold:75 
+					});
+				}
+				
+				// Set up background image on each slide
+				$(slider).find(".sliderimg").backgroundimage();
+				
+				// Bind update function
+				$(slider).bind('updateSlider',function() {
+					//
+					var containerHeight = $(this).data("height");
+		
+					$(this).height(containerHeight);
+					$(this).find(".sliderimg").height(containerHeight);
+					$(this).find(".sliderimg .wrap").height(containerHeight);
+				});
+				
+				// Run functions during resize
+				$(window).resize(function() {
+		
+					// Update slider
+					$(slider).trigger('updateSlider');
+				});
+								
+				// Update slider
+				$(slider).trigger('updateSlider');
+			});
+			
+			//
+			$(window).resize();
+		}
+	});
+	
+	

@@ -1,0 +1,651 @@
+/* compiled by scssphp v0.0.12 on Wed, 24 Jul 2019 09:35:06 +1200 (0.1439s) */
+
+/* Image Boxes SCSS Document */
+/* Image boxes */
+.imageboxes {
+  display: block;
+}
+.imageboxes.owl-carousel .imagebox-item {
+  display: block !important;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.imageboxes .module-image {
+  display: block;
+  width: 100%;
+}
+.imageboxes .module-image img {
+  vertical-align: middle;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: rotate(0);
+  -moz-transform: rotate(0);
+  transform: rotate(0);
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+}
+.imageboxes a.imagebox-item:hover .module-image img {
+  opacity: 0.7;
+}
+.imageboxes .module-text p {
+  display: block;
+  padding: 0px 0px 0px 0px;
+  margin: 0px 0px 0px 0px;
+}
+.imageboxes .module-text .readmore {
+  /* Grid of images next to text */
+}
+.imageboxes.imageside .imagebox-item {
+  display: inline-block;
+  position: relative;
+}
+.imageboxes.imageside .module-image {
+  float: left;
+  width: 40%;
+  display: block;
+}
+.imageboxes.imageside.grid.one-column .module-image {
+  width: 20%;
+}
+.imageboxes.imageside.grid.seven-column .module-image, .imageboxes.imageside.grid.six-column .module-image, .imageboxes.imageside.grid.five-column .module-image {
+  width: 100%;
+  padding-bottom: 5px;
+}
+.imageboxes.imageside .module-text {
+  float: right;
+  width: 100%;
+  display: block;
+  text-align: left;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  /* If image shown */
+}
+.imageboxes.imageside .module-image + .module-text {
+  width: 60%;
+  padding-left: 20px;
+}
+.imageboxes.imageside.grid.one-column .module-text {
+  width: 80%;
+}
+.imageboxes.imageside.grid.seven-column .module-text, .imageboxes.imageside.grid.six-column .module-text, .imageboxes.imageside.grid.five-column .module-text {
+  width: 100%;
+  padding-left: 0px;
+  /* Grid of image next to text with the title above */
+}
+.imageboxes.imagesidetitleabove .imagebox-item {
+  display: inline-block;
+  position: relative;
+}
+.imageboxes.imagesidetitleabove .module-image {
+  float: left;
+  width: 40%;
+  display: block;
+}
+.imageboxes.imagesidetitleabove .module-title {
+  display: block;
+  text-align: left;
+  padding-bottom: 10px;
+}
+.imageboxes.imagesidetitleabove .module-title h4 {
+  padding-bottom: 2px;
+}
+.imageboxes.imagesidetitleabove .module-title h5 {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.imageboxes.imagesidetitleabove.grid.one-column .module-image {
+  width: 20%;
+}
+.imageboxes.imagesidetitleabove.grid.seven-column .module-image, .imageboxes.imagesidetitleabove.grid.six-column .module-image, .imageboxes.imagesidetitleabove.grid.five-column .module-image {
+  width: 100%;
+  padding-bottom: 5px;
+}
+.imageboxes.imagesidetitleabove .module-text {
+  float: right;
+  width: 100%;
+  display: block;
+  text-align: left;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  padding-bottom: 20px;
+  /* If image shown */
+}
+.imageboxes.imagesidetitleabove .module-image + .module-text {
+  width: 60%;
+  padding-left: 20px;
+}
+.imageboxes.imagesidetitleabove.grid.one-column .module-text {
+  width: 80%;
+}
+.imageboxes.imagesidetitleabove.grid.seven-column .module-text, .imageboxes.imagesidetitleabove.grid.six-column .module-text, .imageboxes.imagesidetitleabove.grid.five-column .module-text {
+  width: 100%;
+  padding-left: 0px;
+}
+.imageboxes.imagesidetitleabove .readmore {
+  padding-top: 10px;
+  /* Grid of images with text under */
+}
+.imageboxes.textunder .imagebox-item {
+  display: inline-block;
+  position: relative;
+}
+.imageboxes.textunder .module-image {
+  width: 100%;
+  display: block;
+}
+.imageboxes.textunder .module-text {
+  width: 100%;
+  display: block;
+  padding-top: 5px;
+  /* Grid of images with text above */
+}
+.imageboxes.textabove .imagebox-item {
+  display: inline-block;
+  position: relative;
+}
+.imageboxes.textabove .module-image {
+  width: 100%;
+  display: block;
+  position: relative;
+}
+.imageboxes.textabove .module-image .view {
+  color: #fff;
+  opacity: 0;
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  z-index: 600;
+}
+.imageboxes.textabove a.imagebox-item:hover .module-image .view {
+  opacity: 1;
+}
+.imageboxes.textabove .module-text {
+  width: 100%;
+  display: block;
+  /* Grid of images with title above and text below */
+}
+.imageboxes.titleabove .imagebox-item {
+  display: inline-block;
+  position: relative;
+}
+.imageboxes.titleabove .module-title {
+  width: 100%;
+  display: block;
+}
+.imageboxes.titleabove .module-image {
+  width: 100%;
+  display: block;
+  position: relative;
+}
+.imageboxes.titleabove .module-image .view {
+  color: #fff;
+  opacity: 0;
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  z-index: 600;
+}
+.imageboxes.titleabove a.imagebox-item:hover .module-image .view {
+  opacity: 1;
+}
+.imageboxes.titleabove .module-text {
+  width: 100%;
+  display: block;
+  padding-top: 10px;
+  padding-bottom: 20px;
+  /* Grid of icons with text under */
+}
+.imageboxes.iconover .imagebox-item {
+  display: inline-block;
+  position: relative;
+  text-align: center;
+}
+.imageboxes.iconover .imagebox-item-icon {
+  width: 100%;
+  display: block;
+  font-size: 60px;
+  line-height: 1;
+}
+.imageboxes.iconover .imagebox-item-icon [class^="icon-"], .imageboxes.iconover .imagebox-item-icon [class*=" icon-"], .imageboxes.iconover .imagebox-item-icon .material-icons {
+  font-size: 60px;
+  line-height: 1;
+}
+.imageboxes.iconover .module-text {
+  width: 100%;
+  display: block;
+  /* Grid of image with text over the image */
+}
+.imageboxes.textover .imagebox-item {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+.imageboxes.textover .module-image {
+  float: none;
+  width: 101%;
+}
+.imageboxes.textover .module-image img {
+  width: 100%;
+}
+.imageboxes.textover a.imagebox-item:hover .module-image img {
+  opacity: 1;
+  /* Waypoint animations if turned on */
+}
+.waypoints-active .imageboxes.textover.waypoints .imagebox-item .module-image {
+  opacity: 0;
+  -moz-transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+}
+.waypoints-active .imageboxes.textover.waypoints .imagebox-item.waypoint-on .module-image {
+  opacity: 1;
+}
+.imageboxes.textover .module-text {
+  float: none;
+  width: auto;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  display: block;
+  padding: 0 0 0 0;
+  background-color: rgba(0, 0, 0, 0.25);
+  z-index: 500;
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.imageboxes.textover .module-text > span {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  text-align: center;
+  padding: 15px 20px;
+  /* Waypoint animations if turned on */
+}
+.waypoints-active .imageboxes.textover.waypoints .module-text {
+  opacity: 0;
+  -moz-transition: all 0.4s ease, opacity 2s ease;
+  -webkit-transition: all 0.4s ease, opacity 2s ease;
+  transition: all 0.4s ease, opacity 2s ease;
+}
+.waypoints-active .imageboxes.textover.waypoints .imagebox-item.waypoint-on .module-text {
+  opacity: 1;
+}
+.imageboxes.textover a.imagebox-item:hover .module-text {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.imageboxes.textover .module-text, .imageboxes.textover .module-text .silent {
+  color: #fff;
+  /* Grid of image with title over the image and text to the side */
+}
+.imageboxes.textoveruneven .imagebox-item {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  background-color: #333;
+}
+.imageboxes.textoveruneven .module-image {
+  float: none;
+  width: 60.5%;
+  display: block;
+}
+.imageboxes.textoveruneven .imagebox-item:nth-child(2n+2) .module-image {
+  float: right;
+  text-align: right;
+  position: relative;
+  right: -1px;
+}
+.imageboxes.textoveruneven .module-image img {
+  display: block;
+  width: 101%;
+}
+.imageboxes.textoveruneven a.imagebox-item:hover .module-image img {
+  opacity: 1;
+  /* Waypoint animations if turned on */
+}
+.waypoints-active .imageboxes.textoveruneven.waypoints .imagebox-item .module-image {
+  opacity: 0;
+  -moz-transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+}
+.waypoints-active .imageboxes.textoveruneven.waypoints .imagebox-item.waypoint-on .module-image {
+  opacity: 1;
+}
+.imageboxes.textoveruneven .module-title {
+  float: none;
+  width: auto;
+  position: absolute;
+  top: 0px;
+  left: 0;
+  right: 39.5%;
+  bottom: 0px;
+  display: block;
+  padding: 0 0 0 0;
+  background-color: rgba(0, 0, 0, 0.25);
+  z-index: 500;
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.imageboxes.textoveruneven .imagebox-item:nth-child(2n+2) .module-title {
+  left: 39.5%;
+  right: -1px;
+}
+.imageboxes.textoveruneven .module-title > span {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  text-align: center;
+  padding: 15px 10%;
+  /* Waypoint animations if turned on */
+}
+.waypoints-active .imageboxes.textoveruneven.waypoints .module-title {
+  opacity: 0;
+  -moz-transition: all 0.4s ease, opacity 2s ease;
+  -webkit-transition: all 0.4s ease, opacity 2s ease;
+  transition: all 0.4s ease, opacity 2s ease;
+}
+.waypoints-active .imageboxes.textoveruneven.waypoints .imagebox-item.waypoint-on .module-title {
+  opacity: 1;
+}
+.imageboxes.textoveruneven .module-title, .imageboxes.textoveruneven .module-title .silent {
+  color: #fff;
+}
+.imageboxes.textoveruneven .module-text {
+  float: none;
+  width: auto;
+  position: absolute;
+  top: 0px;
+  left: 60.5%;
+  right: 0px;
+  bottom: 0px;
+  display: block;
+  padding: 0 0 0 0;
+  z-index: 500;
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.imageboxes.textoveruneven .imagebox-item:nth-child(2n+2) .module-text {
+  left: 0;
+  right: 60.5%;
+}
+.imageboxes.textoveruneven .module-text > span {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  text-align: center;
+  padding: 15px 10%;
+  /* Waypoint animations if turned on */
+}
+.waypoints-active .imageboxes.textoveruneven.waypoints .module-text {
+  opacity: 0;
+  -moz-transition: all 0.4s ease, opacity 2s ease;
+  -webkit-transition: all 0.4s ease, opacity 2s ease;
+  transition: all 0.4s ease, opacity 2s ease;
+}
+.waypoints-active .imageboxes.textoveruneven.waypoints .imagebox-item.waypoint-on .module-text {
+  opacity: 1;
+}
+.imageboxes.textoveruneven .module-text, .imageboxes.textoveruneven .module-text .silent {
+  color: #fff;
+  /* Grid of text over a background color */
+}
+.imageboxes.textbg .imagebox-item {
+  display: inline-block;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+  overflow: hidden;
+}
+.imageboxes.textbg .module-image {
+  display: none;
+}
+.imageboxes.textbg .module-text {
+  float: none;
+  width: auto;
+  height: 100%;
+  display: block;
+  text-align: center;
+  padding: 15px 20px 20px 20px;
+  background-color: rgba(0, 0, 0, 0.25);
+  position: relative;
+  z-index: 510;
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.imageboxes.textbg .imagebox-item:hover .module-text {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.imageboxes.textbg .module-text, .imageboxes.textbg .module-text .silent {
+  color: #fff;
+  /* Image with rollover text popup */
+}
+.imageboxes.rollover .imagebox-item {
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+}
+.imageboxes.rollover .imagebox-item:hover .module-image img {
+  opacity: 1;
+}
+.imageboxes.rollover .module-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 0 0 0 0;
+  background-color: rgba(0, 0, 0, 0);
+  z-index: 500;
+  -moz-transition: background-color 0.2s ease, opacity 0.6s ease;
+  -webkit-transition: background-color 0.2s ease, opacity 0.6s ease;
+  transition: background-color 0.2s ease, opacity 0.6s ease;
+  opacity: 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.imageboxes.rollover .imagebox-item:hover .module-text {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+.imageboxes.rollover .module-text > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 15px 20px;
+}
+.imageboxes.rollover .module-text, .imageboxes.rollover .module-text .silent {
+  color: #fff;
+  /* Icon side */
+}
+.imageboxes.iconside .imagebox-item {
+  position: relative;
+}
+.imageboxes.iconside .imagebox-item-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50px;
+  color: #000;
+  line-height: 73px;
+  text-align: center;
+}
+.imageboxes.iconside .module-text {
+  display: block;
+  text-align: left;
+  padding-left: 80px;
+  /* Owl Carousel */
+}
+.owl-carousel-next, .owl-carousel-prev {
+  display: none;
+}
+.imageboxes.owl-carousel {
+  margin-bottom: 20px;
+}
+.imageboxes.owl-carousel .owl-nav {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.imageboxes.owl-carousel .owl-nav [class*='owl-'] {
+  position: absolute;
+  top: 0px;
+  width: 50px;
+  height: 50px;
+  margin-top: -25px;
+  line-height: 50px;
+  font-size: 50px;
+  text-align: center;
+  padding: 0 0 0 0;
+  color: #ccc;
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.imageboxes.owl-carousel .owl-nav [class*='owl-'] .material-icons {
+  line-height: 50px;
+  font-size: 50px;
+}
+.imageboxes.owl-carousel .owl-nav [class*='owl-']:hover {
+  color: #666;
+  text-decoration: none;
+}
+.imageboxes.owl-carousel .owl-nav .owl-prev {
+  right: 100%;
+  margin-right: 20px;
+}
+.imageboxes.owl-carousel .owl-nav .owl-next {
+  left: 100%;
+  margin-left: 20px;
+}
+.imageboxes.owl-carousel .owl-nav .disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.imageboxes.owl-carousel .owl-dots {
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  margin-top: 10px;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.imageboxes.owl-carousel .owl-dots .owl-dot {
+  display: inline-block;
+  zoom: 1;
+  *display: inline;
+}
+.imageboxes.owl-carousel .owl-dots .owl-dot span {
+  width: 12px;
+  height: 12px;
+  margin: 5px 3px;
+  background: #ccc;
+  display: block;
+  -webkit-backface-visibility: visible;
+  transition: opacity 200ms ease;
+  border-radius: 30px;
+}
+.imageboxes.owl-carousel .owl-dots .owl-dot.active span, .imageboxes.owl-carousel .owl-dots .owl-dot:hover span {
+  background: #666;
+  /* Media Queries */
+}
+@media screen and (max-width: 480px) {
+  .imageboxes {
+    display: block;
+    /* Grid - 1 column */
+  }
+  .imageboxes.imglefttitleabove .imagebox-item, .imageboxes.imageside .imagebox-item {
+    width: 100% !important;
+    margin-right: 0% !important;
+    margin-bottom: 30px;
+  }
+  .imageboxes.imglefttitleabove .module-image, .imageboxes.imageside .module-image {
+    float: none;
+    width: 100% !important;
+  }
+  .imageboxes.imglefttitleabove .module-text, .imageboxes.imageside .module-text {
+    float: none;
+    width: 100% !important;
+    display: block;
+    padding-bottom: 5px;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+  }
+  .imageboxes.imglefttitleabove .readmore {
+    position: relative;
+    margin-top: 20px;
+    /* Grid of image with title over the image and text to the side */
+  }
+  .imageboxes.textoveruneven .module-image {
+    float: none !important;
+    width: 100%;
+    display: block;
+    text-align: center !important;
+    right: auto !important;
+  }
+  .imageboxes.textoveruneven .module-title {
+    position: relative;
+    width: 100%;
+    top: auto;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto;
+    background: none;
+    padding: 15px 20px 0 20px;
+  }
+  .imageboxes.textoveruneven .module-title > span {
+    position: relative;
+    padding: 0 0 0 0;
+    top: auto;
+    transform: none;
+  }
+  .imageboxes.textoveruneven .module-text {
+    position: relative;
+    width: 100%;
+    top: auto;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto;
+    background: none;
+    padding: 0 20px 25px 20px;
+  }
+  .imageboxes.textoveruneven .module-text > span {
+    position: relative;
+    padding: 0 0 0 0;
+    top: auto;
+    transform: none;
+  }
+}

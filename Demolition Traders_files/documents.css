@@ -1,0 +1,160 @@
+/* compiled by scssphp v0.0.12 on Wed, 18 May 2016 11:51:41 +1200 (0.0238s) */
+
+/* Documents CSS Document */
+.document-item-image img {
+  vertical-align: middle;
+  max-width: 100%;
+  max-height: 100%;
+}
+.document-item-icn img {
+  vertical-align: middle;
+}
+.document-item-text img {
+  vertical-align: top;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+  padding-top: 3px;
+  /* Image grid with text under */
+}
+.documents.imagegrid {
+  display: block;
+  width: 100%;
+}
+.documents.imagegrid .document-item {
+  display: block;
+  text-align: center;
+}
+.document-item .document-item-image {
+  height: 150px;
+  line-height: 150px;
+  width: 100%;
+  display: block;
+  text-align: center;
+  padding-bottom: 5px;
+}
+.document-item .document-item-text {
+  height: auto;
+  width: 100%;
+  display: block;
+  /* Image list with image side */
+}
+.documents.imagelist .document-item {
+  display: block;
+}
+.documents.imagelist .document-item-image {
+  float: left;
+  display: block;
+  width: 25%;
+  height: auto;
+  line-height: 0;
+  text-align: center;
+  padding-right: 20px;
+  padding-bottom: 5px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.documents.imagelist .document-item-image img {
+  vertical-align: top;
+}
+.documents.imagelist .document-item-text {
+  float: left;
+  display: block;
+  width: 75%;
+  /* Download List */
+}
+.documents.downloadlist {
+  margin-bottom: 15px;
+}
+.documents.downloadlist .document-item {
+  display: block;
+  height: auto;
+  padding-left: 25px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  position: relative;
+}
+.documents.downloadlist .document-item-icn {
+  position: absolute;
+  left: 0px;
+  top: -1px;
+}
+.documents.downloadlist .document-item-icn img {
+  vertical-align: middle;
+}
+.documents.downloadlist .document-item-text {
+  display: block;
+}
+.documents.downloadlist .document-item-text .large {
+  padding-right: 80px;
+  display: inline-block;
+}
+.documents.downloadlist .document-item-text .size {
+  position: absolute;
+  right: 30px;
+  top: 0px;
+  display: inline-block;
+}
+.documents.downloadlist .document-item-download {
+  position: absolute;
+  right: 0px;
+  top: 2px;
+  display: inline-block;
+  /* Icon List */
+}
+.documents.iconlist {
+  margin-bottom: 15px;
+}
+.documents.iconlist:after {
+  content: '';
+  display: block;
+  clear: both;
+}
+.documents.iconlist .document-item {
+  display: block;
+  width: 100%;
+  height: auto;
+  display: block;
+  padding-left: 25px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  position: relative;
+}
+.documents.iconlist li, .documents.iconlist li.grid-item {
+  padding-left: 0px;
+  margin-bottom: 0px;
+}
+.documents.iconlist li:before {
+  display: none;
+}
+.documents.iconlist .document-item-icn {
+  position: absolute;
+  left: 0px;
+  top: -1px;
+  vertical-align: middle;
+  /* Simple List */
+}
+.documents.simplelist {
+  margin-bottom: 15px;
+}
+.documents.simplelist:after {
+  content: '';
+  display: block;
+  clear: both;
+}
+.documents.simplelist li, .documents.simplelist li.grid-item {
+  margin-bottom: 0px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  /* Media Queries */
+}

@@ -1,0 +1,33 @@
+{
+  "name": "demolition-traders",
+  "version": "1.0.0",
+  "description": "E-commerce platform with IdealPOS integration for Demolition Traders",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm run watch:css",
+    "build": "npm run build:css",
+    "watch:css": "sass --watch frontend/assets/scss:frontend/assets/css",
+    "build:css": "sass frontend/assets/scss:frontend/assets/css --style compressed",
+    "lint": "eslint frontend/assets/js",
+    "format": "prettier --write \"frontend/assets/js/**/*.js\""
+  },
+  "keywords": [
+    "ecommerce",
+    "demolition",
+    "renovation",
+    "idealpos",
+    "pos-integration"
+  ],
+  "author": "Demolition Traders",
+  "license": "PROPRIETARY",
+  "devDependencies": {
+    "sass": "^1.69.5",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "chart.js": "^4.4.0",
+    "sweetalert2": "^11.10.1"
+  }
+}

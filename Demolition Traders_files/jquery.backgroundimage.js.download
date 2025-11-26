@@ -1,0 +1,703 @@
+/**
+ * Background Image v2.0
+ *
+ * Plugin for controlling the display of background images
+ * with content over top.
+ *
+ * Example usage:
+ * $(".bgimg").backgroundimage();
+ *
+ * Html usage:
+ * <div class="bgimg">
+ * 	<img/>
+ * 	<div></div>
+ * </div>
+ *
+ * Copyright 2017 Josh Tere <me@joshtere.com>
+ * Released under the MIT License
+ * http://www.joshtere.com
+ */
+ 
+
+(function($, window, document, undefined) {
+	"use strict";
+
+	//
+	var pluginName = "backgroundimage";
+	
+	// Debug mode
+	var debugMode = false;
+	
+	//
+	function Plugin(element, options) {
+		
+		//
+		this.settings = $.extend(true,{},defaults,options);
+		
+		//
+		this.element  = $(element);
+		this.$elem    = $(this.element);
+
+		//
+		this.$window  = $(window);
+		
+		//
+		var $this = this;
+		
+		//
+		function animation_frame() {
+			//
+			if($this.settings.lastPosition === window.pageYOffset) {
+				   
+				// Avoid overcalculations
+				animateFrame(animation_frame);
+				return false;
+			} 
+			else {
+				$this.settings.lastPosition = window.pageYOffset;
+			}
+			
+			$this.move($this,false);
+			
+			animateFrame(animation_frame);
+			
+			//console.log("Animate");
+		}
+		
+		//	
+		function move_on_resize() {
+	
+			$this.settings.viewportWidth  = window.innerWidth;
+			$this.settings.viewportHeight = window.innerHeight;
+			$this.settings.scrollTop      = $(window).scrollTop();
+	
+			// Adjust background image sizes
+			$this.resize($this,false);
+
+			// Move background images
+			$this.move($this,false);
+			
+			//console.log("Resize");
+		}
+		
+		//	
+		function move_on_scroll() {
+	
+			$this.move($this,false);
+			
+			//console.log("Scroll");
+		}
+		
+		if($.throttle) {
+			// Run functions during resize
+			this.$window.resize($.throttle(250,move_on_resize));
+			
+			// Run functions during scroll
+			this.$window.scroll($.throttle(20,move_on_scroll));
+		}
+		else {
+			// Run functions during resize
+			this.$window.resize(move_on_resize);
+			
+			// Run functions during scroll
+			this.$window.scroll(move_on_scroll);
+		}
+		
+		// Start frame animation
+		animation_frame();
+		
+		//
+		this.init();
+	}
+	
+	// Animation frame
+	var animateFrame = window.requestAnimationFrame ||
+						window.webkitRequestAnimationFrame ||
+						window.mozRequestAnimationFrame ||
+						window.msRequestAnimationFrame ||
+						window.oRequestAnimationFrame ||
+						function(callback){setTimeout(callback,1000/60);};
+						
+	// Set transform property
+    var transformProp = window.transformProp || (function() {
+		var testEl = document.createElement('div');
+		if(testEl.style.transform === null) {
+			var vendors = ['Webkit', 'Moz', 'ms'];
+			for(var vendor in vendors) {
+				if(testEl.style[ vendors[vendor] + 'Transform' ] !== undefined) {
+					return vendors[vendor] + 'Transform';
+				}
+			}
+		}
+		return 'transform';
+	})();
+	
+	// Set item count
+	var itemCount = 0;
+	
+	// Default options
+	var defaults = {
+		
+		//
+		top : 0,
+		
+		//
+		height : 0,
+		
+		// Parallax scroll value
+		parallaxSpeed : 0.5,
+		
+		// Minumum effects width
+		effectsCutoff : 720,
+		
+		// Fade speed
+		fadeSpeed : 10,
+		
+		// Scale speed
+		scaleSpeed : 5,
+		
+		// Scroll interval
+		scrollInterval : 1,
+		
+		// Last scroll position
+		lastPosition : -1,
+		
+		// Viewport width and height
+		viewportWidth  : window.innerWidth,
+		viewportHeight : window.innerHeight,
+		
+		// Distance from top
+		scrollTop : $(window).scrollTop(),
+		
+		// Browser
+		browser : browser(),
+		
+		// Complete callback
+		complete : function() {
+			
+		},
+	};
+	
+	//
+	Plugin.prototype = {
+		
+		// Update backgrounds
+		update: function() {
+			
+			// Move background images
+			this.move(this,true);
+			
+			// Adjust background image sizes
+			this.resize(this,true);
+			
+			//console.log("Updated");
+		},
+		
+		// Move background
+		move : function(el,setup) {
+			
+			// No parallax on edge
+			if(!setup && (this.settings.browser === "IE" || this.settings.browser === "Edge")) {
+				return;
+			}
+			
+			// Check for element height
+			if(this.settings.height <= 0) {
+				//
+				this.settings.top    = this.$elem.offset().top;
+				this.settings.height = this.$elem.height();
+			}
+			
+			this.settings.scrollTop = this.$window.scrollTop();
+			
+			// Set visible flag to false
+			var visible = false;
+			
+			// Check container in viewport
+			if(this.settings.scrollTop+this.settings.viewportHeight+50 > this.settings.top && 
+				this.settings.scrollTop <= this.settings.top+this.settings.height) {
+					
+				//
+				visible = true;
+				//console.log("Visible");
+			}
+			
+			// If slide, check visible
+			if(this.slide && this.$elem.css('opacity') == 0) {
+				visible = false;
+			}
+			
+			// Run all on setup
+			if(setup) {visible = true;}
+			
+			// If container is visible
+			if(visible) {
+					
+				// Get container top
+				var containerTop = (this.settings.top-this.settings.scrollTop);
+				
+				/*var percentageY = (this.settings.scrollTop - this.settings.top / this.settings.viewportHeight)*(this.settings.height - this.settings.viewportHeight);
+				var valueX      = (this.settings.parallaxSpeed * (100 * (1 - percentageY)));
+				valueX          = Math.round(valueX * 100) / 100;
+				valueX          = Math.round((containerTop*this.settings.parallaxSpeed)*-1); // this.settings.parallaxSpeed*/
+						
+				// Move image
+				if(this.$image) {
+					
+					/*var yE = containerTop;
+					var hV = this.settings.viewportHeight;
+					var hE = this.settings.height;
+					var hB = this.$image.height();
+					
+					var yB = ((yE)/(hV))*(hE-hB);*/
+					//console.log(containerTop);
+					//valueX = yB;
+					
+					// Get effects
+					var effects = this.imageEffects;
+					effects = (effects === undefined) ? '' : effects;
+					
+					if(effects !== '') {
+						
+						// Set offset
+						var newOffset = (effects.indexOf('parallax') !== -1 && this.settings.viewportWidth > this.settings.effectsCutoff) ? Math.round((containerTop*this.settings.parallaxSpeed)*-1) : 0;
+						
+						// Set opacity
+						var opacity = (effects.indexOf('fade') !== -1 && this.settings.viewportWidth > this.settings.effectsCutoff) ? 1-(((containerTop*(this.settings.fadeSpeed/100))/100)*-1) : 1;
+						opacity = (opacity > 1) ? 1 : opacity;
+						
+						// Set scale
+						var scale = (effects.indexOf('expand') !== -1 && this.settings.viewportWidth > this.settings.effectsCutoff) ? 1+(((containerTop*(this.settings.scaleSpeed/100))/100)*-1) : 1;
+						scale = (scale < 1) ? 1 : scale;
+						
+						// Update image
+						this.$image.css(transformProp,"translate3d(0px,"+newOffset+"px,0px) scale("+scale+")");
+						this.$image.css("opacity",opacity);
+					}
+				}
+					
+				// Move content
+				if(this.$content) {
+					
+					// Get effects
+					var effects = this.contentEffects;
+					effects = (effects === undefined) ? '' : effects;
+					
+					if(effects !== '') {
+						// Set offset
+						var newOffset = (effects.indexOf('parallax') !== -1 && this.settings.viewportWidth > this.settings.effectsCutoff) ? Math.round((containerTop*this.settings.parallaxSpeed)*-1) : 0;
+						newOffset = (containerTop > 0) ? 0 : newOffset;
+						
+						// Set opacity
+						opacity = (effects.indexOf('fade') !== -1 && this.settings.viewportWidth > this.settings.effectsCutoff) ? 1-(((containerTop*((this.settings.fadeSpeed+5)/100))/100)*-1) : 1;
+						opacity = (opacity > 1) ? 1 : opacity;
+							
+						// Update content
+						this.$content.css(transformProp,"translate3d(0px,"+newOffset+"px,0px)");
+						this.$content.css("opacity",opacity);
+					}
+				}
+				
+				if(debugMode) {
+					if(this.$content) {
+						$("#"+this.id+"-top-tag").css('top',this.settings.top+'px');
+						$("#"+this.id+"-bottom-tag").css('top',this.settings.top+this.settings.height+'px');
+					}
+					
+					if(this.$image) {
+						$("#"+this.id+"-image-top-tag").css('top',this.$image.offset().top+'px');
+						$("#"+this.id+"-image-bottom-tag").css('top',((this.$image.offset().top+this.$image.height()))+'px');
+					}
+				}
+			}
+			
+			//console.log("Move");
+		},
+		
+		// Adjust background image sizes
+		resize : function(setup) {
+			
+			// Check for element height
+			this.settings.top = this.$elem.offset().top;
+			this.settings.height = this.$elem.height();
+			
+			// Set width and height
+			{
+				// Set is contrained
+				var isConstrained = false;
+				
+				// Get effects
+				var effects = this.imageEffects;
+				effects = (effects === undefined) ? '' : effects;
+				
+				// If parallax then use full height/width
+				if(effects.indexOf('parallax') !== -1 && this.settings.viewportWidth > this.settings.effectsCutoff) {
+					
+					var fullWidth  = this.$elem.innerWidth();
+					var fullHeight = this.$elem.innerHeight()*(1+this.settings.parallaxSpeed);
+					
+					// Get site full width
+					var siteFullWidth  = (this.$elem.innerWidth() > this.settings.viewportWidth) ? this.$elem.innerWidth() : this.settings.viewportWidth;
+					var siteFullHeight = (this.$elem.innerHeight() > this.settings.viewportHeight) ? this.$elem.innerHeight() : this.settings.viewportHeight;
+				
+					// Overwrite width with full if needed
+					if(fullWidth+30 > siteFullWidth) {fullWidth = siteFullWidth;}
+					else {isConstrained = true;}
+					//if(fullHeight+30 > siteFullHeight) {fullHeight = siteFullHeight;}
+				}
+				
+				// Else use container height/width
+				else {
+					var fullWidth  = this.$elem.innerWidth();
+					var fullHeight = this.$elem.innerHeight();
+				}
+			}
+	
+			// Set dimensions
+			{
+				// Dimensions
+				var dimensions = this.$image.data("dimensions");
+				dimensions = (dimensions === undefined) ? [0,0] : dimensions.split("x");
+	
+				// New dimensions
+				var newWidth  = 0;
+				var newHeight = 0;
+	
+				// Try to resize by width
+				newWidth  = fullWidth;
+				newHeight = Math.ceil((newWidth/dimensions[0])*dimensions[1]);
+	
+				// If height to short then resize by height
+				if(newHeight < fullHeight) {
+					//
+					newHeight = fullHeight;
+					newWidth  = Math.ceil((newHeight/dimensions[1])*dimensions[0]);
+				}
+			}
+			
+	
+			// Set focal point
+			{
+				/*
+					Focal Point Difference
+					--
+					The focal point difference is the amount the image needs to 
+					move (left or right) before the focal point is centered. A positive
+					value should be aligned from the left and a negative value from
+					the right. An image should be moved to the right or left until
+					the focal point difference has been made up.
+	
+					var fpd = (((imageWidth/2)-(imageWidth*fp))*2)*-1;
+				*/
+	
+				// Focal points
+				var focalPoints = this.$image.data("focal-points");
+				focalPoints = (focalPoints === undefined) ? [0.5,0.5] : focalPoints.split(",");
+	
+				// New locations
+				var newTop    = false;
+				var newLeft   = false;
+				var newRight  = false;
+				var newBottom = false;
+	
+				// If width is greater than the viewport then set image focal point
+				if(newWidth > fullWidth) {
+	
+					// Get focal point difference
+					var focalPointDifference = Math.ceil((((newWidth/2)-(newWidth*parseFloat(focalPoints[0])))*2)*-1);
+	
+					// If focal point difference is greater than 0, move to left
+					if(focalPointDifference > 0) {
+	
+						// If focal point difference is greater than amount to move, then move left
+						if(Math.ceil(newWidth-fullWidth) <= focalPointDifference) {
+							// Set left
+							newLeft  = Math.ceil(newWidth-fullWidth)*-1;
+							newLeft  = newLeft+'px';
+						}
+						// If less than amount to move, then move left and center
+						else {
+							// Set left
+							newLeft  = focalPointDifference;
+							newLeft += Math.ceil((Math.ceil(newWidth-fullWidth)-focalPointDifference)/2);
+							newLeft  = newLeft*-1;
+							newLeft  = newLeft+'px';
+						}
+	
+						//
+						newRight = 'auto';
+					}
+					// If focal point difference is less than 0, move to right
+					else if(focalPointDifference < 0) {
+	
+						//
+						focalPointDifference = focalPointDifference*-1;
+	
+						// If focal point difference is greater than amount to move, then move right
+						if(Math.ceil(newWidth-fullWidth) <= focalPointDifference) {
+							// Set right
+							newRight = Math.ceil(newWidth-fullWidth)*-1;
+							newRight = newRight+'px';
+							newLeft  = 'auto';
+						}
+						// If less than amount to move, then move right and center
+						else {
+							// Set right
+							newRight  = focalPointDifference;
+							newRight += Math.ceil((Math.ceil(newWidth-fullWidth)-focalPointDifference)/2);
+							newRight  = newRight*-1;
+							newRight  = newRight+'px';
+							newLeft   = 'auto';
+						}
+					}
+					// If focal point difference is 0
+					else {
+						// Set left
+						newLeft  = Math.ceil((newWidth-fullWidth)/2);
+						newLeft  = newLeft*-1;
+						newLeft  = newLeft+'px';
+						newRight = 'auto';
+					}
+				}
+				else {
+					// Set left
+					newLeft  = 0;
+					newRight = 'auto';
+				}
+	
+	
+				// If height is greater than the viewport then set image focal point
+				if(newHeight > fullHeight) {
+	
+					// Get focal point difference
+					var focalPointDifference = Math.ceil((((newHeight/2)-(newHeight*parseFloat(focalPoints[1])))*2)*-1);
+				
+					// If focal point difference is greater than 0, move up
+					if(focalPointDifference > 0) {
+	
+						// If focal point difference is greater than amount to move, then move up
+						if(Math.ceil(newHeight-fullHeight) <= focalPointDifference) {
+							// Set top
+							newTop  = Math.ceil(newHeight-fullHeight)*-1;
+							newTop  = newTop+'px';
+						}
+						// If less than amount to move, then move up and center
+						else {
+							// Set left
+							newTop  = focalPointDifference;
+							newTop += Math.ceil((Math.ceil(newHeight-fullHeight)-focalPointDifference)/2);
+							newTop  = newTop*-1;
+							newTop  = newTop+'px';
+						}
+	
+						//
+						newBottom = 'auto';
+					}
+					// If focal point difference is less than 0, move down
+					else if(focalPointDifference < 0) {
+	
+						//
+						focalPointDifference = focalPointDifference*-1;
+	
+						// If focal point difference is greater than amount to move, then move down
+						if(Math.ceil(newHeight-fullHeight) <= focalPointDifference) {
+							// Set bottom
+							newBottom = Math.ceil(newHeight-fullHeight)*-1;
+							newBottom = newBottom+'px';
+							newTop    = 'auto';
+						}
+						// If less than amount to move, then move down and center
+						else {
+							// Set bottom
+							newBottom  = focalPointDifference;
+							newBottom += Math.ceil((Math.ceil(newHeight-fullHeight)-focalPointDifference)/2);
+							newBottom  = newBottom*-1;
+							newBottom  = newBottom+'px';
+							newTop     = 'auto';
+						}
+					}
+					// If focal point difference is 0
+					else {
+						// Set top
+						newTop    = Math.ceil((newHeight-fullHeight)/2);
+						newTop    = newTop*-1;
+						
+						// Hack for constrained parallax images
+						if(isConstrained && effects.indexOf('parallax') !== -1) {
+							newTop = newTop+50;
+						}
+						else if(effects.indexOf('parallax') !== -1 && this.settings.viewportWidth > this.settings.effectsCutoff) {
+							newTop = newTop+20;
+						}
+						
+						newTop    = newTop+'px';
+						newBottom = 'auto';
+					}
+				}
+				else {
+					// Set top
+					newTop    = 0;
+					newBottom = 'auto';
+				}
+			}
+	
+	
+			// Update image
+			{
+				this.$image.width(newWidth);
+				this.$image.height(newHeight);
+	
+				// If top is set
+				if(newTop !== false) {
+					this.$image.css("top",""+newTop+"");
+				}
+	
+				// If left is set
+				if(newLeft !== false) {
+					this.$image.css("left",""+newLeft+"");
+				}
+	
+				// If right is set
+				if(newRight !== false) {
+					this.$image.css("right",""+newRight+"");
+				}
+	
+				// If bottom is set
+				if(newBottom !== false) {
+					this.$image.css("bottom",""+newBottom+"");
+				}
+			}
+			
+			//console.log("Resize");
+		},
+		
+		init: function() {
+			
+			// Add to item count
+			itemCount = itemCount+1;
+			
+			//
+			var $this = this;
+			
+			// Set item id
+			this.id = 'bgi-item-'+itemCount;
+			
+			// Add background image classes to elements
+			this.$image   = this.$elem.children("picture,img").first();
+			this.$content = this.$elem.children("div").first();
+			
+			// Check if element is part of unslider
+			if(this.$elem.hasClass("sliderimg")) {
+				//
+				this.slide = true;
+			}
+			
+			// Add class to container
+			this.$elem.addClass('backgroundimage-container');
+			
+			// Effects
+			this.imageEffects   = this.$image.data("effect");
+			this.contentEffects = this.$content.data("effect");
+			
+			if(this.settings.browser === "IE" || this.settings.browser === "Edge") {
+				
+				this.imageEffects = "";
+				this.contentEffects = "";
+			}
+			
+			// Wrap image
+			this.$image.css('display','block');
+			this.$image.wrap('<div class="backgroundimage-image"></div>');
+			
+			// Add class to content
+			this.$content.addClass('backgroundimage-content');
+			
+			// Background image parameters
+			this.settings.top = this.$elem.offset().top;
+			this.settings.height = this.$elem.height();
+			
+			setTimeout(function() {
+				//
+				$this.settings.top = $this.$elem.offset().top;
+				$this.settings.height = $this.$elem.height();
+				
+				// Move background images
+				$this.move($this,true);
+				
+				if(debugMode) {
+					$("html").append('<div id="'+$this.id+'-top-tag" class="top-tag" style="top:'+$this.settings.top+'px;"></div>');
+					$("html").append('<div id="'+$this.id+'-bottom-tag" class="bottom-tag" style="top:'+($this.settings.top+$this.settings.height)+'px;"></div>');
+					//
+					$("html").append('<div id="'+$this.id+'-image-top-tag" class="image-top-tag" style="top:'+$this.$image.offset().top+'px;"></div>');
+					$("html").append('<div id="'+$this.id+'-image-bottom-tag" class="image-bottom-tag" style="top:'+($this.$image.offset().top+$this.$image.height())+'px;"></div>');
+				}
+			},400);
+			
+			//console.log(this.settings.top);
+
+			// Move background images
+			this.move(this,true);
+			
+			// Adjust background image sizes
+			this.resize(this,true);
+			
+			// Return element on complete
+			if($.isFunction(this.settings.complete)) {
+				//
+				this.settings.complete.call(this.$elem);
+			}
+			
+			//console.log("Initialise");
+		}
+	};
+	
+	//
+	$.fn[pluginName] = function(options) {
+		return this.each(function() {
+			
+			// Check if there is an existing instance related to element
+			var instance = $.data(this, pluginName);
+			
+			if(instance) {
+				if(typeof options === "string" && typeof instance[options] === "function") {
+					instance[options].apply(instance);
+				}
+				else if(options !== undefined) {
+					console.log('Method ' + options + ' does not exist on Plugin');
+				}
+			} 
+			else {
+				// Create the plugin
+				var plugin = new Plugin(this,options);
+	
+				// Store the plugin instance on the element
+				$.data(this,pluginName,plugin);
+			}
+		});
+	};
+	
+	// Basic browser detection
+	function browser() {
+		//
+		var browser = 'Other';
+		var ua      = window.navigator.userAgent;
+		var msie    = ua.indexOf('MSIE ');
+		var trident = ua.indexOf('Trident/');
+		var edge    = ua.indexOf('Edge/');
+		
+		// IE
+		if(parseInt(msie) > 0 || parseInt(trident) > 0) {
+			//
+			browser = 'IE';
+		}
+		// Edge
+		else if(parseInt(edge) > 0) {
+			//
+			browser = 'Edge';
+		}
+		
+		//
+		return browser;
+	}
+		
+}(jQuery, window, document));

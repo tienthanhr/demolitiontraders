@@ -1,0 +1,10 @@
+# Uploads Directory
+
+This directory stores product images and other uploaded files.
+
+Files uploaded here should be:
+- Product images (JPG, PNG, GIF)
+- PDF documents
+- Other allowed file types
+
+Maximum upload size: 5MB (configurable in .env)

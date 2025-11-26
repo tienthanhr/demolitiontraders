@@ -1,0 +1,5 @@
+{
+  "require": {
+    "calcinai/xero-php-oauth2": "^2.0"
+  }
+}

@@ -1,0 +1,99 @@
+// Image Boxes JavaScript Document
+
+	$(document).ready(function() {
+		"use strict";
+	
+	
+		// Check for match height class (matchheight)
+		if($.fn.matchHeight && $(".imagebox-matchheight").length > 0) {
+			//
+			$(".imagebox-matchheight").matchHeight({
+				byRow: true,
+				property: "height",
+			});
+		}
+		
+		// Check for match height class (matchheight)
+		if($.fn.matchHeight && $(".imageboxes.textabove .module-text").length > 0) {
+			//
+			$(".imageboxes.textabove .module-text").matchHeight({
+				byRow: true,
+				property: "height",
+			});
+		}
+	
+		// Check for owl carousel
+		if($.fn.owlCarousel) {
+			
+			var items = $('.imageboxes.owl-carousel').data("items");
+			
+			var moreOptions;
+			var owlOptions = {
+				items: items,
+				margin: 40,
+				loop: true,
+				itemElement: 'div',
+				nav: true,
+				dots: true,
+				navText: [$(".owl-carousel-prev").html(),$(".owl-carousel-next").html()],
+				};
+				
+			//
+			switch(items) {
+				case 7 :
+				case 6 : {
+					moreOptions = {
+						responsive:{
+							0:{items:1,nav:false},
+							680:{items:3,nav:false,margin:20},
+							1200:{items:5,nav:true,margin:20}
+						}
+					};
+					break;
+				}
+				case 5 :
+				case 4 : {
+					moreOptions = {
+						responsive:{
+							0:{items:1,nav:false},
+							680:{items:3,nav:false,margin:20},
+							1200:{nav:true,margin:20}
+						}
+					};
+					break;
+				}
+				default : {
+					moreOptions = {
+						responsive:{
+							0:{items:1,nav:false},
+							680:{items:2,nav:false,margin:20},
+							1200:{nav:true}
+						}
+					};
+					break;
+				}
+			}
+			
+			// Join options
+			owlOptions = merge_options(owlOptions,moreOptions);
+
+			//
+			if($('.imageboxes.owl-carousel').length > 0) {
+				$('.imageboxes.owl-carousel').owlCarousel(owlOptions);
+			}
+		}
+	});
+	
+	
+	/**
+ * Overwrites obj1's values with obj2's and adds obj2's if non existent in obj1
+ * @param obj1
+ * @param obj2
+ * @returns obj3 a new object based on obj1 and obj2
+ */
+function merge_options(obj1,obj2) {
+    var obj3 = {};
+    for (var attrname in obj1) { obj3[attrname] = obj1[attrname]; }
+    for (var attrname in obj2) { obj3[attrname] = obj2[attrname]; }
+    return obj3;
+}

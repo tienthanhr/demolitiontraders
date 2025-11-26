@@ -1,0 +1,299 @@
+/* compiled by scssphp v0.0.12 on Thu, 16 Nov 2017 11:17:57 +1300 (0.0454s) */
+
+/* Rotator SCSS Document */
+#image-rotator {
+  color: #fff;
+  position: relative;
+}
+#image-rotator-prev, #image-rotator-next {
+  display: none;
+}
+#image-rotator a {
+  color: #fff;
+}
+#image-rotator a:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+#main #image-rotator {
+  margin-bottom: 18px;
+  /* Flexslider Caption */
+}
+#image-rotator .flex-caption {
+  position: absolute;
+  width: 100%;
+  padding: 70px 25px;
+  left: 0px;
+  bottom: 0;
+  color: #fff;
+  opacity: 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  /* Rotating images */
+}
+#image-rotator .flex-active-slide .flex-caption {
+  left: 0px;
+  opacity: 1;
+}
+#image-rotator .flex-caption .wrap {
+  font-weight: inherit;
+  display: block;
+}
+#image-rotator .flex-caption .wrap .flex-caption-inner {
+  display: inline-block;
+  /* Unslider */
+}
+.unslider-holder {
+  opacity: 0;
+  -webkit-transition: all 1.5s ease;
+  -moz-transition: all 1.5s ease;
+  transition: all 1.5s ease;
+}
+.unslider-holder.show-unslider {
+  opacity: 1;
+}
+.sliderimg:before {
+  display: none;
+}
+.sliderimg .backgroundimage-content {
+  position: relative;
+}
+.sliderimg .backgroundimage-content .wrap {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  /*.sliderimg .wrap,
+			.sliderimg.reset-animation .wrap {
+			opacity:0 !important;
+			-webkit-transition:all 1s ease 0.5s;
+			-moz-transition:all 1s ease 0.5s;
+			transition:all 1s ease 0.5s;
+			}
+			
+				.sliderimg.unslider-animate .wrap {opacity:1 !important;}*/
+  /* Unslider Caption */
+}
+.sliderimg .slidertext {
+  /* Animation */
+}
+.sliderimg.unslider-animate {
+  /* Direction controls */
+}
+.unslider .unslider-arrow {
+  position: absolute;
+  top: 50%;
+  height: 100px;
+  line-height: 100px;
+  margin-top: -50px;
+  z-index: 600;
+  overflow: hidden;
+}
+.unslider .unslider-arrow .material-icons {
+  font-size: 50px;
+  font-weight: 100;
+  line-height: 100px;
+  /* Navigation controls */
+}
+.unslider .unslider-nav {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 600;
+  overflow: hidden;
+}
+.unslider .unslider-nav li {
+  display: inline-block;
+  margin: 0 4px;
+  cursor: pointer;
+  text-indent: -1000000px;
+  overflow: hidden;
+  width: 15px;
+  height: 15px;
+  /*border: solid 1px #ffffff;*/
+  background-color: #fff;
+  border-radius: 100px;
+  -moz-transition: all 0.3s ease-out;
+  -webkit-transition: all 0.3s ease-out;
+  transition: all 0.3s ease-out;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.unslider .unslider-nav li:hover, .unslider .unslider-nav li.unslider-active {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+.unslider .unslider-nav ol > li:before {
+  display: none;
+  /* Full screen rotator */
+}
+#fullscreen-rotator {
+  color: #fff;
+  position: relative;
+}
+#fullscreen-rotator a {
+  color: #fff;
+}
+#fullscreen-rotator a:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+#main #fullscreen-rotator {
+  margin-bottom: 18px;
+  /* Set height to fullscreen */
+}
+#fullscreen-rotator, #fullscreen-rotator .flexslider, #fullscreen-rotator .flexslider .slides, #fullscreen-rotator .flexslider .slides > li {
+  height: 100vh;
+}
+#fullscreen-rotator .flexslider .slides > li {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* Caption */
+}
+#fullscreen-rotator .flex-caption {
+  position: absolute;
+  width: 100%;
+  padding: 0 0 0 0;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  color: #fff;
+  text-align: center;
+  opacity: 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  /* Rotating images */
+}
+#fullscreen-rotator .flex-active-slide .flex-caption {
+  left: 0px;
+  opacity: 1;
+}
+#fullscreen-rotator .flex-caption .wrap {
+  font-weight: inherit;
+  display: block;
+}
+#fullscreen-rotator .flex-caption .wrap .flex-caption-inner {
+  display: inline-block;
+  /* Direction controls */
+}
+#fullscreen-rotator .flex-direction-nav .flex-prev {
+  /* Navigation controls */
+}
+#header-rotator {
+  float: right;
+  display: inline-block;
+  margin-top: 10px;
+  margin-right: 25px;
+}
+#rotator {
+  position: relative;
+  height: 200px;
+  z-index: 600;
+}
+#rotator table {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 700;
+  display: none;
+  /* Legacy? */
+}
+#flash {
+  position: relative;
+  height: 200px;
+  z-index: 600;
+}
+#flash #flash-over {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 800;
+}
+#flash table {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 700;
+  display: none;
+}
+#slider {
+  position: relative;
+  background: url(images/colorbox/loading_white.gif) no-repeat 50% 50%;
+}
+.nivo-caption {
+  position: absolute;
+  right: 0px;
+  bottom: 65%;
+  color: #fff;
+  width: 100%;
+  z-index: 8;
+  overflow: visible;
+  height: 0px;
+  display: none;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#image-rotator .slider-text {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  padding: 5px 25px;
+  text-align: right;
+}
+#slider img {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  display: none;
+  z-index: 1;
+}
+#slider a {
+  border: 0;
+  display: block;
+}
+#slider-over {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 800;
+  /* Media Queries */
+}
+@media screen and (max-width: 1100px) {
+  #image-rotator {
+    overflow: hidden;
+  }
+  #slider {
+    height: auto !important;
+  }
+  #slider .slider-text {
+    width: 50%;
+    bottom: -45%;
+  }
+}
+@media screen and (max-width: 650px) {
+  #slider .slider-text {
+    width: 70%;
+    bottom: -40%;
+  }
+}
+@media screen and (max-width: 480px) {
+  #slider, #flash, #slidebox, #image-rotator {
+    display: none;
+  }
+}

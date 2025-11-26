@@ -1,0 +1,43 @@
+/* Background Image CSS Document v1.0 */
+
+.backgroundimage-container {
+position:relative;
+color:#ffffff;
+}
+	.background-image > img {display:none;}
+
+	.backgroundimage-image {
+	position:absolute;
+	top:0px;
+	left:0px;
+	right:0px;
+	bottom:0px;	
+	background-color:#000000;
+	overflow:hidden;
+	z-index:0;
+	}
+		.backgroundimage-image img {
+		position:absolute;
+		top:0px;
+		left:0px;
+		max-width:none;
+		-webkit-backface-visibility:hidden;
+		backface-visibility:hidden;
+		-webkit-transform:rotate(0);
+		-moz-transform:rotate(0);
+		transform:rotate(0);
+		will-change:transform, opacity;
+		z-index:0;
+		}
+	
+	.backgroundimage-content {
+	color:inherit;
+	position:relative;
+	-webkit-backface-visibility:hidden;
+	backface-visibility:hidden;
+	-webkit-transform:rotate(0);
+	-moz-transform:rotate(0);
+	transform:rotate(0);
+	will-change:transform, opacity;
+	z-index:1;
+	}

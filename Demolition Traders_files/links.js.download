@@ -1,0 +1,14 @@
+// JavaScript Document
+
+	$(document).ready(function() {
+		"use strict";
+
+		// Check for links items then match height
+		if($.fn.matchHeight && $(".links").length > 0) {
+			//
+			$(".links.textunder .link-item-image").matchHeight({
+				byRow: true,
+				property: "height"
+			});
+		}
+	});

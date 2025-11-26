@@ -1,0 +1,358 @@
+<!-- Header Component -->
+<!-- Top Navigation Bar -->
+<div class="header-top">
+    <div class="container">
+        <div class="header-top-left">
+            <a href="index.php">Home</a>
+            <a href="wanted-listing.php">Wanted Listing</a>
+            <a href="sell-to-us.php">Sell to Us</a>
+            <a href="cabins.php">Cabins</a>
+            <a href="staff.php">Staff</a>
+            <a href="faqs.php">FAQs</a>
+            <a href="about.php">About Us</a>
+            <a href="contact.php">Contact Us</a>
+            <a href="https://www.facebook.com/DemolitionTraders" target="_blank"><i class="fa-brands fa-facebook-square"></i></a>
+        </div>
+        <div class="header-top-right">
+            <a href="login.php" id="login-link">Login</a>
+            <a href="wishlist.php" class="wishlist-link"><i class="fa-regular fa-heart"></i> <span id="wishlist-count">0</span></a>
+            <a href="cart.php" class="cart-link"><i class="fa-solid fa-cart-shopping"></i> <span id="cart-count">0</span></a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Header -->
+<header class="site-header">
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">
+                <a href="index.php">
+                    <img src="assets/images/logo.png" alt="Demolition Traders" style="max-height: 100px;">
+                </a>
+            </div>
+            
+            <div class="header-center">
+                <div class="header-search">
+                    <form action="shop.php" method="GET">
+                        <input type="text" name="search" placeholder="Search Products" class="search-input">
+                        <button type="submit" class="search-button"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+                <div class="tagline">"Take a look... you'll be surprised"</div>
+            </div>
+            
+            <div class="header-info">
+                <a href="tel:0800336548466" class="info-box">
+                    <i class="fa-solid fa-phone"></i>
+                    <div>
+                        <strong>Give us a call</strong>
+                        <span>0800 DEMOLITION</span>
+                    </div>
+                </a>
+                <a href="https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,14z/data=!4m5!3m4!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104" class="info-box" target="_blank">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div>
+                        <strong>Visit Our Yard</strong>
+                        <span>249 Kahikatea Drive, Greenlea Lane, Frankton, Hamilton</span>
+                    </div>
+                </a>
+                <div class="info-box opening-hours-box" id="opening-hours-box">
+                    <i class="fa-solid fa-clock"></i>
+                    <div>
+                        <strong>Opening Hours</strong>
+                        <span id="opening-hours-display">Mon-Fri: 8am-5pm, Sat: 8am-4pm</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down dropdown-icon" id="hours-dropdown-icon"></i>
+                </div>
+            </div>
+
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Opening Hours Floating Modal -->
+<div class="opening-hours-modal" id="opening-hours-modal">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="opening-hours-dropdown" id="opening-hours-dropdown">
+        <div class="dropdown-header">
+            <h3>Weekly Opening Hours</h3>
+            <button class="close-btn" id="close-hours-modal">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="opening-hours-list" id="opening-hours-list">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Menu -->
+<nav class="main-nav">
+    <div class="container">
+        <ul class="nav-menu">
+            <li class="has-dropdown">
+                <a href="shop.php?category=plywood">Plywood</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=untreated-plywood">Untreated Plywood</a></li>
+                    <li><a href="shop.php?category=mdf">MDF</a></li>
+                    <li><a href="shop.php?category=treated-plywood">Treated Plywood</a></li>
+                    <li><a href="shop.php?category=acp-seratone">ACP / Seratone</a></li>
+                </ul>
+            </li>
+                     <li class="has-dropdown">
+                <a href="shop.php?category=doors">Doors</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=new-aluminium-single-doors">New Aluminium Single Doors</a></li>
+                    <li><a href="shop.php?category=new-aluminium-french-doors">New Aluminium French Doors</a></li>
+                    <li><a href="shop.php?category=new-exterior-doors">New Exterior Doors</a></li>
+                    <li><a href="shop.php?category=new-interior-doors">New Interior Doors</a></li>
+                    <li><a href="shop.php?category=recycled-doors">Recycled Doors</a></li>
+                    <li><a href="shop.php?category=bi-fold-doors">Bi-fold Doors</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=windows">Windows</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=aluminium-windows">Aluminium Windows</a></li>
+                    <li><a href="shop.php?category=wooden-windows">Wooden Windows</a></li>
+                    <li><a href="shop.php?category=bi-fold-sliding-windows">Bi-folds</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=sliding-doors">Sliding Doors</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=new-aluminium-sliding-doors">New Aluminium Sliding Doors</a></li>
+                    <li><a href="shop.php?category=recycled-sliding-doors">Recycled Sliding Doors</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=timber">Timber</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=mouldings">Mouldings</a></li>
+                    <li><a href="shop.php?category=native-timber">Native Timber</a></li>
+                    <li><a href="shop.php?category=pine">Pine</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=cladding">Cladding</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=weatherboard">Weatherboard</a></li>
+                    <li><a href="shop.php?category=cement-board">Cement Board</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=landscaping">Landscaping</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=railway-sleepers">Railway Sleepers</a></li>
+                    <li><a href="shop.php?category=pavers">Pavers</a></li>
+                    <li><a href="shop.php?category=wire-netting">Wire/Netting</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=roofing">Roofing</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=iron">Iron</a></li>
+                    <li><a href="shop.php?category=flashing-drainage">Flashing & Drainage</a></li>
+                    <li><a href="shop.php?category=clearlite">Clearlite</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=kitchens">Kitchens</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=kitchen-cabinets">Kitchen Cabinets</a></li>
+                    <li><a href="shop.php?category=complete-kitchens">Complete Kitchens</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=bathroom">Bathroom & Laundry</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=baths">Baths</a></li>
+                    <li><a href="shop.php?category=hand-basins">Hand Basins</a></li>
+                    <li><a href="shop.php?category=vanities">Vanities</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="shop.php?category=general">General</a>
+                <ul class="dropdown">
+                    <li><a href="shop.php?category=character-items">Character Items</a></li>
+                    <li><a href="shop.php?category=hardware">Hardware</a></li>
+                    <li><a href="shop.php?category=insulation">Insulation</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<script>
+        // Update wishlist count
+        async function updateWishlistCount() {
+            try {
+                const response = await fetch('/demolitiontraders/backend/api/wishlist/get.php');
+                const data = await response.json();
+                const count = data.wishlist ? data.wishlist.length : 0;
+                const el = document.getElementById('wishlist-count');
+                if (el) el.textContent = count;
+            } catch (error) {
+                // ignore
+            }
+        }
+    // Update cart count
+    async function updateCartCount() {
+        try {
+            const response = await fetch('/demolitiontraders/api/cart/get');
+            const data = await response.json();
+            document.getElementById('cart-count').textContent = data.summary.item_count;
+        } catch (error) {
+            console.error('Error updating cart count:', error);
+        }
+    }
+    
+    // Check authentication
+    async function checkAuth() {
+        try {
+            const response = await fetch('/demolitiontraders/api/auth/me');
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('auth-links').innerHTML = `
+                    <a href="account.php"><i class="fa-solid fa-user"></i> ${data.first_name}</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                `;
+            }
+        } catch (error) {
+            // Not authenticated
+        }
+    }
+    
+    // Logout function
+    async function logout() {
+        try {
+            await fetch('/demolitiontraders/api/auth/logout', { method: 'POST' });
+            window.location.href = 'index.php';
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    }
+    
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+        const navMenu = document.querySelector('.nav-menu');
+        navMenu.classList.toggle('active');
+        if (navMenu.classList.contains('active')) {
+            document.body.classList.add('menu-open');
+        } else {
+            document.body.classList.remove('menu-open');
+        }
+    });
+    // Đóng menu khi click ngoài menu trên mobile
+    document.addEventListener('click', function(e) {
+        const navMenu = document.querySelector('.nav-menu');
+        const toggleBtn = document.getElementById('mobile-menu-toggle');
+        if (navMenu.classList.contains('active') && !navMenu.contains(e.target) && e.target !== toggleBtn) {
+            navMenu.classList.remove('active');
+            document.body.classList.remove('menu-open');
+        }
+    });
+    
+    // Fetch opening hours from Google Places API
+    let weeklyHours = [];
+    
+    async function fetchOpeningHours() {
+        try {
+            const response = await fetch('/demolitiontraders/backend/api/opening-hours.php');
+            const data = await response.json();
+            
+            if (data.success && data.today_hours) {
+                const displayElement = document.getElementById('opening-hours-display');
+                
+                // Store weekly hours for dropdown
+                weeklyHours = data.weekday_text || [];
+                
+                // Extract just the hours part (remove day name)
+                const hoursOnly = data.today_hours.replace(/^[A-Za-z]+:\s*/, '');
+                
+                // Add open/closed indicator
+                const statusIcon = data.open_now 
+                    ? '<span style="color: #4caf50; margin-right: 5px;">●</span>' 
+                    : '<span style="color: #f44336; margin-right: 5px;">●</span>';
+                
+                const statusText = data.open_now ? 'Open Now' : 'Closed';
+                
+                displayElement.innerHTML = statusIcon + statusText + ' - ' + hoursOnly;
+                
+                // Populate dropdown list
+                populateHoursList(data.weekday_text, data.open_now);
+            }
+        } catch (error) {
+            console.error('Error fetching opening hours:', error);
+            // Keep default hours on error
+        }
+    }
+    
+    function populateHoursList(weekdayText, isOpenNow) {
+        const listElement = document.getElementById('opening-hours-list');
+        
+        if (!weekdayText || weekdayText.length === 0) {
+            listElement.innerHTML = '<div class="hours-item">Hours not available</div>';
+            return;
+        }
+        
+        const today = new Date().getDay(); // 0 (Sunday) to 6 (Saturday)
+        const adjustedToday = (today + 6) % 7; // Convert to Monday-first (0=Monday, 6=Sunday)
+        
+        listElement.innerHTML = weekdayText.map((hours, index) => {
+            const isToday = index === adjustedToday;
+            const dayClass = isToday ? 'hours-item today' : 'hours-item';
+            const parts = hours.split(': ');
+            const day = parts[0];
+            const time = parts[1] || 'Closed';
+            
+            return '<div class="' + dayClass + '">' +
+                '<span class="day-name">' + day + '</span>' +
+                '<span class="day-hours">' + time + '</span>' +
+                '</div>';
+        }).join('');
+    }
+    
+    // Toggle opening hours dropdown
+    document.getElementById('opening-hours-box')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const modal = document.getElementById('opening-hours-modal');
+        const icon = document.getElementById('hours-dropdown-icon');
+        
+        modal.classList.add('active');
+        icon.style.transform = 'rotate(180deg)';
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // Close modal functions
+    function closeHoursModal() {
+        const modal = document.getElementById('opening-hours-modal');
+        const icon = document.getElementById('hours-dropdown-icon');
+        
+        modal.classList.remove('active');
+        icon.style.transform = 'rotate(0deg)';
+        document.body.style.overflow = '';
+    }
+    
+    // Close button
+    document.getElementById('close-hours-modal')?.addEventListener('click', closeHoursModal);
+    
+    // Backdrop click
+    document.getElementById('modal-backdrop')?.addEventListener('click', closeHoursModal);
+    
+    // ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeHoursModal();
+        }
+    });
+    
+    // Initialize
+    updateCartCount();
+    updateWishlistCount();
+    checkAuth();
+    fetchOpeningHours();
+</script>

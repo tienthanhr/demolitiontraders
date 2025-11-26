@@ -1,0 +1,216 @@
+/* compiled by scssphp v0.0.12 on Mon, 12 Feb 2018 13:07:16 +1300 (0.035s) */
+
+/* Links SCSS Document */
+.links {
+  display: block;
+}
+.links .link-item-image {
+  display: block;
+  -webkit-backface-visibility: hidden;
+  -moz-transition: all 0.3s ease-out;
+  -webkit-transition: all 0.3s ease-out;
+  transition: all 0.3s ease-out;
+}
+.links .link-item-image img {
+  vertical-align: middle;
+}
+.links .link-item:hover .link-item-image {
+  opacity: 0.7;
+}
+.links .link-item-text .link-item-text-link {
+  display: block;
+}
+.links .link-item-text .link-item-text-link [class^="icon-"], .links .link-item-text .link-item-text-link [class*=" icon-"], .links .link-item-text .link-item-text-link .material-icons {
+  display: inline-block;
+  font-size: 16px;
+  vertical-align: middle;
+  margin-top: -1px;
+  /* Grid of images next to text */
+}
+.links.imageside {
+  margin-bottom: 15px;
+}
+.links.imageside .link-item {
+  display: inline-block;
+  margin-bottom: 5px;
+  position: relative;
+}
+.links.imageside .link-item-image {
+  float: left;
+  width: 40%;
+  display: block;
+}
+.links.imageside.grid.one-column .link-item-image {
+  width: 20%;
+}
+.links.imageside.grid.seven-column .link-item-image, .links.imageside.grid.six-column .link-item-image, .links.imageside.grid.five-column .link-item-image {
+  width: 100%;
+  padding-bottom: 5px;
+}
+.links.imageside .link-item-icon {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.links.imageside .link-item-icon img {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: -1px;
+}
+.links.imageside .link-item-text {
+  float: left;
+  width: 100%;
+  display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.links.imageside .link-item-text .link-item-text-details {
+  display: inline-block;
+  padding-bottom: 15px;
+  /* If icon shown */
+}
+.links.imageside .link-item-icon + .link-item-text {
+  padding-left: 25px;
+  /* If image shown */
+}
+.links.imageside .link-item-image + .link-item-text {
+  width: 60%;
+  padding-left: 20px;
+}
+.links.imageside.grid.one-column .link-item-image + .link-item-text {
+  width: 80%;
+}
+.links.imageside.grid.seven-column .link-item-text, .links.imageside.grid.six-column .link-item-text, .links.imageside.grid.five-column .link-item-text {
+  width: 100%;
+  padding-left: 0px;
+  /* Grid of images with text under */
+}
+.links.textunder .link-item {
+  display: inline-block;
+  position: relative;
+}
+.links.textunder .link-item-image {
+  width: 100%;
+  display: block;
+  padding-bottom: 5px;
+}
+.links.textunder .link-item-icon [class^="icon-"], .links.textunder .link-item-icon [class*=" icon-"], .links.textunder .link-item-icon [class^="social-"], .links.textunder .link-item-icon [class*=" social-"], .links.textunder .link-item-icon .material-icons {
+  display: inline-block;
+  font-size: 40px;
+  vertical-align: middle;
+  margin-bottom: 6px;
+}
+.links.textunder .link-item-text {
+  width: 100%;
+  display: block;
+  /* List */
+}
+.links.simplelist {
+  margin-bottom: 15px;
+}
+.links.simplelist .link-item {
+  display: inline-block;
+  position: relative;
+}
+.links.simplelist:after {
+  content: '';
+  display: block;
+  clear: both;
+}
+.links.simplelist li, .links.simplelist li.grid-item {
+  margin-bottom: 0px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.links.simplelist .link-item-image {
+  float: left;
+  width: 40%;
+  display: inline-block;
+}
+.links.simplelist.grid.one-column .link-item-image {
+  width: 20%;
+}
+.links.simplelist.grid.seven-column .link-item-image, .links.simplelist.grid.six-column .link-item-image, .links.simplelist.grid.five-column .link-item-image {
+  width: 100%;
+  padding-bottom: 5px;
+}
+.links.simplelist .link-item-icon {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.links.simplelist .link-item-icon img {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: -1px;
+}
+.links.simplelist .link-item-text {
+  width: 100%;
+  display: inline-block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.links.simplelist .link-item-text .link-item-text-details {
+  display: inline-block;
+  padding-bottom: 15px;
+  /* If icon shown */
+}
+.links.simplelist .link-item-icon + .link-item-text {
+  padding-left: 25px;
+  /* If image shown */
+}
+.links.simplelist .link-item-image + .link-item-text {
+  float: left;
+  width: 60%;
+  padding-left: 20px;
+}
+.links.simplelist.grid.one-column .link-item-image + .link-item-text {
+  float: left;
+  width: 80%;
+}
+.links.simplelist.grid.seven-column .link-item-text, .links.simplelist.grid.six-column .link-item-text, .links.simplelist.grid.five-column .link-item-text {
+  width: 100%;
+  padding-left: 0px;
+  /* Linked images */
+}
+.links.imagelinks {
+  text-align: center;
+}
+.links.imagelinks .link-item {
+  display: inline-block;
+  padding: 10px 10px;
+}
+.links.imagelinks .link-item:nth-child(1) {
+  padding-left: 10px;
+}
+.links.imagelinks .link-item:nth-last-child(2) {
+  padding-right: 10px;
+}
+.links.imagelinks .link-item img {
+  max-width: 160px;
+  max-height: 80px;
+  width: auto;
+  height: auto;
+  vertical-align: middle;
+  /* Linked icons or icon fonts */
+}
+.links.iconlinks .link-item {
+  display: inline-block;
+  text-align: center;
+}
+.links.iconlinks .link-item + .link-item {
+  margin-left: 15px;
+}
+.links.iconlinks .link-item [class^="social-"], .links.iconlinks .link-item [class*=" social-"], .links.iconlinks .link-item [class^="icon-"], .links.iconlinks .link-item [class*=" icon-"], .links.iconlinks .link-item .material-icons {
+  display: inline-block;
+  font-size: 20px;
+  vertical-align: middle;
+  padding-top: 4px;
+  /* Media Queries */
+}

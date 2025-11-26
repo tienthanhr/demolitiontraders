@@ -1,0 +1,84 @@
+/* compiled by scssphp v0.0.12 on Thu, 19 May 2016 15:32:03 +1200 (0.016s) */
+
+/* Gallery SCSS Document */
+.gallery {
+  display: block;
+}
+.gallery .module-image {
+  display: block;
+  -webkit-backface-visibility: hidden;
+  -moz-transition: all 0.3s ease-out;
+  -webkit-transition: all 0.3s ease-out;
+  transition: all 0.3s ease-out;
+}
+.gallery .module-image img {
+  vertical-align: middle;
+}
+.gallery a.gallery-item:hover .module-image {
+  opacity: 0.7;
+}
+.gallery .module-text p {
+  display: block;
+  padding: 0px 0px 0px 0px;
+  margin: 0px 0px 0px 0px;
+}
+.gallery .module-text .readmore {
+  /* Grid of images with text under */
+}
+.gallery.textunder .gallery-item {
+  display: inline-block;
+  position: relative;
+}
+.gallery.textunder .module-image {
+  width: 100%;
+  display: block;
+}
+.gallery.textunder .module-text {
+  width: 100%;
+  display: block;
+  padding-top: 5px;
+  /* Grid of images with text under for summary */
+}
+.gallery.summary .gallery-item {
+  display: inline-block;
+  position: relative;
+}
+.gallery.summary .module-image {
+  width: 100%;
+  display: block;
+}
+.gallery.summary .module-text {
+  width: 100%;
+  display: block;
+  /* Photo details page */
+}
+.photo-details {
+  display: block;
+}
+.photo-details-image {
+  padding-bottom: 10px;
+}
+.photo-details-description {
+  display: block;
+}
+.photo-details-description .backlink {
+  display: block;
+  /* Media Queries */
+}
+@media screen and (max-width: 650px) {
+  .gallery.summary.grid.seven-column .gallery-item, .gallery.summary.grid.six-column .gallery-item, .gallery.summary.grid.five-column .gallery-item, .gallery.summary.grid.four-column .gallery-item, .gallery.summary.grid.three-column .gallery-item {
+    clear: none !important;
+    width: 30% !important;
+    margin-right: 5% !important;
+  }
+  .gallery.summary.grid.seven-column .gallery-item:nth-child(3n+3), .gallery.summary.grid.six-column .gallery-item:nth-child(3n+3), .gallery.summary.grid.five-column .gallery-item:nth-child(3n+3), .gallery.summary.grid.four-column .gallery-item:nth-child(3n+3), .gallery.summary.grid.three-column .gallery-item:nth-child(3n+3) {
+    margin-right: 0% !important;
+  }
+}
+@media screen and (max-width: 480px) {
+  .gallery.summary.grid.seven-column .gallery-item, .gallery.summary.grid.six-column .gallery-item, .gallery.summary.grid.five-column .gallery-item, .gallery.summary.grid.four-column .gallery-item, .gallery.summary.grid.three-column .gallery-item {
+    clear: none !important;
+    width: 30% !important;
+    margin-right: 5% !important;
+  }
+}

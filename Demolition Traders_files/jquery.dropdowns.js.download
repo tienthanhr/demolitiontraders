@@ -1,0 +1,367 @@
+/* 
+	Navigation dropdowns jQuery plugin
+	Created on August 2015
+	by Josh Tere
+*/
+
+(function($) {
+	
+    var dropdowns = function(element,options) {
+ 		
+		// Setup settings
+        var settings = $.extend({
+            // Defaults
+            animate: 			true,
+            animationSpeed: 	220,
+			ease:				"easeOutSine",
+			clickToOpen:		false,
+            showDelay: 			200,
+            moveDelay: 			200,
+			hideDelay:			1000,
+			webSize:			'full'
+        },options);
+		
+		
+		var showInterval;
+		var moveInterval;
+		var hideInterval;
+		var parent;
+		var current;
+		var showElement;
+		
+		
+		// Delayed show function
+		function show_dropdown(navHolder,from) {
+			// Clear interval
+			clearInterval(showInterval);
+			clearInterval(hideInterval);
+			clearInterval(moveInterval);
+			
+			logger("Show (triggered from "+from+")");
+			
+			if(settings.animate) {
+				// Show dropdown menu with animation
+				if($(navHolder).find(".over").length <= 0) {
+					//
+					logger("Slide Down Menu");
+					$(showElement).slideDown(settings.animationSpeed,settings.ease);
+				}
+				else {
+					//
+					logger("Slide Across Submenu");
+					$(showElement).show("slide",{direction:"left"},settings.animationSpeed,settings.ease);
+				}
+			}
+			else {
+				// Show dropdown menu straight away
+				$(showElement).show();
+			}
+			
+			// Clear
+			showElement = "";
+			
+			// Show dropdown menu
+			$(current).addClass("over");
+		}
+		
+		
+		// Delayed hide function
+		function hide_dropdown(navHolder,from) {
+			// Clear interval
+			clearInterval(hideInterval);
+			clearInterval(moveInterval);
+			
+			logger("Hide (triggered from "+from+")");
+			
+			// Hide dropdown and remove drop class
+			$(navHolder).find(".drop ul").stop(true,true,true).hide();
+			$(navHolder).find(".over").removeClass("over");
+			
+			// Clear current
+			parent  = "";
+			current = "";
+		}
+		
+		
+		// Check size function
+		function check() {
+			
+			var webSize = $("body").data("websize");
+			
+			// Only allow drops downs under certain sizes
+			if(webSize !== 'mobile' && webSize !== 'smalltablet') {return true;}
+			else {return false;}
+		}
+		
+		
+		// Console log
+		function logger(text) {
+			//
+			//console.log(text);
+		}
+		
+		
+		
+		function run_on(navItem,navHolder,event) {
+			
+			// Clear show interval
+			showElement = "";
+			clearInterval(showInterval);
+			
+			// Clear hide interval
+			parent  = "";
+			current = "";
+			clearInterval(hideInterval);
+			clearInterval(moveInterval);
+			
+			// Check website size
+			if(check()) {
+				
+				var tempParent     = $(navItem).parent("li").parent("ul");
+				var tempSubparent  = $(navItem).parent("li");
+				var tempCurrent    = $(navItem);
+				
+				// Check if current parent
+				if(!$(tempParent).is(parent)) {
+				
+					// Set parent
+					parent = tempParent;
+				}
+				
+				// Check current
+				if(!$(tempCurrent).is(current)) {
+					
+					// Set current
+					current = tempCurrent;
+					
+
+					// Check if dropdown link
+					if($(tempSubparent).hasClass("drop")) {
+						
+						//
+						clearInterval(moveInterval);
+						
+						// Hide all dropdowns to parent
+						$(parent).find("ul").not($(current).parent("li").find("ul:first")).stop(true,true,true).hide();
+						
+						// For menu
+						$(current).parent("li").find("ul:first").each(function() {
+							
+							// If click to open set
+							if($(navItem).hasClass("click-open") && $(navItem).closest("li").hasClass("drop") && $(navItem).closest("ul").is(navHolder)) {
+								
+								//
+								if($(this).is(":visible") === false) {
+									//
+									$(parent).find(".over").removeClass("over");
+								}
+								
+								//
+								if(event.type === "click") {
+									// Save to show in navigation
+									showElement = $(this);
+									// Stop linking anywhere	
+									event.preventDefault();
+									
+									
+									// Check if menu not showing
+									if($(showElement).is(":visible")) {
+										//
+										logger("Click to Hide");
+										//
+										hide_dropdown(navHolder,"Click to Hide");
+									}
+									else {
+										//
+										logger("Click to Show");
+										//
+										show_dropdown(navHolder,"Click to Show");
+									}
+								}
+							}
+							else if($(this).is(":visible") === false) {
+							
+								//
+								$(parent).find(".over").removeClass("over");
+								
+								// Save to show in navigation
+								showElement = $(this);
+								
+								logger("Starting Show Interval");
+								
+								// Set timer to show menus
+								showInterval = setInterval(function() {
+									//
+									clearInterval(hideInterval);
+									show_dropdown(navHolder,"Starting Show Interval");
+										
+								},settings.showDelay);
+							}
+							
+							
+							// Hide dropdown menus on click
+							$("body").one("click",function() {
+								hide_dropdown(navHolder,"Body Click");
+							});    
+							
+							event.stopPropagation();
+						});
+					}
+					else {
+						
+						logger("Move to navigation item");
+						
+						// Check if isn't child of open
+						if($(tempParent).hasClass("sub-nav")) {
+							
+							logger("Child of open");
+							
+							// Check for children of current
+							$(parent).find("ul").not($(current).parent("li").find("ul:first")).stop(true,true,true).hide();
+						}
+						else {
+							
+							// Set timer to hide menus
+							moveInterval = setInterval(function() {
+								//
+								clearInterval(moveInterval);
+								
+								// Hide all dropdowns to parent
+								$(parent).find("ul").not($(current).parent("li").find("ul:first")).stop(true,true,true).hide();
+								
+								//
+								$(parent).find(".over").removeClass("over");
+								
+								hide_dropdown(navHolder,"Hide on Move");
+									
+							},settings.moveDelay);
+						}
+					}
+				}
+			}
+		}
+
+		
+		// Assign show type classes
+		$(element).find("li > a").each(function(index,ele) {
+			
+			var clickOpen = $(ele).data("showtype");
+			if(clickOpen === "click" || settings.clickToOpen) {clickOpen = true;}
+			
+			// Add event classes
+			if(clickOpen) {
+				$(ele).addClass("click-open");
+			}
+			else {
+				$(ele).addClass("hover-open");
+			}
+		});
+
+		
+		// Assign drop classes
+		$(element).find("li").each(function(index,ele) {
+			
+			var dropCount = 0;
+			
+			$(ele).children("ul").each(function(i,e) {
+				// Add dropdown class
+				$(e).addClass("sub-nav");
+				dropCount++;
+			});
+			
+			// Add drop class
+			if(dropCount > 0) {
+				$(ele).addClass("drop");
+			}
+		});
+		
+	
+		// On mouse over navigation links
+		$(element)
+			/*.on("mouseenter","li > a.hover-open",function(event) {
+				//
+				run_on($(this),element,event);
+				
+			})*/
+			
+			// On click
+			.on("mouseenter click","li > a",function(event) {
+				
+				// Clear move interval
+				clearInterval(moveInterval);
+				
+				//
+				run_on($(this),element,event);
+				
+			})
+			.on("mouseleave","li > a",function() {
+				
+				// Check website size
+				if(check()) {
+				
+					// Clear show interval
+					showElement = "";
+					clearInterval(showInterval);
+					clearInterval(hideInterval);
+					clearInterval(moveInterval);
+					
+					logger("Starting Hide Interval");
+					
+					// Set timer to hide menus
+					hideInterval = setInterval(function() {
+						//
+						hide_dropdown(element,"Starting Hide Interval");
+							
+					},settings.hideDelay);
+				}
+			})
+			
+			// On over dropdown
+			.on("mouseenter click","li ul",function() {
+				//
+				clearInterval(hideInterval);
+				clearInterval(moveInterval);
+			})
+			.on("mouseleave","li ul",function() {
+				
+				// Check website size
+				if(check()) {
+				
+					// Clear show interval
+					showElement = "";
+					clearInterval(showInterval);
+					clearInterval(hideInterval);
+					clearInterval(moveInterval);
+					
+					logger("Starting Hide Interval");
+					
+					// Set timer to hide menus
+					hideInterval = setInterval(function() {
+						//
+						hide_dropdown(element,"Starting Hide Interval");
+							
+					},settings.hideDelay);
+				}
+			});
+    };
+	
+	
+	$.fn.dropdowns = function(options) {
+	
+		return this.each(function() {
+			//
+			var element = $(this);
+			
+			// Return instance
+			if(element.data('dropdowns')) {return;}
+
+			// Create new object
+			var currentDropdowns = new dropdowns($(this),options);
+			
+			// Save
+			element.data('dropdowns',currentDropdowns);
+		});
+	};
+
+	
+}(jQuery));

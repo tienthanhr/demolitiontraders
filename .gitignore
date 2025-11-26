@@ -1,0 +1,39 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+vendor/
+
+# Logs
+*.log
+logs/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Cache
+cache/*
+!cache/.gitkeep
+tmp/*
+!tmp/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Composer
+composer.phar
+
+# NPM
+package-lock.json
+yarn.lock
