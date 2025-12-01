@@ -159,9 +159,28 @@
                 <p>Total Users</p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-sync" style="color: #9c27b0;"></i>
-                <h3 id="last-sync">Never</h3>
-                <p>Last POS Sync</p>
+                <i class="fas fa-handshake" style="color: #e91e63;"></i>
+                <h3 id="total-sell-to-us">0</h3>
+                <p>Sell to Us</p>
+            </div>
+        </div>
+        
+        <!-- Management Sections -->
+        <div class="section-card">
+            <h2><i class="fas fa-cog"></i> Quick Management</h2>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="location.href='admin-sell-to-us.php'" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-handshake"></i>
+                    Manage Sell to Us
+                </button>
+                <button class="action-btn" onclick="alert('Coming soon!')" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <i class="fas fa-search"></i>
+                    Wanted Listings
+                </button>
+                <button class="action-btn" onclick="alert('Coming soon!')" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                    <i class="fas fa-envelope"></i>
+                    Contact Inquiries
+                </button>
             </div>
         </div>
         
@@ -255,6 +274,17 @@
                 const productsResp = await fetch('/demolitiontraders/api/products?per_page=1');
                 const productsData = await productsResp.json();
                 document.getElementById('total-products').textContent = productsData.pagination?.total || 0;
+                
+                // Sell to Us count
+                try {
+                    const sellToUsResp = await fetch(getApiUrl('/api/sell-to-us/list.php?status=new&limit=1'));
+                    const sellToUsData = await sellToUsResp.json();
+                    if (sellToUsData.success) {
+                        document.getElementById('total-sell-to-us').textContent = sellToUsData.total || 0;
+                    }
+                } catch (e) {
+                    console.error('Error loading sell-to-us stats:', e);
+                }
                 
                 // For orders and users, we'll show placeholder for now
                 document.getElementById('total-orders').textContent = '0';
