@@ -67,6 +67,21 @@ body {
     margin-right: 10px;
 }
 
+.menu-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 15px 20px;
+}
+
+.menu-label {
+    padding: 10px 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 600;
+}
+
 /* Main Content */
 .main-content {
     flex: 1;

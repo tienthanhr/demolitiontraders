@@ -4,7 +4,7 @@
         <p>Admin Panel</p>
     </div>
     <nav class="sidebar-menu">
-        <a href="index.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
+        <a href="admin-dashboard.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-dashboard.php' ? 'active' : ''; ?>">
             <i class="fas fa-home"></i> Dashboard
         </a>
         <a href="products.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'products.php' ? 'active' : ''; ?>">
@@ -19,6 +19,22 @@
         <a href="customers.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'customers.php' ? 'active' : ''; ?>">
             <i class="fas fa-users"></i> Customers
         </a>
+        
+        <div class="menu-divider"></div>
+        <div class="menu-label">Customer Inquiries</div>
+        
+        <a href="admin-sell-to-us.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-sell-to-us.php' ? 'active' : ''; ?>">
+            <i class="fas fa-handshake"></i> Sell to Us
+        </a>
+        <a href="admin-wanted-listings.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-wanted-listings.php' ? 'active' : ''; ?>">
+            <i class="fas fa-search"></i> Wanted Listings
+        </a>
+        <a href="admin-contact.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-contact.php' ? 'active' : ''; ?>">
+            <i class="fas fa-envelope"></i> Contact Messages
+        </a>
+        
+        <div class="menu-divider"></div>
+        
         <a href="admins.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admins.php' ? 'active' : ''; ?>">
             <i class="fas fa-user-shield"></i> Admins
         </a>
@@ -27,6 +43,15 @@
         </a>
         <a href="settings.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>">
             <i class="fas fa-cog"></i> Settings
+        </a>
+        
+        <div class="menu-divider"></div>
+        
+        <a href="../index.php" class="menu-item" target="_blank">
+            <i class="fas fa-external-link-alt"></i> View Site
+        </a>
+        <a href="../logout.php" class="menu-item">
+            <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </nav>
 </aside>

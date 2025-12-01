@@ -1,132 +1,89 @@
 <?php
-require_once __DIR__ . '/config.php';
-session_start();
-
-// Check if user is admin
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login.php');
-    exit;
-}
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sell to Us Management - Admin</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
+$pageTitle = 'Sell to Us Management';
+$additionalCSS = '<style>
+    .page-header {
+        background: white;
+        padding: 25px 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+    }
     
-    <script src="<?php echo asset('assets/js/api-helper.js?v=1'); ?>"></script>
-    <link rel="stylesheet" href="<?php echo asset('assets/css/new-style.css?v=6'); ?>">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    .page-header h1 {
+        margin: 0;
+        color: #2f3192;
+        font-size: 28px;
+    }
     
-    <style>
-        .admin-container {
-            max-width: 1400px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .admin-header h1 {
-            color: #2f3192;
-            margin: 0;
-        }
-        
-        .admin-nav {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .admin-nav a {
-            padding: 10px 20px;
-            background: #fff;
-            border: 2px solid #2f3192;
-            color: #2f3192;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        
-        .admin-nav a:hover,
-        .admin-nav a.active {
-            background: #2f3192;
-            color: #fff;
-        }
-        
-        .filter-bar {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .filter-bar select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .stat-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 32px;
-            color: #2f3192;
-        }
-        
-        .stat-card p {
-            margin: 0;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .submissions-table {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th {
-            background: #2f3192;
-            color: #fff;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        margin: 0 0 10px 0;
+        font-size: 36px;
+        color: #2f3192;
+    }
+    
+    .stat-card p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .content-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+    }
+    
+    .filter-bar {
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .filter-bar select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        background: #f5f5f5;
+        color: #333;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+    }
         
         td {
             padding: 15px;
@@ -336,21 +293,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             margin-bottom: 20px;
             color: #ddd;
         }
-    </style>
-</head>
-<body>
-    <div class="admin-container">
-        <div class="admin-header">
-            <h1><i class="fas fa-handshake"></i> Sell to Us Management</h1>
-            <div class="admin-nav">
-                <a href="admin-dashboard.php"><i class="fas fa-dashboard"></i> Dashboard</a>
-                <a href="admin-sell-to-us.php" class="active"><i class="fas fa-handshake"></i> Sell to Us</a>
-                <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </div>
-        </div>
-        
-        <!-- Stats Cards -->
-        <div class="stats-cards">
+</style>';
+
+include __DIR__ . '/components/admin-header.php';
+?>
+
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="fas fa-handshake"></i> Sell to Us Management</h1>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-cards">
             <div class="stat-card">
                 <h3 id="stat-new">0</h3>
                 <p>New Submissions</p>
@@ -383,10 +337,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 </select>
             </label>
         </div>
-        
-        <!-- Submissions Table -->
-        <div class="submissions-table">
-            <table>
+</div>
+
+<!-- Submissions Table -->
+<div class="content-card">
+    <table>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -756,5 +711,5 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             alert('✗ ' + message);
         }
     </script>
-</body>
-</html>
+
+<?php include __DIR__ . '/components/admin-footer.php'; ?>
