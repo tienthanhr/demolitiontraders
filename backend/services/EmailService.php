@@ -638,8 +638,13 @@ HTML;
             </div>
             
             <div class="field">
-                <div class="label">Item Description:</div>
-                <div class="value">{$data['description']}</div>
+                <div class="label">Item Name:</div>
+                <div class="value"><strong>{$data['item_name']}</strong></div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Quantity:</div>
+                <div class="value">{$data['quantity']}</div>
             </div>
             
             <div class="field">
@@ -648,8 +653,13 @@ HTML;
             </div>
             
             <div class="field">
-                <div class="label">Quantity:</div>
-                <div class="value">{$data['quantity']}</div>
+                <div class="label">Pick Up or Delivery:</div>
+                <div class="value">{$data['pickup_delivery']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Description:</div>
+                <div class="value">{$data['description']}</div>
             </div>
             
             {$photosHtml}

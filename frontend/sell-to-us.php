@@ -104,9 +104,41 @@
                             </div>
                         </div>
                         
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Item Name *</label>
+                                <input type="text" name="item_name" placeholder="e.g., Rimu Doors, Weatherboards, Kitchen Cabinets" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity *</label>
+                                <input type="text" name="quantity" placeholder="e.g., 10 units, 50 sqm" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Condition *</label>
+                                <select name="condition" required>
+                                    <option value="">Select Condition</option>
+                                    <option value="excellent">Excellent</option>
+                                    <option value="good">Good</option>
+                                    <option value="fair">Fair</option>
+                                    <option value="needs_work">Needs Work</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Pick Up or Delivery *</label>
+                                <select name="pickup_delivery" required>
+                                    <option value="">Select Option</option>
+                                    <option value="pickup_onsite">We pick up from your site</option>
+                                    <option value="deliver_to_us">I will deliver to your yard</option>
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
-                            <label>Item Description *</label>
-                            <textarea name="description" rows="6" placeholder="Please describe the materials you have to sell, including quantity, condition, and approximate age..." required></textarea>
+                            <label>Description *</label>
+                            <textarea name="description" rows="6" placeholder="Please describe the materials in detail, including approximate age, any special features, and current condition..." required></textarea>
                         </div>
                         
                         <div class="form-group">

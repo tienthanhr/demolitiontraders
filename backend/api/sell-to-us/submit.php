@@ -32,7 +32,9 @@ try {
     }
     
     // Validate required fields
-    if (empty($data['name']) || empty($data['email']) || empty($data['phone']) || empty($data['description'])) {
+    if (empty($data['name']) || empty($data['email']) || empty($data['phone']) || 
+        empty($data['item_name']) || empty($data['quantity']) || empty($data['condition']) || 
+        empty($data['pickup_delivery']) || empty($data['description'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Missing required fields']);
         exit;
@@ -43,9 +45,11 @@ try {
     $email = filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL);
     $phone = htmlspecialchars(trim($data['phone']));
     $location = isset($data['location']) ? htmlspecialchars(trim($data['location'])) : '';
+    $itemName = htmlspecialchars(trim($data['item_name']));
+    $quantity = htmlspecialchars(trim($data['quantity']));
+    $condition = htmlspecialchars(trim($data['condition']));
+    $pickupDelivery = htmlspecialchars(trim($data['pickup_delivery']));
     $description = htmlspecialchars(trim($data['description']));
-    $condition = isset($data['condition']) ? htmlspecialchars(trim($data['condition'])) : '';
-    $quantity = isset($data['quantity']) ? htmlspecialchars(trim($data['quantity'])) : '';
     
     if (!$email) {
         http_response_code(400);
@@ -79,11 +83,11 @@ try {
     $db = Database::getInstance()->getConnection();
     $stmt = $db->prepare("
         INSERT INTO sell_to_us_submissions 
-        (name, email, phone, location, description, item_condition, quantity, photos, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        (name, email, phone, location, item_name, quantity, item_condition, pickup_delivery, description, photos, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ");
     $photosJson = !empty($uploadedFiles) ? json_encode($uploadedFiles) : null;
-    $stmt->execute([$name, $email, $phone, $location, $description, $condition, $quantity, $photosJson]);
+    $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $condition, $pickupDelivery, $description, $photosJson]);
     
     // Send email to admin
     $emailService = new EmailService();
@@ -92,9 +96,11 @@ try {
         'email' => $email,
         'phone' => $phone,
         'location' => $location,
-        'description' => $description,
-        'condition' => $condition,
+        'item_name' => $itemName,
         'quantity' => $quantity,
+        'condition' => $condition,
+        'pickup_delivery' => $pickupDelivery,
+        'description' => $description,
         'photos' => $uploadedFiles
     ]);
     
