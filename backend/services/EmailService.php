@@ -589,9 +589,7 @@ HTML;
             $photosHtml = '';
             if (!empty($data['photos'])) {
                 $photosHtml = '<div class="field"><div class="label">Photos:</div><div class="value">';
-                foreach ($data['photos'] as $photo) {
-                    $photosHtml .= '<div><a href="' . $_SERVER['HTTP_HOST'] . '/' . $photo . '">' . basename($photo) . '</a></div>';
-                }
+                $photosHtml .= count($data['photos']) . ' photo(s) attached to this email';
                 $photosHtml .= '</div></div>';
             }
             
@@ -679,10 +677,23 @@ HTML;
 HTML;
             
             $this->mailer->clearAddresses();
+            $this->mailer->clearAttachments();
             $this->mailer->addAddress($adminEmail);
             $this->mailer->addReplyTo($data['email'], $data['name']);
             $this->mailer->Subject = "New Sell to Us Submission from {$data['name']}";
             $this->mailer->Body = $html;
+            
+            // Attach photos if available
+            if (!empty($data['photos'])) {
+                $uploadsPath = __DIR__ . '/../../';
+                foreach ($data['photos'] as $photoPath) {
+                    $fullPath = $uploadsPath . $photoPath;
+                    if (file_exists($fullPath)) {
+                        $this->mailer->addAttachment($fullPath, basename($photoPath));
+                    }
+                }
+            }
+            
             $this->mailer->send();
             
             error_log("Sell to us email sent to admin");
