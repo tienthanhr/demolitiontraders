@@ -33,7 +33,7 @@ try {
     
     // Validate required fields
     if (empty($data['name']) || empty($data['email']) || empty($data['phone']) || 
-        empty($data['item_name']) || empty($data['quantity']) || empty($data['condition']) || 
+        empty($data['item_name']) || empty($data['quantity']) || 
         empty($data['pickup_delivery']) || empty($data['description'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Missing required fields']);
@@ -47,7 +47,7 @@ try {
     $location = isset($data['location']) ? htmlspecialchars(trim($data['location'])) : '';
     $itemName = htmlspecialchars(trim($data['item_name']));
     $quantity = htmlspecialchars(trim($data['quantity']));
-    $condition = htmlspecialchars(trim($data['condition']));
+    $pickupDate = isset($data['pickup_date']) ? htmlspecialchars(trim($data['pickup_date'])) : '';
     $pickupDelivery = htmlspecialchars(trim($data['pickup_delivery']));
     $description = htmlspecialchars(trim($data['description']));
     
@@ -83,11 +83,11 @@ try {
     $db = Database::getInstance()->getConnection();
     $stmt = $db->prepare("
         INSERT INTO sell_to_us_submissions 
-        (name, email, phone, location, item_name, quantity, item_condition, pickup_delivery, description, photos, created_at)
+        (name, email, phone, location, item_name, quantity, pickup_date, pickup_delivery, description, photos, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ");
     $photosJson = !empty($uploadedFiles) ? json_encode($uploadedFiles) : null;
-    $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $condition, $pickupDelivery, $description, $photosJson]);
+    $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $pickupDate, $pickupDelivery, $description, $photosJson]);
     
     // Send email to admin
     $emailService = new EmailService();
@@ -98,7 +98,7 @@ try {
         'location' => $location,
         'item_name' => $itemName,
         'quantity' => $quantity,
-        'condition' => $condition,
+        'pickup_date' => $pickupDate,
         'pickup_delivery' => $pickupDelivery,
         'description' => $description,
         'photos' => $uploadedFiles

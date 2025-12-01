@@ -117,14 +117,9 @@
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Condition *</label>
-                                <select name="condition" required>
-                                    <option value="">Select Condition</option>
-                                    <option value="excellent">Excellent</option>
-                                    <option value="good">Good</option>
-                                    <option value="fair">Fair</option>
-                                    <option value="needs_work">Needs Work</option>
-                                </select>
+                                <label>Preferred Pick Up Date</label>
+                                <input type="date" name="pickup_date" min="<?php echo date('Y-m-d'); ?>">
+                                <small>Optional - When would you like us to collect the items?</small>
                             </div>
                             <div class="form-group">
                                 <label>Pick Up or Delivery *</label>

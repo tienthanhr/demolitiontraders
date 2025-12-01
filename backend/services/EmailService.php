@@ -648,8 +648,14 @@ HTML;
             </div>
             
             <div class="field">
-                <div class="label">Condition:</div>
-                <div class="value">{$data['condition']}</div>
+                <div class="label">Preferred Pick Up Date:</div>
+                <div class="value">HTML;
+            
+            $pickupDateDisplay = !empty($data['pickup_date']) ? date('d/m/Y', strtotime($data['pickup_date'])) : 'Not specified';
+            $html .= $pickupDateDisplay;
+            
+            $html .= <<<HTML
+</div>
             </div>
             
             <div class="field">

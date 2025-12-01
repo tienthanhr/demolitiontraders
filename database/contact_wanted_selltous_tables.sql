@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS sell_to_us_submissions (
     location VARCHAR(255),
     item_name VARCHAR(255) NOT NULL,
     quantity VARCHAR(100) NOT NULL,
-    item_condition VARCHAR(100) NOT NULL,
+    pickup_date DATE,
     pickup_delivery VARCHAR(50) NOT NULL,
     description TEXT NOT NULL,
     photos JSON,
