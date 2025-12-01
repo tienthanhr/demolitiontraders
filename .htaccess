@@ -1,10 +1,11 @@
 RewriteEngine On
-RewriteBase /demolitiontraders/
+RewriteBase /
 
 # Prevent directory listing
 Options -Indexes
 
-# Force HTTPS (enable in production)
+# Force HTTPS (enable in production) - with proxy support
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP_HOST} !^localhost [NC]
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
@@ -23,7 +24,7 @@ RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^(.*\.(jpg|jpeg|png|gif|css|js|svg|webp|ico|woff|woff2|ttf|pdf))$ - [L]
 
 # Remove /frontend/ from URLs - 301 redirect
-RewriteRule ^frontend/(.+)$ /demolitiontraders/$1 [R=301,L]
+RewriteRule ^frontend/(.+)$ /$1 [R=301,L]
 
 # Map root to frontend/index.php
 RewriteRule ^$ frontend/index.php [L]
@@ -31,7 +32,7 @@ RewriteRule ^$ frontend/index.php [L]
 # Map clean URLs to frontend/*.php (only if file exists)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{DOCUMENT_ROOT}/demolitiontraders/frontend/$1.php -f
+RewriteCond %{DOCUMENT_ROOT}/frontend/$1.php -f
 RewriteRule ^([a-zA-Z0-9_-]+)/?$ frontend/$1.php [L,QSA]
 
 # If nothing matched, serve 404 (don't fallback to frontend/)

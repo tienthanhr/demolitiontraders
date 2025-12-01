@@ -4,6 +4,5 @@
  * Demolition Traders E-commerce Platform
  */
 
-// Redirect to frontend
-header('Location: frontend/index.php');
-exit;
+// Load frontend without redirect
+require_once __DIR__ . '/frontend/index.php';
