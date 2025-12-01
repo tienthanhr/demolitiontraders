@@ -468,21 +468,46 @@
                     body: formData
                 });
                 
-                const result = await response.json();
+                // Log the raw response for debugging
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Response text:', responseText);
+                    throw new Error('Invalid JSON response from server');
+                }
                 
                 if (response.ok && result.success) {
-                    showToast('Thank you! Your submission has been received. We\'ll review your items and contact you shortly.', 'success');
+                    if (typeof showToast === 'function') {
+                        showToast('Thank you! Your submission has been received. We\'ll review your items and contact you shortly.', 'success');
+                    } else {
+                        alert('Thank you! Your submission has been received.');
+                    }
                     this.reset();
                     
                     // Clear photo preview
                     selectedFiles = [];
                     document.getElementById('photo-preview').innerHTML = '';
                 } else {
-                    showToast(result.error || 'Failed to submit. Please try again.', 'error');
+                    const errorMsg = result.error || 'Failed to submit. Please try again.';
+                    if (typeof showToast === 'function') {
+                        showToast(errorMsg, 'error');
+                    } else {
+                        alert('Error: ' + errorMsg);
+                    }
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showToast('An error occurred. Please try again.', 'error');
+                const errorMsg = 'An error occurred. Please try again.';
+                if (typeof showToast === 'function') {
+                    showToast(errorMsg, 'error');
+                } else {
+                    alert(errorMsg);
+                }
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;

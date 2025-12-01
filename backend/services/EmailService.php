@@ -646,16 +646,15 @@ HTML;
                 <div class="label">Quantity:</div>
                 <div class="value">{$data['quantity']}</div>
             </div>
+HTML;
+            
+            // Add pickup date conditionally
+            $pickupDateDisplay = !empty($data['pickup_date']) ? date('d/m/Y', strtotime($data['pickup_date'])) : 'Not specified';
+            $html .= <<<HTML
             
             <div class="field">
                 <div class="label">Preferred Pick Up Date:</div>
-                <div class="value">HTML;
-            
-            $pickupDateDisplay = !empty($data['pickup_date']) ? date('d/m/Y', strtotime($data['pickup_date'])) : 'Not specified';
-            $html .= $pickupDateDisplay;
-            
-            $html .= <<<HTML
-</div>
+                <div class="value">{$pickupDateDisplay}</div>
             </div>
             
             <div class="field">
