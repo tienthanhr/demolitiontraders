@@ -83,7 +83,7 @@ try {
     if ($userId) {
         // Search for matching products based on description and category
         $searchTerms = explode(' ', $description);
-        $searchQuery = "SELECT p.* FROM products p WHERE p.status = 'active' AND p.stock_quantity > 0 AND (";
+        $searchQuery = "SELECT p.* FROM products p WHERE p.stock_quantity > 0 AND (";
         $searchConditions = [];
         $searchParams = [];
         
