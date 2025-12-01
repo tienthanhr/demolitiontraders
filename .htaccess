@@ -22,19 +22,8 @@ Options -Indexes
     Require all denied
 </Files>
 
-##### BASIC HEADERS (SAFE ONLY) #####
 <IfModule mod_headers.c>
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-Content-Type-Options "nosniff"
     Header set Referrer-Policy "no-referrer-when-downgrade"
 </IfModule>
-
-##### REMOVE BROKEN CSP (CAUSES CSS TO BREAK) #####
-# DO NOT ENABLE CSP UNLESS PROPERLY CONFIGURED
-
-##### PHP DEFAULT SETTINGS #####
-php_value upload_max_filesize 20M
-php_value post_max_size 25M
-php_value memory_limit 128M
-php_value max_execution_time 60
-
