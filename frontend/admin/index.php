@@ -5,7 +5,7 @@ session_start();
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
 
 if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    header('Location: ../admin-login.php');
+    header('Location: ../login.php');
     exit;
 }
 ?>
@@ -316,35 +316,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
 <body>
     <div class="admin-wrapper">
         <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>Demolition Traders</h2>
-                <p>Admin Panel</p>
-            </div>
-            <nav class="sidebar-menu">
-                <a href="index.php" class="menu-item active">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
-                <a href="products.php" class="menu-item">
-                    <i class="fas fa-box"></i> Products
-                </a>
-                <a href="categories.php" class="menu-item">
-                    <i class="fas fa-tags"></i> Categories
-                </a>
-                <a href="orders.php" class="menu-item">
-                    <i class="fas fa-shopping-cart"></i> Orders
-                </a>
-                <a href="customers.php" class="menu-item">
-                    <i class="fas fa-users"></i> Customers
-                </a>
-                <a href="low-stock.php" class="menu-item">
-                    <i class="fas fa-exclamation-triangle"></i> Low Stock
-                </a>
-                <a href="settings.php" class="menu-item">
-                    <i class="fas fa-cog"></i> Settings
-                </a>
-            </nav>
-        </aside>
+        <?php include 'sidebar.php'; ?>
 
         <!-- Main Content -->
         <main class="main-content">
