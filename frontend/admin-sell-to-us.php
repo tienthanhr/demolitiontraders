@@ -1,18 +1,63 @@
 <?php
 $pageTitle = 'Sell to Us Management';
-$additionalCSS = '<style>
+$additionalCSS = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+<style>
     .page-header {
         background: white;
         padding: 25px 30px;
         border-radius: 10px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .page-header h1 {
         margin: 0;
         color: #2f3192;
         font-size: 28px;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .view-toggle button {
+        padding: 8px 16px;
+        border: 2px solid #2f3192;
+        background: white;
+        color: #2f3192;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .view-toggle button.active {
+        background: #2f3192;
+        color: white;
+    }
+    
+    .view-toggle button:hover {
+        opacity: 0.8;
+    }
+    
+    #calendarView {
+        display: none;
+    }
+    
+    #calendarView.active {
+        display: block;
+    }
+    
+    #tableView.active {
+        display: block;
+    }
+    
+    .fc-event {
+        cursor: pointer;
     }
     
     .stats-cards {
@@ -65,11 +110,18 @@ $additionalCSS = '<style>
         align-items: center;
     }
     
-    .filter-bar select {
+    .filter-bar select,
+    .filter-bar input {
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 5px;
         font-size: 14px;
+    }
+    
+    .filter-bar label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     
     table {
@@ -216,6 +268,26 @@ $additionalCSS = '<style>
             object-fit: cover;
             border-radius: 5px;
             cursor: pointer;
+            border: 2px solid #eee;
+            transition: all 0.3s;
+        }
+        
+        .photo-gallery img:hover {
+            border-color: #2f3192;
+            transform: scale(1.05);
+        }
+        
+        .photo-item {
+            position: relative;
+        }
+        
+        .item-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid #eee;
         }
         
         .form-group {
@@ -301,34 +373,46 @@ include __DIR__ . '/components/admin-header.php';
 <!-- Page Header -->
 <div class="page-header">
     <h1><i class="fas fa-handshake"></i> Sell to Us Management</h1>
+    <div class="view-toggle">
+        <button id="btnTableView" class="active" onclick="switchView('table')">
+            <i class="fas fa-table"></i> Table View
+        </button>
+        <button id="btnCalendarView" onclick="switchView('calendar')">
+            <i class="fas fa-calendar"></i> Calendar View
+        </button>
+    </div>
 </div>
 
-<!-- Stats Cards -->
-<div class="stats-cards">
-            <div class="stat-card">
-                <h3 id="stat-new">0</h3>
-                <p>New Submissions</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="stat-reviewing">0</h3>
-                <p>Under Review</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="stat-contacted">0</h3>
-                <p>Contacted</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="stat-purchased">0</h3>
-                <p>Purchased</p>
-            </div>
+<!-- Table View -->
+<div id="tableView" class="active">
+    <!-- Stats Cards -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <h3 id="stat-new">0</h3>
+            <p>New Submissions</p>
         </div>
-        
+        <div class="stat-card">
+            <h3 id="stat-reviewing">0</h3>
+            <p>Under Review</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="stat-contacted">0</h3>
+            <p>Contacted</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="stat-purchased">0</h3>
+            <p>Purchased</p>
+        </div>
+    </div>
+    
+    <!-- Content Card with Filter Bar -->
+    <div class="content-card">
         <!-- Filter Bar -->
         <div class="filter-bar">
             <label>
-                <strong>Filter by Status:</strong>
+                <strong>Status:</strong>
                 <select id="statusFilter">
-                    <option value="all">All Submissions</option>
+                    <option value="all">All</option>
                     <option value="new">New</option>
                     <option value="reviewing">Reviewing</option>
                     <option value="contacted">Contacted</option>
@@ -336,34 +420,51 @@ include __DIR__ . '/components/admin-header.php';
                     <option value="declined">Declined</option>
                 </select>
             </label>
+            <label>
+                <strong>Type:</strong>
+                <select id="typeFilter">
+                    <option value="all">All</option>
+                    <option value="pickup">Pickup</option>
+                    <option value="delivery">Delivery</option>
+                </select>
+            </label>
+            <label>
+                <strong>Search:</strong>
+                <input type="text" id="searchInput" placeholder="Name, email, item...">
+            </label>
         </div>
+
+        <!-- Submissions Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Photo</th>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Item</th>
+                    <th>Type</th>
+                    <th>Pickup Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="submissionsBody">
+                <tr>
+                    <td colspan="10" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading submissions...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<!-- Submissions Table -->
-<div class="content-card">
-    <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Date</th>
-                        <th>Name</th>
-                        <th>Contact</th>
-                        <th>Item</th>
-                        <th>Pickup Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="submissionsBody">
-                    <tr>
-                        <td colspan="8" class="loading">
-                            <i class="fas fa-spinner fa-spin"></i> Loading submissions...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+<!-- Calendar View -->
+<div id="calendarView" class="content-card">
+    <div id="calendar"></div>
+</div>
     
     <!-- View Modal -->
     <div id="viewModal" class="modal">
@@ -417,17 +518,20 @@ include __DIR__ . '/components/admin-header.php';
         </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script>
         let allSubmissions = [];
+        let calendar;
         
         // Load submissions on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadSubmissions();
+            initCalendar();
             
-            // Filter change
-            document.getElementById('statusFilter').addEventListener('change', function() {
-                filterSubmissions(this.value);
-            });
+            // Filter changes
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('typeFilter').addEventListener('change', applyFilters);
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
             
             // Edit form submit
             document.getElementById('editForm').addEventListener('submit', async function(e) {
@@ -435,6 +539,80 @@ include __DIR__ . '/components/admin-header.php';
                 await updateSubmission();
             });
         });
+        
+        // Initialize calendar
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                events: [],
+                eventClick: function(info) {
+                    const submissionId = parseInt(info.event.id);
+                    viewSubmission(submissionId);
+                },
+                height: 'auto'
+            });
+            calendar.render();
+        }
+        
+        // Switch between table and calendar views
+        function switchView(view) {
+            const tableView = document.getElementById('tableView');
+            const calendarView = document.getElementById('calendarView');
+            const btnTable = document.getElementById('btnTableView');
+            const btnCalendar = document.getElementById('btnCalendarView');
+            
+            if (view === 'calendar') {
+                tableView.classList.remove('active');
+                calendarView.classList.add('active');
+                btnTable.classList.remove('active');
+                btnCalendar.classList.add('active');
+                updateCalendar();
+            } else {
+                tableView.classList.add('active');
+                calendarView.classList.remove('active');
+                btnTable.classList.add('active');
+                btnCalendar.classList.remove('active');
+            }
+        }
+        
+        // Update calendar with pickup dates
+        function updateCalendar() {
+            if (!calendar) return;
+            
+            const events = allSubmissions
+                .filter(sub => sub.pickup_date && sub.pickup_delivery.toLowerCase().includes('pickup'))
+                .map(sub => ({
+                    id: sub.id,
+                    title: `${sub.name} - ${sub.item_name}`,
+                    start: sub.pickup_date,
+                    backgroundColor: getStatusColor(sub.status),
+                    borderColor: getStatusColor(sub.status),
+                    extendedProps: {
+                        submission: sub
+                    }
+                }));
+            
+            calendar.removeAllEvents();
+            calendar.addEventSource(events);
+        }
+        
+        // Get color by status
+        function getStatusColor(status) {
+            const colors = {
+                'new': '#1976d2',
+                'reviewing': '#f57c00',
+                'contacted': '#7b1fa2',
+                'purchased': '#388e3c',
+                'declined': '#d32f2f'
+            };
+            return colors[status] || '#666';
+        }
         
         // Load submissions from API
         async function loadSubmissions() {
@@ -445,6 +623,7 @@ include __DIR__ . '/components/admin-header.php';
                     allSubmissions = result.data;
                     updateStats();
                     displaySubmissions(allSubmissions);
+                    updateCalendar();
                 }
             } catch (error) {
                 console.error('Failed to load submissions:', error);
@@ -480,7 +659,7 @@ include __DIR__ . '/components/admin-header.php';
             if (submissions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="empty-state">
+                        <td colspan="10" class="empty-state">
                             <i class="fas fa-inbox"></i>
                             <p>No submissions found</p>
                         </td>
@@ -489,9 +668,16 @@ include __DIR__ . '/components/admin-header.php';
                 return;
             }
             
-            tbody.innerHTML = submissions.map(sub => `
+            tbody.innerHTML = submissions.map(sub => {
+                const photoUrl = sub.photos && sub.photos.length > 0 ? sub.photos[0] : '';
+                const thumbnail = photoUrl 
+                    ? `<img src="${photoUrl}" class="item-thumbnail" onclick="viewSubmission(${sub.id})" title="Click to view details">`
+                    : '<i class="fas fa-image" style="color: #ccc; font-size: 24px;"></i>';
+                
+                return `
                 <tr>
                     <td>${sub.id}</td>
+                    <td>${thumbnail}</td>
                     <td>${formatDate(sub.created_at)}</td>
                     <td>${escapeHtml(sub.name)}</td>
                     <td>
@@ -499,33 +685,64 @@ include __DIR__ . '/components/admin-header.php';
                         <small>${escapeHtml(sub.phone)}</small>
                     </td>
                     <td>${escapeHtml(sub.item_name)}</td>
+                    <td><span class="status-badge ${sub.pickup_delivery.toLowerCase().includes('pickup') ? 'status-contacted' : 'status-reviewing'}">${escapeHtml(sub.pickup_delivery)}</span></td>
                     <td>${sub.pickup_date ? formatDate(sub.pickup_date) : '<em>Not set</em>'}</td>
                     <td><span class="status-badge status-${sub.status}">${capitalize(sub.status)}</span></td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-sm btn-view" onclick="viewSubmission(${sub.id})">
+                            <button class="btn-sm btn-view" onclick="viewSubmission(${sub.id})" title="View details">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn-sm btn-edit" onclick="editSubmission(${sub.id})">
+                            <button class="btn-sm btn-edit" onclick="editSubmission(${sub.id})" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-sm btn-delete" onclick="deleteSubmission(${sub.id})">
+                            <button class="btn-sm btn-delete" onclick="deleteSubmission(${sub.id})" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
         
-        // Filter submissions
-        function filterSubmissions(status) {
-            if (status === 'all') {
-                displaySubmissions(allSubmissions);
-            } else {
-                const filtered = allSubmissions.filter(sub => sub.status === status);
-                displaySubmissions(filtered);
+        // Apply all filters
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = allSubmissions;
+            
+            // Filter by status
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(sub => sub.status === statusFilter);
             }
+            
+            // Filter by type (pickup/delivery)
+            if (typeFilter !== 'all') {
+                filtered = filtered.filter(sub => 
+                    sub.pickup_delivery.toLowerCase().includes(typeFilter)
+                );
+            }
+            
+            // Search filter
+            if (searchTerm) {
+                filtered = filtered.filter(sub => 
+                    sub.name.toLowerCase().includes(searchTerm) ||
+                    sub.email.toLowerCase().includes(searchTerm) ||
+                    sub.item_name.toLowerCase().includes(searchTerm) ||
+                    sub.phone.includes(searchTerm)
+                );
+            }
+            
+            displaySubmissions(filtered);
+        }
+        
+        // Filter submissions (legacy support)
+        function filterSubmissions(status) {
+            document.getElementById('statusFilter').value = status;
+            applyFilters();
         }
         
         // View submission details

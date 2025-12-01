@@ -33,9 +33,9 @@ $adminPrefix = $inAdminFolder ? '' : 'admin/';
             <i class="fas fa-handshake"></i> Sell to Us
         </a>
         <a href="<?php echo $prefix; ?>admin-wanted-listings.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-wanted-listings.php' ? 'active' : ''; ?>">
-            <i class="fas fa-search"></i> Wanted Listings
+            <i class="fas fa-star"></i> Wanted Listings
         </a>
-        <a href="<?php echo $prefix; ?>admin-contact.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-contact.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $prefix; ?>admin-contact-messages.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-contact-messages.php' ? 'active' : ''; ?>">
             <i class="fas fa-envelope"></i> Contact Messages
         </a>
         
