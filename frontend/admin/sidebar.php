@@ -10,7 +10,7 @@ $adminPrefix = $inAdminFolder ? '' : 'admin/';
         <p>Admin Panel</p>
     </div>
     <nav class="sidebar-menu">
-        <a href="<?php echo $prefix; ?>admin-dashboard.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admin-dashboard.php' ? 'active' : ''; ?>">
+        <a href="<?php echo $adminPrefix; ?>index.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
             <i class="fas fa-home"></i> Dashboard
         </a>
         <a href="<?php echo $adminPrefix; ?>products.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'products.php' ? 'active' : ''; ?>">
