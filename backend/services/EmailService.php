@@ -631,11 +631,6 @@ HTML;
             </div>
             
             <div class="field">
-                <div class="label">Location:</div>
-                <div class="value">{$data['location']}</div>
-            </div>
-            
-            <div class="field">
                 <div class="label">Item Name:</div>
                 <div class="value"><strong>{$data['item_name']}</strong></div>
             </div>
@@ -644,21 +639,36 @@ HTML;
                 <div class="label">Quantity:</div>
                 <div class="value">{$data['quantity']}</div>
             </div>
-HTML;
-            
-            // Add pickup date conditionally
-            $pickupDateDisplay = !empty($data['pickup_date']) ? date('d/m/Y', strtotime($data['pickup_date'])) : 'Not specified';
-            $html .= <<<HTML
-            
-            <div class="field">
-                <div class="label">Preferred Pick Up Date:</div>
-                <div class="value">{$pickupDateDisplay}</div>
-            </div>
             
             <div class="field">
                 <div class="label">Pick Up or Delivery:</div>
                 <div class="value">{$data['pickup_delivery']}</div>
             </div>
+HTML;
+            
+            // Add pickup address and date conditionally if pickup option is selected
+            if ($data['pickup_delivery'] === 'pickup_onsite' && !empty($data['location'])) {
+                $html .= <<<HTML
+            
+            <div class="field">
+                <div class="label">Pick Up Address:</div>
+                <div class="value">{$data['location']}</div>
+            </div>
+HTML;
+            }
+            
+            if (!empty($data['pickup_date'])) {
+                $pickupDateDisplay = date('d/m/Y', strtotime($data['pickup_date']));
+                $html .= <<<HTML
+            
+            <div class="field">
+                <div class="label">Preferred Pick Up Date:</div>
+                <div class="value">{$pickupDateDisplay}</div>
+            </div>
+HTML;
+            }
+            
+            $html .= <<<HTML
             
             <div class="field">
                 <div class="label">Description:</div>

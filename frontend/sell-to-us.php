@@ -249,8 +249,29 @@
                                 <input type="tel" name="phone" required>
                             </div>
                             <div class="form-group">
-                                <label>Location</label>
-                                <input type="text" name="location" placeholder="City or region">
+                                <label><i class="fa-solid fa-truck"></i> Pick Up or Delivery *</label>
+                                <select name="pickup_delivery" id="pickup_delivery" required>
+                                    <option value="">Select Option</option>
+                                    <option value="pickup_onsite">We pick up from your site</option>
+                                    <option value="deliver_to_us">I will deliver to your yard</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row" id="pickup_fields" style="display: none;">
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-location-dot"></i> Pick Up Address</label>
+                                <input type="text" name="location" id="pickup_address" placeholder="Enter full address for pickup">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-calendar-days"></i> Preferred Pick Up Date</label>
+                                <div class="date-input-wrapper">
+                                    <i class="fa-solid fa-calendar"></i>
+                                    <input type="date" name="pickup_date" id="pickup_date" min="<?php echo date('Y-m-d'); ?>" placeholder="dd/mm/yyyy">
+                                </div>
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    <i class="fa-solid fa-info-circle"></i> Optional - Select your preferred collection date
+                                </small>
                             </div>
                         </div>
                         
@@ -262,27 +283,6 @@
                             <div class="form-group">
                                 <label>Quantity *</label>
                                 <input type="text" name="quantity" placeholder="e.g., 10 units, 50 sqm" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><i class="fa-solid fa-calendar-days"></i> Preferred Pick Up Date</label>
-                                <div class="date-input-wrapper">
-                                    <i class="fa-solid fa-calendar"></i>
-                                    <input type="date" name="pickup_date" min="<?php echo date('Y-m-d'); ?>" placeholder="dd/mm/yyyy">
-                                </div>
-                                <small style="color: #666; display: block; margin-top: 5px;">
-                                    <i class="fa-solid fa-info-circle"></i> Optional - Select your preferred collection date
-                                </small>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fa-solid fa-truck"></i> Pick Up or Delivery *</label>
-                                <select name="pickup_delivery" required>
-                                    <option value="">Select Option</option>
-                                    <option value="pickup_onsite">We pick up from your site</option>
-                                    <option value="deliver_to_us">I will deliver to your yard</option>
-                                </select>
                             </div>
                         </div>
                         
@@ -421,6 +421,28 @@
                 showToast('Photo removed', 'info');
             }
         };
+        
+        // Toggle pickup address and date fields based on selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const pickupDeliverySelect = document.getElementById('pickup_delivery');
+            const pickupFields = document.getElementById('pickup_fields');
+            const pickupAddress = document.getElementById('pickup_address');
+            const pickupDate = document.getElementById('pickup_date');
+            
+            if (pickupDeliverySelect) {
+                pickupDeliverySelect.addEventListener('change', function() {
+                    if (this.value === 'pickup_onsite') {
+                        pickupFields.style.display = 'flex';
+                        pickupAddress.required = true;
+                    } else {
+                        pickupFields.style.display = 'none';
+                        pickupAddress.required = false;
+                        pickupAddress.value = '';
+                        pickupDate.value = '';
+                    }
+                });
+            }
+        });
         
         // Set up date input to show DD/MM/YYYY format hint
         document.addEventListener('DOMContentLoaded', function() {
