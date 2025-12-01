@@ -4,8 +4,18 @@
  * Handles sell-to-us form submissions with file uploads
  */
 
+// Start output buffering to prevent any accidental output
+ob_start();
+
+// Suppress errors in output
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../services/EmailService.php';
+
+// Clean any output that might have occurred
+ob_clean();
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -108,13 +118,18 @@ try {
         error_log("Sell to us email failed: " . $emailResult['error']);
     }
     
+    // Clean buffer and output JSON
+    ob_clean();
     echo json_encode([
         'success' => true,
         'message' => 'Thank you! We have received your submission and will contact you shortly.'
     ]);
+    ob_end_flush();
     
 } catch (Exception $e) {
     error_log("Sell to us form error: " . $e->getMessage());
+    ob_clean();
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'An error occurred. Please try again.']);
+    ob_end_flush();
 }

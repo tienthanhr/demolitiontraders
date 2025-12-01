@@ -342,7 +342,11 @@
                 
                 // Check if adding these files would exceed the limit
                 if (selectedFiles.length + files.length > 5) {
-                    showToast('Maximum 5 photos allowed', 'warning');
+                    if (typeof showToast === 'function') {
+                        showToast('Maximum 5 photos allowed', 'warning');
+                    } else {
+                        alert('Maximum 5 photos allowed');
+                    }
                     return;
                 }
                 
@@ -365,15 +369,25 @@
                     photoItem.className = 'photo-preview-item';
                     photoItem.dataset.fileName = file.name;
                     
-                    photoItem.innerHTML = `
-                        <img src="${e.target.result}" alt="${file.name}">
-                        <button type="button" class="remove-photo" onclick="removePhoto('${file.name}')">
-                            <i class="fa-solid fa-times"></i>
-                        </button>
-                        <div class="photo-info">
-                            ${formatFileSize(file.size)}
-                        </div>
-                    `;
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = file.name;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'remove-photo';
+                    removeBtn.innerHTML = '<i class="fa-solid fa-times"></i>';
+                    removeBtn.addEventListener('click', function() {
+                        removePhoto(file.name);
+                    });
+                    
+                    const photoInfo = document.createElement('div');
+                    photoInfo.className = 'photo-info';
+                    photoInfo.textContent = formatFileSize(file.size);
+                    
+                    photoItem.appendChild(img);
+                    photoItem.appendChild(removeBtn);
+                    photoItem.appendChild(photoInfo);
                     
                     previewContainer.appendChild(photoItem);
                 };
@@ -394,14 +408,18 @@
             selectedFiles = selectedFiles.filter(file => file.name !== fileName);
             
             // Remove preview item
-            const previewItem = document.querySelector(`.photo-preview-item[data-file-name="${fileName}"]`);
-            if (previewItem) {
-                previewItem.style.opacity = '0';
-                previewItem.style.transform = 'scale(0.8)';
-                setTimeout(() => previewItem.remove(), 300);
-            }
+            const previewItems = document.querySelectorAll('.photo-preview-item');
+            previewItems.forEach(item => {
+                if (item.dataset.fileName === fileName) {
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.8)';
+                    setTimeout(() => item.remove(), 300);
+                }
+            });
             
-            showToast('Photo removed', 'info');
+            if (typeof showToast === 'function') {
+                showToast('Photo removed', 'info');
+            }
         };
         
         // Set up date input to show DD/MM/YYYY format hint
