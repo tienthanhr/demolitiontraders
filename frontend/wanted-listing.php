@@ -145,21 +145,46 @@
                     body: JSON.stringify(data)
                 });
                 
-                const result = await response.json();
+                // Log the raw response for debugging
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Response text:', responseText);
+                    throw new Error('Invalid JSON response from server');
+                }
                 
                 if (response.ok && result.success) {
                     let message = result.message;
                     if (result.matched_products && result.matched_products > 0) {
                         message += ` We found ${result.matched_products} similar items and added them to your wishlist!`;
                     }
-                    showToast(message, 'success');
+                    if (typeof showToast === 'function') {
+                        showToast(message, 'success');
+                    } else {
+                        alert(message);
+                    }
                     this.reset();
                 } else {
-                    showToast(result.error || 'Failed to submit. Please try again.', 'error');
+                    const errorMsg = result.error || 'Failed to submit. Please try again.';
+                    if (typeof showToast === 'function') {
+                        showToast(errorMsg, 'error');
+                    } else {
+                        alert('Error: ' + errorMsg);
+                    }
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showToast('An error occurred. Please try again.', 'error');
+                const errorMsg = 'An error occurred. Please try again.';
+                if (typeof showToast === 'function') {
+                    showToast(errorMsg, 'error');
+                } else {
+                    alert(errorMsg);
+                }
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;

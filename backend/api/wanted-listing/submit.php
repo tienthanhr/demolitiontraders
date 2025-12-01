@@ -7,10 +7,22 @@
  * - Sends email notification to admin and user
  */
 
+// Start output buffering and clean any existing output
+while (ob_get_level()) {
+    ob_end_clean();
+}
+ob_start();
+
+// Suppress all errors from being displayed
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(0);
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../services/EmailService.php';
 
-header('Content-Type: application/json');
+// Set headers before any output
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -141,10 +153,26 @@ try {
         $response['message'] .= " We found " . count($matchedProducts) . " similar items and added them to your wishlist.";
     }
     
-    echo json_encode($response);
+    // Clean buffer and output JSON
+    $output = ob_get_clean();
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    
+    exit;
     
 } catch (Exception $e) {
     error_log("Wanted listing form error: " . $e->getMessage());
+    
+    // Clean buffer
+    if (ob_get_level()) {
+        ob_end_clean();
+    }
+    
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'An error occurred. Please try again.']);
+    echo json_encode([
+        'success' => false, 
+        'error' => 'An error occurred. Please try again.'
+    ], JSON_UNESCAPED_UNICODE);
+    
+    exit;
 }
