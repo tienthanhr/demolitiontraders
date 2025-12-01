@@ -144,23 +144,33 @@
         document.getElementById('sell-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
             const formData = new FormData(this);
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/sell-to-us/submit', {
+                const response = await fetch('/demolitiontraders/backend/api/sell-to-us/submit.php', {
                     method: 'POST',
                     body: formData
                 });
                 
-                if (response.ok) {
-                    alert('Thank you! Your submission has been received. We\'ll review your items and contact you shortly.');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showToast('Thank you! Your submission has been received. We\'ll review your items and contact you shortly.', 'success');
                     this.reset();
                 } else {
-                    alert('Failed to submit. Please try again.');
+                    showToast(result.error || 'Failed to submit. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
     </script>

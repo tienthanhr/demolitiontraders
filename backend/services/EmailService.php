@@ -491,4 +491,369 @@ HTML;
             return false;
         }
     }
+    
+    /**
+     * Send Contact Form Email to Admin
+     */
+    public function sendContactFormEmail($data) {
+        if (!$this->config['enabled']) {
+            return ['success' => false, 'error' => 'Email sending is disabled'];
+        }
+        
+        try {
+            $adminEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : 'info@demolitiontraders.co.nz';
+            
+            $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #2f3192; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px; }
+        .field { margin-bottom: 15px; }
+        .label { font-weight: bold; color: #2f3192; }
+        .value { margin-top: 5px; padding: 10px; background: #f8f9fa; border-left: 3px solid #2f3192; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h2 style="margin: 0;">New Contact Form Submission</h2>
+            </div>
+            
+            <div class="field">
+                <div class="label">Name:</div>
+                <div class="value">{$data['name']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Email:</div>
+                <div class="value"><a href="mailto:{$data['email']}">{$data['email']}</a></div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Phone:</div>
+                <div class="value">{$data['phone']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Subject:</div>
+                <div class="value">{$data['subject']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Message:</div>
+                <div class="value">{$data['message']}</div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                <strong>Action Required:</strong> Please reply to this customer at {$data['email']}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+            
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($adminEmail);
+            $this->mailer->addReplyTo($data['email'], $data['name']);
+            $this->mailer->Subject = "New Contact Form: {$data['subject']}";
+            $this->mailer->Body = $html;
+            $this->mailer->send();
+            
+            error_log("Contact form email sent to admin");
+            return ['success' => true, 'message' => 'Email sent successfully'];
+            
+        } catch (Exception $e) {
+            error_log("Failed to send contact form email: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Send Sell to Us Email to Admin
+     */
+    public function sendSellToUsEmail($data) {
+        if (!$this->config['enabled']) {
+            return ['success' => false, 'error' => 'Email sending is disabled'];
+        }
+        
+        try {
+            $adminEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : 'info@demolitiontraders.co.nz';
+            
+            $photosHtml = '';
+            if (!empty($data['photos'])) {
+                $photosHtml = '<div class="field"><div class="label">Photos:</div><div class="value">';
+                foreach ($data['photos'] as $photo) {
+                    $photosHtml .= '<div><a href="' . $_SERVER['HTTP_HOST'] . '/' . $photo . '">' . basename($photo) . '</a></div>';
+                }
+                $photosHtml .= '</div></div>';
+            }
+            
+            $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #28a745; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px; }
+        .field { margin-bottom: 15px; }
+        .label { font-weight: bold; color: #28a745; }
+        .value { margin-top: 5px; padding: 10px; background: #f8f9fa; border-left: 3px solid #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h2 style="margin: 0;">New Sell to Us Submission</h2>
+            </div>
+            
+            <div class="field">
+                <div class="label">Name:</div>
+                <div class="value">{$data['name']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Email:</div>
+                <div class="value"><a href="mailto:{$data['email']}">{$data['email']}</a></div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Phone:</div>
+                <div class="value">{$data['phone']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Location:</div>
+                <div class="value">{$data['location']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Item Description:</div>
+                <div class="value">{$data['description']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Condition:</div>
+                <div class="value">{$data['condition']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Quantity:</div>
+                <div class="value">{$data['quantity']}</div>
+            </div>
+            
+            {$photosHtml}
+            
+            <div style="margin-top: 20px; padding: 15px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
+                <strong>Action Required:</strong> Review the items and contact the seller at {$data['phone']} or {$data['email']}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+            
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($adminEmail);
+            $this->mailer->addReplyTo($data['email'], $data['name']);
+            $this->mailer->Subject = "New Sell to Us Submission from {$data['name']}";
+            $this->mailer->Body = $html;
+            $this->mailer->send();
+            
+            error_log("Sell to us email sent to admin");
+            return ['success' => true, 'message' => 'Email sent successfully'];
+            
+        } catch (Exception $e) {
+            error_log("Failed to send sell to us email: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Send Wanted Listing Email to Admin
+     */
+    public function sendWantedListingEmail($data) {
+        if (!$this->config['enabled']) {
+            return ['success' => false, 'error' => 'Email sending is disabled'];
+        }
+        
+        try {
+            $adminEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : 'info@demolitiontraders.co.nz';
+            
+            $userStatus = $data['user_id'] ? "Registered User (ID: {$data['user_id']})" : "Guest";
+            $notifyStatus = $data['notify'] ? "Yes" : "No";
+            
+            $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #ff6b35; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px; }
+        .field { margin-bottom: 15px; }
+        .label { font-weight: bold; color: #ff6b35; }
+        .value { margin-top: 5px; padding: 10px; background: #f8f9fa; border-left: 3px solid #ff6b35; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h2 style="margin: 0;">New Wanted Listing Submission</h2>
+            </div>
+            
+            <div class="field">
+                <div class="label">Name:</div>
+                <div class="value">{$data['name']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Email:</div>
+                <div class="value"><a href="mailto:{$data['email']}">{$data['email']}</a></div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Phone:</div>
+                <div class="value">{$data['phone']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">User Status:</div>
+                <div class="value">{$userStatus}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Category:</div>
+                <div class="value">{$data['category']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Item Description:</div>
+                <div class="value">{$data['description']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Quantity:</div>
+                <div class="value">{$data['quantity']}</div>
+            </div>
+            
+            <div class="field">
+                <div class="label">Email Notifications:</div>
+                <div class="value">{$notifyStatus}</div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                <strong>Action Required:</strong> When similar items arrive, contact {$data['name']} at {$data['email']} or {$data['phone']}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+            
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($adminEmail);
+            $this->mailer->addReplyTo($data['email'], $data['name']);
+            $this->mailer->Subject = "New Wanted Listing: {$data['category']} - {$data['name']}";
+            $this->mailer->Body = $html;
+            $this->mailer->send();
+            
+            error_log("Wanted listing email sent to admin");
+            return ['success' => true, 'message' => 'Email sent successfully'];
+            
+        } catch (Exception $e) {
+            error_log("Failed to send wanted listing email: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Send Wanted Listing Confirmation to User
+     */
+    public function sendWantedListingConfirmationEmail($email, $name, $description) {
+        if (!$this->config['enabled']) {
+            return ['success' => false, 'error' => 'Email sending is disabled'];
+        }
+        
+        try {
+            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $email;
+            
+            $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #2f3192; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px; }
+        .content { font-size: 16px; }
+        .item-box { background: #f8f9fa; padding: 15px; border-left: 4px solid #2f3192; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h2 style="margin: 0;">Wanted Listing Confirmation</h2>
+            </div>
+            
+            <div class="content">
+                <p>Hi {$name},</p>
+                
+                <p>Thank you for submitting your wanted listing to Demolition Traders!</p>
+                
+                <p><strong>You're looking for:</strong></p>
+                <div class="item-box">
+                    {$description}
+                </div>
+                
+                <p>We'll keep an eye out for items matching your description and notify you by email when we have a match.</p>
+                
+                <p>Our stock changes regularly as we receive new materials from demolition sites across New Zealand, so check back often!</p>
+                
+                <p>If you have any questions, feel free to contact us:</p>
+                <ul>
+                    <li>Phone: 07 847 4989</li>
+                    <li>Email: info@demolitiontraders.co.nz</li>
+                    <li>Freephone: 0800 DEMOLITION</li>
+                </ul>
+                
+                <p>Best regards,<br>
+                <strong>Demolition Traders Team</strong></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+            
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($toEmail, $name);
+            $this->mailer->Subject = "Your Wanted Listing - Demolition Traders";
+            $this->mailer->Body = $html;
+            $this->mailer->send();
+            
+            error_log("Wanted listing confirmation sent to: $toEmail");
+            return ['success' => true, 'message' => 'Confirmation email sent'];
+            
+        } catch (Exception $e) {
+            error_log("Failed to send wanted listing confirmation: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }

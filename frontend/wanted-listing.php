@@ -130,25 +130,39 @@
         document.getElementById('wanted-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/wanted-listing/submit', {
+                const response = await fetch('/demolitiontraders/backend/api/wanted-listing/submit.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 
-                if (response.ok) {
-                    alert('Thank you! Your wanted item has been submitted. We\'ll contact you when we have a match.');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    let message = result.message;
+                    if (result.matched_products && result.matched_products > 0) {
+                        message += ` We found ${result.matched_products} similar items and added them to your wishlist!`;
+                    }
+                    showToast(message, 'success');
                     this.reset();
                 } else {
-                    alert('Failed to submit. Please try again.');
+                    showToast(result.error || 'Failed to submit. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
         

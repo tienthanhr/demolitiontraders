@@ -150,25 +150,35 @@
         document.getElementById('contact-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/contact/submit', {
+                const response = await fetch('/demolitiontraders/backend/api/contact/submit.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 
-                if (response.ok) {
-                    alert('Thank you for your message! We\'ll get back to you soon.');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showToast('Thank you for your message! We\'ll get back to you soon.', 'success');
                     this.reset();
                 } else {
-                    alert('Failed to send message. Please try again.');
+                    showToast(result.error || 'Failed to send message. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again or contact us directly.');
+                showToast('An error occurred. Please try again or contact us directly.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         });
         
