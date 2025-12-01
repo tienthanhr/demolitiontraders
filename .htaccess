@@ -1,10 +1,40 @@
 RewriteEngine On
 RewriteBase /
 
-# Nếu file hoặc thư mục có thật → load bình thường
+##### ALLOW STATIC FILES #####
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ [NC]
+RewriteRule .* - [L]
+
+RewriteCond %{REQUEST_URI} ^/(frontend|backend|uploads|cache|Demolition Traders_files) [NC]
+RewriteRule .* - [L]
+
+##### DEFAULT PHP ROUTING #####
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Tất cả request còn lại → đưa vào index.php
 RewriteRule ^ index.php [L]
+
+##### SECURITY BUT NON-BREAKING #####
+Options -Indexes
+
+<Files .htaccess>
+    Require all denied
+</Files>
+
+##### BASIC HEADERS (SAFE ONLY) #####
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "no-referrer-when-downgrade"
+</IfModule>
+
+##### REMOVE BROKEN CSP (CAUSES CSS TO BREAK) #####
+# DO NOT ENABLE CSP UNLESS PROPERLY CONFIGURED
+
+##### PHP DEFAULT SETTINGS #####
+php_value upload_max_filesize 20M
+php_value post_max_size 25M
+php_value memory_limit 128M
+php_value max_execution_time 60
+
