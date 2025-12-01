@@ -7,6 +7,73 @@
     <base href="/demolitiontraders/frontend/">
     <link rel="stylesheet" href="assets/css/new-style.css?v=4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom date picker styling */
+        input[type="date"] {
+            position: relative;
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="date"]:hover {
+            border-color: #2f3192;
+        }
+        
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #2f3192;
+            box-shadow: 0 0 0 3px rgba(47, 49, 146, 0.1);
+        }
+        
+        /* Style for the calendar icon */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            opacity: 0.6;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+            background: #f0f0f0;
+        }
+        
+        /* Add icon styling for date field */
+        .date-input-wrapper {
+            position: relative;
+        }
+        
+        .date-input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #2f3192;
+            pointer-events: none;
+        }
+        
+        .date-input-wrapper input[type="date"] {
+            padding-left: 45px;
+        }
+        
+        /* Hide placeholder on focus */
+        input[type="date"]:focus::-webkit-datetime-edit-text,
+        input[type="date"]:focus::-webkit-datetime-edit-month-field,
+        input[type="date"]:focus::-webkit-datetime-edit-day-field,
+        input[type="date"]:focus::-webkit-datetime-edit-year-field {
+            color: #333;
+        }
+        
+        input[type="date"]:not(:focus):not(:valid) {
+            color: #999;
+        }
+    </style>
 </head>
 <body>
     <?php include 'components/header.php'; ?>
@@ -117,12 +184,17 @@
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Preferred Pick Up Date</label>
-                                <input type="date" name="pickup_date" min="<?php echo date('Y-m-d'); ?>">
-                                <small>Optional - When would you like us to collect the items?</small>
+                                <label><i class="fa-solid fa-calendar-days"></i> Preferred Pick Up Date</label>
+                                <div class="date-input-wrapper">
+                                    <i class="fa-solid fa-calendar"></i>
+                                    <input type="date" name="pickup_date" min="<?php echo date('Y-m-d'); ?>" placeholder="dd/mm/yyyy">
+                                </div>
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    <i class="fa-solid fa-info-circle"></i> Optional - Select your preferred collection date
+                                </small>
                             </div>
                             <div class="form-group">
-                                <label>Pick Up or Delivery *</label>
+                                <label><i class="fa-solid fa-truck"></i> Pick Up or Delivery *</label>
                                 <select name="pickup_delivery" required>
                                     <option value="">Select Option</option>
                                     <option value="pickup_onsite">We pick up from your site</option>
@@ -168,6 +240,30 @@
     <?php include 'components/toast-notification.php'; ?>
     
     <script>
+        // Set up date input to show DD/MM/YYYY format hint
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.querySelector('input[type="date"]');
+            if (dateInput) {
+                // Add a custom attribute for better UX
+                dateInput.setAttribute('data-placeholder', 'dd/mm/yyyy');
+                
+                // Show formatted date in helper text when date is selected
+                dateInput.addEventListener('change', function() {
+                    if (this.value) {
+                        const date = new Date(this.value);
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        
+                        const helperText = this.parentElement.nextElementSibling;
+                        if (helperText && helperText.tagName === 'SMALL') {
+                            helperText.innerHTML = `<i class="fa-solid fa-check-circle" style="color: #28a745;"></i> Pick up date: ${day}/${month}/${year}`;
+                        }
+                    }
+                });
+            }
+        });
+        
         document.getElementById('sell-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
