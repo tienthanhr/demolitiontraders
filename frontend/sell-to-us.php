@@ -73,6 +73,89 @@
         input[type="date"]:not(:focus):not(:valid) {
             color: #999;
         }
+        
+        /* Photo preview styling */
+        .photo-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .photo-preview-item {
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f8f9fa;
+            aspect-ratio: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-preview-item:hover {
+            border-color: #2f3192;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .photo-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .photo-preview-item .remove-photo {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .photo-preview-item .remove-photo:hover {
+            background: #dc3545;
+            transform: scale(1.1);
+        }
+        
+        .photo-preview-item .photo-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .btn.btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn.btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -209,9 +292,15 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Upload Photos</label>
-                            <input type="file" name="photos[]" multiple accept="image/*">
-                            <small>You can select multiple photos (max 5)</small>
+                            <label><i class="fa-solid fa-camera"></i> Upload Photos</label>
+                            <input type="file" id="photo-upload" name="photos[]" multiple accept="image/*" style="display: none;">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('photo-upload').click()">
+                                <i class="fa-solid fa-upload"></i> Choose Photos
+                            </button>
+                            <small style="display: block; margin-top: 8px; color: #666;">
+                                <i class="fa-solid fa-info-circle"></i> You can select up to 5 photos (JPG, PNG)
+                            </small>
+                            <div id="photo-preview" class="photo-preview-container"></div>
                         </div>
                         
                         <button type="submit" class="btn btn-primary">Submit for Quote</button>
@@ -240,6 +329,81 @@
     <?php include 'components/toast-notification.php'; ?>
     
     <script>
+        // Photo preview and management
+        let selectedFiles = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const photoInput = document.getElementById('photo-upload');
+            const previewContainer = document.getElementById('photo-preview');
+            
+            // Handle file selection
+            photoInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                
+                // Check if adding these files would exceed the limit
+                if (selectedFiles.length + files.length > 5) {
+                    showToast('Maximum 5 photos allowed', 'warning');
+                    return;
+                }
+                
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        selectedFiles.push(file);
+                        displayPhotoPreview(file);
+                    }
+                });
+                
+                // Clear the input so the same file can be selected again if needed
+                photoInput.value = '';
+            });
+            
+            function displayPhotoPreview(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const photoItem = document.createElement('div');
+                    photoItem.className = 'photo-preview-item';
+                    photoItem.dataset.fileName = file.name;
+                    
+                    photoItem.innerHTML = `
+                        <img src="${e.target.result}" alt="${file.name}">
+                        <button type="button" class="remove-photo" onclick="removePhoto('${file.name}')">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                        <div class="photo-info">
+                            ${formatFileSize(file.size)}
+                        </div>
+                    `;
+                    
+                    previewContainer.appendChild(photoItem);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+        });
+        
+        // Remove photo function (global scope for onclick)
+        window.removePhoto = function(fileName) {
+            // Remove from selectedFiles array
+            selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+            
+            // Remove preview item
+            const previewItem = document.querySelector(`.photo-preview-item[data-file-name="${fileName}"]`);
+            if (previewItem) {
+                previewItem.style.opacity = '0';
+                previewItem.style.transform = 'scale(0.8)';
+                setTimeout(() => previewItem.remove(), 300);
+            }
+            
+            showToast('Photo removed', 'info');
+        };
+        
         // Set up date input to show DD/MM/YYYY format hint
         document.addEventListener('DOMContentLoaded', function() {
             const dateInput = document.querySelector('input[type="date"]');
@@ -274,6 +438,12 @@
             
             const formData = new FormData(this);
             
+            // Remove the original photos[] field and add selected files
+            formData.delete('photos[]');
+            selectedFiles.forEach((file, index) => {
+                formData.append('photos[]', file);
+            });
+            
             try {
                 const response = await fetch('/demolitiontraders/backend/api/sell-to-us/submit.php', {
                     method: 'POST',
@@ -285,6 +455,10 @@
                 if (response.ok && result.success) {
                     showToast('Thank you! Your submission has been received. We\'ll review your items and contact you shortly.', 'success');
                     this.reset();
+                    
+                    // Clear photo preview
+                    selectedFiles = [];
+                    document.getElementById('photo-preview').innerHTML = '';
                 } else {
                     showToast(result.error || 'Failed to submit. Please try again.', 'error');
                 }
