@@ -87,10 +87,10 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             <button class="btn btn-success" onclick="exportProducts()" style="padding: 15px;">
                 <i class="fas fa-download"></i><br>Export Products
             </button>
-            <button class="btn btn-warning" onclick="window.print()" style="padding: 15px;">
+            <button class="btn btn-warning" onclick="printReport()" style="padding: 15px;">
                 <i class="fas fa-print"></i><br>Print Report
             </button>
-            <button class="btn btn-danger" onclick="if(confirm('Are you sure you want to logout?')) window.location.href='../../logout.php'" style="padding: 15px;">
+            <button class="btn btn-danger" type="button" onclick="logoutConfirm(); return false;" style="padding: 15px;">
                 <i class="fas fa-sign-out-alt"></i><br>Logout
             </button>
         </div>
@@ -98,6 +98,19 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
 </div>
 
 <script>
+async function logoutConfirm() {
+    console.log('logoutConfirm called');
+    const result = await showConfirm('Are you sure you want to logout?', 'Logout', true);
+    console.log('confirm result:', result);
+    if (result === true) {
+        console.log('Redirecting to logout...');
+        window.location.href = '../../logout.php';
+    } else {
+        console.log('Logout cancelled');
+    }
+    return false;
+}
+
 // Load opening hours from Google Places API
 async function loadOpeningHours() {
     try {
@@ -154,14 +167,43 @@ function syncIdealPOS() {
     }
 }
 
-function clearCache() {
-    if (confirm('Clear website cache?')) {
-        alert('Cache cleared successfully!');
+async function clearCache() {
+    const confirmed = await showConfirm(
+        'Are you sure you want to clear the website cache?',
+        'Clear Cache',
+        false
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        const response = await fetch('/demolitiontraders/backend/api/admin/clear-cache.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccess(`Cache cleared successfully!\n${result.files_deleted} files deleted (${result.size_freed})`);
+        } else {
+            showError('Failed to clear cache: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error clearing cache:', error);
+        showError('Server error while clearing cache');
     }
 }
 
 function exportProducts() {
-    alert('Exporting products... (Feature under development)');
+    // Open export URL in new window to download CSV
+    showInfo('Preparing products export...');
+    window.location.href = '/demolitiontraders/backend/api/admin/export-products.php';
+}
+
+function printReport() {
+    // Open print report in new window
+    window.open('/demolitiontraders/frontend/admin/print-report.php', '_blank');
 }
 
 // Initialize
@@ -170,5 +212,6 @@ loadSettingsStats();
 </script>
         </main>
     </div>
+    <?php include '../components/toast-notification.php'; ?>
 </body>
 </html>

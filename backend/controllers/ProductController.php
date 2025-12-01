@@ -10,20 +10,26 @@ class ProductController {
     public function __construct() {
         $this->db = Database::getInstance();
     }
-    
+
     /**
      * Get all products with filters
      */
     public function index($params = []) {
-        $where = ['p.is_active = 1'];
+        $where = [];
         $queryParams = [];
         $plywoodCategoryId = null;
 
-        // Width/Height filter from description (expects format like '1800 x 2000' or 'W x H')
+        // Status filter - check is_active parameter
+        if (isset($params['is_active'])) {
+            $where[] = 'p.is_active = :is_active';
+            $queryParams['is_active'] = $params['is_active'];
+        } else {
+            // Default: only show active products for non-admin views
+            $where[] = 'p.is_active = 1';
+        }
+
+        // Width/Height filter from description
         if (!empty($params['min_width']) || !empty($params['max_width']) || !empty($params['min_height']) || !empty($params['max_height'])) {
-            // Use REGEXP_SUBSTR for MySQL 8+ or SUBSTRING_INDEX for MySQL 5.x
-            // Extract width (first number) and height (second number) from description
-            // Example: description = '1800 x 2000' => width = 1800, height = 2000
             if (!empty($params['min_width'])) {
                 $where[] = "CAST(TRIM(SUBSTRING_INDEX(p.description, 'x', 1)) AS UNSIGNED) >= :min_width";
                 $queryParams['min_width'] = $params['min_width'];
@@ -42,19 +48,16 @@ class ProductController {
             }
         }
         
-        // Category filter - handle both slug and ID
+        // Category filter
         if (!empty($params['category'])) {
-            // Check if category is numeric (ID) or string (slug)
             if (is_numeric($params['category'])) {
                 $where[] = 'p.category_id = :category_id';
                 $queryParams['category_id'] = $params['category'];
-                // Check if this is plywood category
                 $cat = $this->db->fetchOne("SELECT slug FROM categories WHERE id = :id", ['id' => $params['category']]);
                 if ($cat && $cat['slug'] === 'plywood') {
                     $plywoodCategoryId = $params['category'];
                 }
             } else {
-                // It's a slug, need to lookup category ID
                 $categorySql = "SELECT id, slug FROM categories WHERE slug = :category_slug";
                 $category = $this->db->fetchOne($categorySql, ['category_slug' => $params['category']]);
                 if ($category) {
@@ -64,7 +67,6 @@ class ProductController {
                         $plywoodCategoryId = $category['id'];
                     }
                 } else {
-                    // Invalid slug, return empty results
                     return [
                         'data' => [],
                         'pagination' => [
@@ -87,9 +89,8 @@ class ProductController {
             $queryParams['search_sku'] = $searchTerm;
         }
         
-        // Condition filter
+        // Treatment filter for plywood
         if (!empty($params['treatment'])) {
-            // Nếu là plywood thì lọc theo description
             if ($plywoodCategoryId) {
                 if ($params['treatment'] === 'treated') {
                     $where[] = "(LOWER(p.description) LIKE '%treated%' AND LOWER(p.description) NOT LIKE '%untreated%')";
@@ -98,17 +99,20 @@ class ProductController {
                 }
             }
         }
-        // Condition filter (giữ nguyên cho các loại khác)
+        
+        // Condition filter
         if (!empty($params['condition']) && !$plywoodCategoryId) {
             $where[] = 'p.condition_type = :condition';
             $queryParams['condition'] = $params['condition'];
         }
         
-        // Featured filter
-        if (isset($params['featured']) && $params['featured'] == '1') {
-            $where[] = 'p.is_featured = 1';
-        }
-        
+     // Featured filter - Support both 'featured' and 'is_featured'
+if (isset($params['is_featured']) || isset($params['featured'])) {
+    $featuredValue = $params['is_featured'] ?? $params['featured'];
+    if ($featuredValue == '1' || $featuredValue === 1 || $featuredValue === true) {
+        $where[] = 'p.is_featured = 1';
+    }
+}
         // Price range
         if (!empty($params['min_price'])) {
             $where[] = 'p.price >= :min_price';
@@ -119,7 +123,6 @@ class ProductController {
             $queryParams['max_price'] = $params['max_price'];
         }
         
-        // Build WHERE clause
         $whereClause = implode(' AND ', $where);
         
         // Sorting
@@ -143,7 +146,8 @@ class ProductController {
         
         // Pagination
         $page = max(1, intval($params['page'] ?? 1));
-        $perPage = min(100, intval($params['per_page'] ?? 20));
+        // Support both 'per_page' and 'limit' parameters, max 500 for recommendations
+        $perPage = min(500, intval($params['per_page'] ?? $params['limit'] ?? 20));
         $offset = ($page - 1) * $perPage;
         
         // Get total count
@@ -176,18 +180,17 @@ class ProductController {
      * Get single product
      */
     public function show($id) {
-        // Get by ID or slug
         if (is_numeric($id)) {
             $sql = "SELECT p.*, c.name as category_name 
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.id
-                    WHERE p.id = :id AND p.is_active = 1";
+                    WHERE p.id = :id";
             $product = $this->db->fetchOne($sql, ['id' => $id]);
         } else {
             $sql = "SELECT p.*, c.name as category_name 
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.id
-                    WHERE p.slug = :slug AND p.is_active = 1";
+                    WHERE p.slug = :slug";
             $product = $this->db->fetchOne($sql, ['slug' => $id]);
         }
         
@@ -195,13 +198,14 @@ class ProductController {
             throw new Exception('Product not found');
         }
         
-        // Get images
-        $product['images'] = $this->db->fetchAll(
-            "SELECT * FROM product_images WHERE product_id = :id ORDER BY display_order, id",
+        // Get images - FIX: Đổi tên field từ image_url thành image_path và trả về dưới key 'url'
+        $images = $this->db->fetchAll(
+            "SELECT id, image_url as url, is_primary FROM product_images WHERE product_id = :id ORDER BY is_primary DESC, display_order, id",
             ['id' => $product['id']]
         );
+        $product['images'] = $images;
         
-        // Get related products (same category)
+        // Get related products
         $product['related'] = $this->db->fetchAll(
             "SELECT p.*, 
              (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
@@ -218,76 +222,391 @@ class ProductController {
      * Create product (Admin only)
      */
     public function store($data) {
-        // Validate required fields
-        $required = ['sku', 'name', 'price'];
-        foreach ($required as $field) {
-            if (empty($data[$field])) {
-                throw new Exception("Field '{$field}' is required");
+        try {
+            $input = !empty($data) ? $data : $_POST;
+            
+            // Log raw input
+            $this->logDebug('[STORE START]', ['input' => $input, 'files' => $_FILES]);
+            
+            // Validate required fields
+            $required = ['name', 'price', 'category_id'];
+            foreach ($required as $field) {
+                if (empty($input[$field])) {
+                    throw new Exception("Field '{$field}' is required");
+                }
             }
+            
+            // Get allowed columns from database
+            $columnsResult = $this->db->fetchAll("DESCRIBE products");
+            $allowedColumns = array_column($columnsResult, 'Field');
+            
+            // Prepare product data
+            $productData = [];
+            $skipColumns = ['id', 'created_at', 'updated_at'];
+            
+            foreach ($allowedColumns as $col) {
+                if (in_array($col, $skipColumns)) continue;
+                
+                if (array_key_exists($col, $input) && $input[$col] !== '' && $input[$col] !== null) {
+                    $productData[$col] = $input[$col];
+                }
+            }
+            
+            // Cast numeric fields
+            if (isset($productData['price'])) $productData['price'] = (float)$productData['price'];
+            if (isset($productData['cost_price'])) $productData['cost_price'] = (float)$productData['cost_price'];
+            if (isset($productData['stock_quantity'])) $productData['stock_quantity'] = (int)$productData['stock_quantity'];
+            if (isset($productData['category_id'])) $productData['category_id'] = (int)$productData['category_id'];
+            if (isset($productData['is_active'])) $productData['is_active'] = (int)$productData['is_active'];
+            if (isset($productData['is_featured'])) $productData['is_featured'] = (int)$productData['is_featured'];
+            if (isset($productData['show_collection_options'])) $productData['show_collection_options'] = (int)$productData['show_collection_options'];
+            
+            // Generate slug if not provided
+            if (empty($productData['slug'])) {
+                $productData['slug'] = $this->generateSlug($input['name']);
+            }
+            
+            // Use temp SKU if not provided
+            if (empty($productData['sku'])) {
+                $productData['sku'] = 'TEMP-' . uniqid();
+            }
+            
+            $this->logDebug('[STORE PREPARED DATA]', $productData);
+            
+            // Insert product
+            $productId = $this->db->insert('products', $productData);
+            
+            if (!$productId) {
+                throw new Exception('Failed to create product - database did not return insert ID');
+            }
+            
+            $this->logDebug('[STORE CREATED]', ['product_id' => $productId]);
+            
+            // Update SKU with proper format: DT-categoryId-productId
+            $finalSku = 'DT-' . $productData['category_id'] . '-' . $productId;
+            
+            // Check if SKU exists
+            $skuExists = $this->db->fetchOne(
+                'SELECT id FROM products WHERE sku = :sku AND id != :id', 
+                ['sku' => $finalSku, 'id' => $productId]
+            );
+            
+            if ($skuExists) {
+                $finalSku .= '-' . time();
+            }
+            
+            $this->db->query('UPDATE products SET sku = :sku WHERE id = :id', [
+                'sku' => $finalSku, 
+                'id' => $productId
+            ]);
+            
+            $this->logDebug('[STORE SKU UPDATED]', ['sku' => $finalSku]);
+            
+            // Handle image uploads
+            if (!empty($_FILES['product_images']['name'][0])) {
+                $this->logDebug('[STORE PROCESSING IMAGES]', $_FILES['product_images']);
+                $this->handleProductImages($productId, $_FILES['product_images'], true);
+            }
+            
+            // Return created product
+            $result = $this->show($productId);
+            
+            $this->logDebug('[STORE SUCCESS]', ['product_id' => $productId]);
+            
+            return [
+                'success' => true,
+                'message' => 'Product created successfully',
+                'data' => $result
+            ];
+            
+        } catch (Exception $e) {
+            $this->logDebug('[STORE ERROR]', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            throw $e;
         }
-        
-        // Generate slug
-        if (empty($data['slug'])) {
-            $data['slug'] = $this->generateSlug($data['name']);
-        }
-        
-        // Insert product
-        $productData = [
-            'sku' => $data['sku'],
-            'name' => $data['name'],
-            'slug' => $data['slug'],
-            'description' => $data['description'] ?? '',
-            'short_description' => $data['short_description'] ?? '',
-            'price' => $data['price'],
-            'cost_price' => $data['cost_price'] ?? null,
-            'compare_at_price' => $data['compare_at_price'] ?? null,
-            'category_id' => $data['category_id'] ?? null,
-            'stock_quantity' => $data['stock_quantity'] ?? 0,
-            'condition_type' => $data['condition_type'] ?? 'new',
-            'is_featured' => $data['is_featured'] ?? 0,
-            'is_active' => $data['is_active'] ?? 1
-        ];
-        
-        $productId = $this->db->insert('products', $productData);
-        
-        return $this->show($productId);
     }
     
     /**
      * Update product (Admin only)
      */
     public function update($id, $data) {
-        $product = $this->db->fetchOne("SELECT * FROM products WHERE id = :id", ['id' => $id]);
-        
-        if (!$product) {
-            throw new Exception('Product not found');
-        }
-        
-        // Update only provided fields
-        $updateData = [];
-        $allowedFields = ['sku', 'name', 'slug', 'description', 'short_description', 'price', 
-                          'cost_price', 'compare_at_price', 'category_id', 'stock_quantity', 
-                          'condition_type', 'is_featured', 'is_active'];
-        
-        foreach ($allowedFields as $field) {
-            if (isset($data[$field])) {
-                $updateData[$field] = $data[$field];
+        try {
+            $input = !empty($data) ? $data : $_POST;
+            
+            $this->logDebug('[UPDATE START]', ['id' => $id, 'input' => $input, 'files' => $_FILES]);
+            
+            // Check if product exists
+            $product = $this->db->fetchOne("SELECT * FROM products WHERE id = :id", ['id' => $id]);
+            if (!$product) {
+                throw new Exception('Product not found');
             }
+            
+            // Get allowed columns
+            $columnsResult = $this->db->fetchAll("DESCRIBE products");
+            $allowedColumns = array_column($columnsResult, 'Field');
+            
+            // Prepare update data
+            $updateData = [];
+            $skipColumns = ['id', 'created_at', 'updated_at'];
+            
+            foreach ($allowedColumns as $col) {
+                if (in_array($col, $skipColumns)) continue;
+                
+                if (array_key_exists($col, $input) && $input[$col] !== '' && $input[$col] !== null) {
+                    $updateData[$col] = $input[$col];
+                }
+            }
+            
+            // Cast numeric fields
+            if (isset($updateData['price'])) $updateData['price'] = (float)$updateData['price'];
+            if (isset($updateData['cost_price'])) $updateData['cost_price'] = (float)$updateData['cost_price'];
+            if (isset($updateData['stock_quantity'])) $updateData['stock_quantity'] = (int)$updateData['stock_quantity'];
+            if (isset($updateData['category_id'])) $updateData['category_id'] = (int)$updateData['category_id'];
+            if (isset($updateData['is_active'])) $updateData['is_active'] = (int)$updateData['is_active'];
+            if (isset($updateData['is_featured'])) $updateData['is_featured'] = (int)$updateData['is_featured'];
+            if (isset($updateData['show_collection_options'])) $updateData['show_collection_options'] = (int)$updateData['show_collection_options'];
+            
+            // Check SKU uniqueness
+            if (isset($updateData['sku'])) {
+                $skuExists = $this->db->fetchOne(
+                    'SELECT id FROM products WHERE sku = :sku AND id != :id', 
+                    ['sku' => $updateData['sku'], 'id' => $id]
+                );
+                if ($skuExists) {
+                    throw new Exception('SKU already exists');
+                }
+            }
+            
+            $this->logDebug('[UPDATE PREPARED DATA]', $updateData);
+            
+            // Update product
+            if (!empty($updateData)) {
+                $this->db->update('products', $updateData, 'id = :id', ['id' => $id]);
+            }
+            
+            // Handle removed images
+            if (!empty($input['removed_image_ids'])) {
+                $ids = is_string($input['removed_image_ids']) 
+                    ? json_decode($input['removed_image_ids'], true) 
+                    : $input['removed_image_ids'];
+                    
+                if (is_array($ids) && !empty($ids)) {
+                    $this->logDebug('[UPDATE REMOVING IMAGES]', $ids);
+                    $this->removeProductImages($ids);
+                }
+            }
+            
+            // Handle new images
+            if (!empty($_FILES['product_images']['name'][0])) {
+                $this->logDebug('[UPDATE ADDING IMAGES]', $_FILES['product_images']);
+                $this->handleProductImages($id, $_FILES['product_images'], false);
+            }
+            
+            $result = $this->show($id);
+            
+            $this->logDebug('[UPDATE SUCCESS]', ['product_id' => $id]);
+            
+            return [
+                'success' => true,
+                'message' => 'Product updated successfully',
+                'data' => $result
+            ];
+            
+        } catch (Exception $e) {
+            $this->logDebug('[UPDATE ERROR]', ['message' => $e->getMessage()]);
+            throw $e;
         }
-        
-        if (!empty($updateData)) {
-            $this->db->update('products', $updateData, 'id = :id', ['id' => $id]);
-        }
-        
-        return $this->show($id);
     }
     
     /**
      * Delete product (Admin only)
      */
     public function delete($id) {
+        // Delete product images first
+        $images = $this->db->fetchAll(
+            "SELECT id FROM product_images WHERE product_id = :id",
+            ['id' => $id]
+        );
+        
+        if ($images) {
+            $imageIds = array_column($images, 'id');
+            $this->removeProductImages($imageIds);
+        }
+        
+        // Delete product
         $this->db->delete('products', 'id = :id', ['id' => $id]);
-        return ['message' => 'Product deleted successfully'];
+        
+        return [
+            'success' => true,
+            'message' => 'Product deleted successfully'
+        ];
+    }
+    
+    /**
+     * Handle product image uploads
+     */
+    /**
+     * FINAL FIX - handleProductImages method
+     * Improved path handling and error logging
+     */
+    private function handleProductImages($productId, $files, $isPrimary = false) {
+        // CRITICAL: Use correct path based on your project location
+        // Your project is at: C:/xampp/htdocs/demolitiontraders/
+        
+        // Physical path on server
+        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/demolitiontraders/uploads/products/';
+        
+        // Create directory if doesn't exist
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+            $this->logDebug('[IMAGE DIR CREATED]', ['path' => $uploadDir]);
+        }
+        
+        // Check writable
+        if (!is_writable($uploadDir)) {
+            $this->logDebug('[IMAGE DIR NOT WRITABLE]', ['path' => $uploadDir]);
+            throw new Exception('Upload directory is not writable: ' . $uploadDir);
+        }
+        
+        $uploadedImages = [];
+        $order = 0;
+        
+        if (!isset($files['tmp_name']) || !is_array($files['tmp_name'])) {
+            $this->logDebug('[IMAGE UPLOAD ERROR]', ['error' => 'Invalid files array']);
+            return $uploadedImages;
+        }
+        
+        foreach ($files['tmp_name'] as $idx => $tmpName) {
+            // Check upload error
+            if (!isset($files['error'][$idx]) || $files['error'][$idx] !== UPLOAD_ERR_OK) {
+                $errorMsg = $files['error'][$idx] ?? 'Unknown';
+                $this->logDebug('[IMAGE UPLOAD ERROR]', [
+                    'index' => $idx,
+                    'error' => $errorMsg,
+                    'name' => $files['name'][$idx] ?? 'unknown'
+                ]);
+                continue;
+            }
+            
+            // Validate uploaded file
+            if (!is_uploaded_file($tmpName)) {
+                $this->logDebug('[NOT UPLOADED FILE]', ['tmp' => $tmpName]);
+                continue;
+            }
+            
+            // Validate extension
+            $originalName = $files['name'][$idx];
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            if (!in_array($ext, $allowedExts)) {
+                $this->logDebug('[INVALID EXTENSION]', ['ext' => $ext, 'file' => $originalName]);
+                continue;
+            }
+            
+            // Generate filename
+            $filename = 'prod_' . uniqid() . '.' . $ext;
+            $fullPath = $uploadDir . $filename;
+            
+            // Database path - MUST match URL structure
+            $dbPath = '/demolitiontraders/uploads/products/' . $filename;
+            
+            $this->logDebug('[ATTEMPTING UPLOAD]', [
+                'original' => $originalName,
+                'filename' => $filename,
+                'tmp_name' => $tmpName,
+                'full_path' => $fullPath,
+                'db_path' => $dbPath
+            ]);
+            
+            // Move file
+            if (move_uploaded_file($tmpName, $fullPath)) {
+                // Verify file exists
+                if (!file_exists($fullPath)) {
+                    $this->logDebug('[MOVE VERIFIED FAILED]', ['path' => $fullPath]);
+                    continue;
+                }
+                
+                // Set proper permissions
+                chmod($fullPath, 0644);
+                
+                // Insert to database
+                $insertId = $this->db->insert('product_images', [
+                    'product_id' => $productId,
+                    'image_url' => $dbPath,
+                    'is_primary' => ($isPrimary && $order === 0) ? 1 : 0,
+                    'display_order' => $order
+                ]);
+                
+                if ($insertId) {
+                    $uploadedImages[] = $dbPath;
+                    $order++;
+                    
+                    $this->logDebug('[UPLOAD SUCCESS]', [
+                        'db_path' => $dbPath,
+                        'full_path' => $fullPath,
+                        'size_kb' => round(filesize($fullPath) / 1024, 2),
+                        'insert_id' => $insertId
+                    ]);
+                } else {
+                    $this->logDebug('[DB INSERT FAILED]', ['path' => $dbPath]);
+                    @unlink($fullPath);
+                }
+            } else {
+                $lastError = error_get_last();
+                $this->logDebug('[MOVE FAILED]', [
+                    'from' => $tmpName,
+                    'to' => $fullPath,
+                    'last_error' => $lastError
+                ]);
+            }
+        }
+        
+        return $uploadedImages;
+    }
+    
+    /**
+     * Remove product images
+     */
+    /**
+     * Improved removeProductImages method
+     * Avoids duplicate/unnecessary deletions and handles external images
+     */
+    private function removeProductImages($imageIds) {
+        if (!is_array($imageIds) || empty($imageIds)) return;
+        
+        foreach ($imageIds as $imgId) {
+            $img = $this->db->fetchOne(
+                'SELECT image_url FROM product_images WHERE id = :id', 
+                ['id' => $imgId]
+            );
+            
+            if ($img && !empty($img['image_url'])) {
+                // Build correct file path
+                $urlPath = $img['image_url'];
+                
+                // If path starts with http or https, skip deletion (external image)
+                if (preg_match('/^https?:\/\//', $urlPath)) {
+                    $this->logDebug('[SKIP EXTERNAL IMAGE]', ['url' => $urlPath]);
+                } else {
+                    // Remove leading slash and build full path
+                    $relativePath = ltrim($urlPath, '/');
+                    $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/' . $relativePath;
+                    
+                    if (file_exists($fullPath)) {
+                        if (@unlink($fullPath)) {
+                            $this->logDebug('[IMAGE DELETED]', ['path' => $fullPath]);
+                        } else {
+                            $this->logDebug('[IMAGE DELETE FAILED]', ['path' => $fullPath]);
+                        }
+                    } else {
+                        $this->logDebug('[IMAGE NOT FOUND FOR DELETE]', ['path' => $fullPath]);
+                    }
+                }
+            }
+            
+            // Delete from database
+            $this->db->delete('product_images', 'id = :id', ['id' => $imgId]);
+        }
     }
     
     /**
@@ -296,7 +615,6 @@ class ProductController {
     private function generateSlug($string) {
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $string), '-'));
         
-        // Check if slug exists
         $exists = $this->db->fetchOne("SELECT id FROM products WHERE slug = :slug", ['slug' => $slug]);
         
         if ($exists) {
@@ -304,5 +622,25 @@ class ProductController {
         }
         
         return $slug;
+    }
+    
+    /**
+     * Debug logging helper
+     */
+    private function logDebug($label, $data) {
+        $logDir = __DIR__ . '/../../logs/';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0755, true);
+        }
+        
+        $logFile = $logDir . 'product_debug.log';
+        $timestamp = date('Y-m-d H:i:s');
+        $logData = is_array($data) ? json_encode($data, JSON_PRETTY_PRINT) : $data;
+        
+        @file_put_contents(
+            $logFile, 
+            "\n[{$timestamp}] {$label}\n{$logData}\n", 
+            FILE_APPEND
+        );
     }
 }

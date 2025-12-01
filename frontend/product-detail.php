@@ -29,6 +29,7 @@
     </section>
     
     <?php include 'components/footer.php'; ?>
+<?php include 'components/toast-notification.php'; ?>
     
     <script src="assets/js/main.js"></script>
     <script>
@@ -42,166 +43,224 @@
             loadProductWithCart(productId);
         }
 
-        // Load product details and cart quantity
-        async function loadProductWithCart(id) {
-            try {
-                const [productRes, cartRes] = await Promise.all([
-                    fetch('/demolitiontraders/api/products/' + id),
-                    fetch('/demolitiontraders/backend/api/index.php?request=cart/get')
-                ]);
-                const product = await productRes.json();
-                const cart = await cartRes.json();
-                if (product.error) {
-                    throw new Error(product.error);
-                }
-                let cartQty = 0;
-                if (cart.items && Array.isArray(cart.items)) {
-                    const cartItem = cart.items.find(i => i.product_id == id || i.product_id == product.id);
-                    if (cartItem) cartQty = parseInt(cartItem.quantity) || 0;
-                }
-                displayProduct(product, cartQty);
-            } catch (error) {
-                console.error('Error loading product:', error);
-                document.getElementById('product-detail').innerHTML = '<div class="error">Failed to load product details</div>';
+        // Reload product when page gets focus (after navigating back)
+        window.addEventListener('focus', function() {
+            if (productId) {
+                loadProductWithCart(productId);
             }
+        });
+        
+        // Also listen for storage changes (cart updates from other tabs/pages)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cartUpdated' && productId) {
+                loadProductWithCart(productId);
+            }
+        });
+
+   async function loadProductWithCart(id) {
+    try {
+        const [productRes, cartRes] = await Promise.all([
+            fetch('/demolitiontraders/backend/api/index.php?request=products/' + id),
+            fetch('/demolitiontraders/backend/api/index.php?request=cart/get')
+        ]);
+        
+        const productData = await productRes.json();
+        const cart = await cartRes.json();
+        
+        console.log('Product response:', productData);
+        
+        // Backend API trả về {success: true, data: {...}}
+        const product = productData.data || productData;
+        
+        if (product.error || !product.id) {
+            throw new Error(product.error || 'Product not found');
         }
         
-        // Display product details
-        function displayProduct(product, cartQty = 0) {
-            document.getElementById('product-name').textContent = product.name;
-            document.getElementById('product-breadcrumb').textContent = product.name;
-            document.title = product.name + ' - Demolition Traders';
+        // ✅ FIX: Convert images array to single image field
+        if (product.images && product.images.length > 0) {
+            product.image = product.images[0].url;
+        }
+        
+        let cartQty = 0;
+        if (cart.items && Array.isArray(cart.items)) {
+            const cartItem = cart.items.find(i => i.product_id == id || i.product_id == product.id);
+            if (cartItem) cartQty = parseInt(cartItem.quantity) || 0;
+        }
+        
+        displayProduct(product, cartQty);
+    } catch (error) {
+        console.error('Error loading product:', error);
+        document.getElementById('product-detail').innerHTML = '<div class="error">Failed to load product details: ' + error.message + '</div>';
+    }
+}
+        
+       // Display product details
+function displayProduct(product, cartQty = 0) {
+    document.getElementById('product-name').textContent = product.name;
+    document.getElementById('product-breadcrumb').textContent = product.name;
+    document.title = product.name + ' - Demolition Traders';
 
-            const imageUrl = product.image ? product.image : 'assets/images/placeholder.jpg';
-            let availableStock = Math.max(0, (parseInt(product.stock_quantity) || 0) - (parseInt(cartQty) || 0));
-            let stockStatus = '';
-            if (availableStock > 0) {
-                stockStatus = `<span class="in-stock"><i class="fas fa-check-circle"></i> In Stock (${availableStock} available)</span>`;
-            } else if ((parseInt(product.stock_quantity) || 0) > 0 && (parseInt(cartQty) || 0) > 0) {
-                stockStatus = '<span class="in-cart"><i class="fas fa-shopping-cart"></i> You have already added this product to your cart. Please proceed to checkout.</span>';
-            } else {
-                stockStatus = '<span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>';
-            }
+    const imageUrl = product.image ? product.image : 'assets/images/placeholder.jpg';
+    let availableStock = Math.max(0, (parseInt(product.stock_quantity) || 0) - (parseInt(cartQty) || 0));
+    const totalStock = parseInt(product.stock_quantity) || 0;
+    const inCart = parseInt(cartQty) || 0;
+    
+    let stockStatus = '';
+    if (availableStock > 0) {
+        stockStatus = `<span class="in-stock"><i class="fas fa-check-circle"></i> In Stock (${availableStock} available)</span>`;
+    } else if (totalStock > 0 && inCart > 0) {
+        // All stock is in cart
+        stockStatus = '<span class="in-cart"><i class="fas fa-shopping-cart"></i> All available stock in cart</span>';
+    } else {
+        stockStatus = '<span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>';
+    }
 
-            const html = `
-                <div class="product-layout">
-                    <div class="product-images">
-                        <div class="main-image">
-                            <img src="${imageUrl}" alt="${product.name}" id="main-product-image">
+    // ✅ Check if collection options should be shown
+    const showCollectionOptions = product.show_collection_options == 1 || product.show_collection_options === true;
+
+    const html = `
+        <div class="product-layout">
+            <div class="product-images">
+                <div class="main-image">
+                    <img src="${imageUrl}" alt="${product.name}" id="main-product-image" onerror="this.src='assets/images/logo.png'">
+                </div>
+            </div>
+            
+            <div class="product-info">
+                <h1 class="product-title">${product.name}</h1>
+                <div class="product-sku">SKU: ${product.sku || 'N/A'}</div>
+                
+                <div class="product-price">
+                    <span class="price">$${parseFloat(product.price).toFixed(2)}</span>
+                    ${product.compare_at_price ? '<span class="compare-price">$' + parseFloat(product.compare_at_price).toFixed(2) + '</span>' : ''}
+                </div>
+                
+                <div class="product-stock">
+                    ${stockStatus}
+                </div>
+                
+                ${availableStock > 0 ? `
+                <div class="product-actions">
+                    <div class="quantity-control">
+                        <label>Quantity:</label>
+                        <div class="quantity-input">
+                            <button type="button" class="qty-btn" onclick="decreaseQuantity()">−</button>
+                            <input type="number" id="quantity" value="1" min="1" max="${availableStock}">
+                            <button type="button" class="qty-btn" onclick="increaseQuantity()">+</button>
                         </div>
                     </div>
-                    
-                    <div class="product-info">
-                        <h1 class="product-title">${product.name}</h1>
-                        <div class="product-sku">SKU: ${product.sku || 'N/A'}</div>
-                        
-                        <div class="product-price">
-                            <span class="price">$${parseFloat(product.price).toFixed(2)}</span>
-                            ${product.compare_at_price ? '<span class="compare-price">$' + parseFloat(product.compare_at_price).toFixed(2) + '</span>' : ''}
-                        </div>
-                        
-                        <div class="product-stock">
-                            ${stockStatus}
-                        </div>
-                        
-                        ${availableStock > 0 ? `
-                        <div class="product-actions">
-                            <div class="quantity-control">
-                                <label>Quantity:</label>
-                                <div class="quantity-input">
-                                    <button type="button" class="qty-btn" onclick="decreaseQuantity()">−</button>
-                                    <input type="number" id="quantity" value="1" min="1" max="${availableStock}">
-                                    <button type="button" class="qty-btn" onclick="increaseQuantity()">+</button>
-                                </div>
-                            </div>
-                            <button class="btn btn-buy-now" id="buy-now-btn" onclick="buyNow(${product.id})">
-                                <i class="fas fa-bolt"></i> Buy Now
-                            </button>
-                            <button class="btn btn-add-cart" onclick="addToCart(${product.id})">
-                                <i class="fas fa-shopping-cart"></i> Add to Cart
-                            </button>
-                            <button class="btn btn-wishlist" onclick="addToWishlist(${product.id})">
-                                <i class="far fa-heart"></i>
-                            </button>
-                        </div>
-                                                ` : ((parseInt(product.stock_quantity) || 0) > 0 && (parseInt(cartQty) || 0) > 0
-                                                        ? `<div class="in-cart-message" style="text-align:center;margin:30px 0;">
-                                                                <i class="fas fa-info-circle"></i> You have already added this product to your cart.<br><br>
-                                                                <a href="cart.php" class="btn btn-primary" style="margin:5px 10px;display:inline-block;">Go to Checkout</a>
-                                                                <a href="shop.php" class="btn btn-secondary" style="margin:5px 10px;display:inline-block;">Browse More Products</a>
-                                                            </div>`
-                                                        : '<p class="out-of-stock-message"><i class="fas fa-exclamation-circle"></i> This product is currently out of stock.</p>')}
-                        
-                        <div class="product-meta">
-                            <div class="meta-row">
-                                <span class="meta-label"><i class="fas fa-tag"></i> Category:</span> 
-                                <a href="shop.php?category=${product.category_id}">${product.category_name || 'Uncategorized'}</a>
-                            </div>
-                            <div class="meta-row">
-                                <span class="meta-label"><i class="fas fa-certificate"></i> Condition:</span> 
-                                <span class="meta-value">${product.condition || 'New'}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="product-description">
-                            <h3><i class="fas fa-info-circle"></i> Description</h3>
-                            <div class="desc-content">${product.description || 'No description available.'}</div>
-                        </div>
-                        
-                        ${product.specifications ? `
-                        <div class="product-specs">
-                            <h3><i class="fas fa-clipboard-list"></i> Specifications</h3>
-                            <div class="specs-content">${product.specifications}</div>
-                        </div>
-                        ` : ''}
+                    <button class="btn btn-buy-now" id="buy-now-btn" onclick="buyNow(${product.id})">
+                        <i class="fas fa-bolt"></i> Buy Now
+                    </button>
+                    <button class="btn btn-add-cart" onclick="addToCart(${product.id})">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    <button class="btn btn-wishlist" onclick="addToWishlist(${product.id})">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                ` : (totalStock > 0 && inCart > 0) ? `
+                <div class="product-actions">
+                    <button class="btn btn-buy-now" style="width:100%;max-width:400px;" onclick="buyNow(${product.id}, true)">
+                        <i class="fas fa-shopping-cart"></i> Go to Cart
+                    </button>
+                    <button class="btn btn-wishlist" onclick="addToWishlist(${product.id})">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                ` : '<p class="out-of-stock-message" style="background:#fff3cd;border:2px solid #ffc107;border-radius:8px;padding:20px;text-align:center;color:#856404;"><i class="fas fa-exclamation-circle"></i> This product is currently out of stock.</p>'}
+                
+                <div class="product-meta">
+                    <div class="meta-row">
+                        <span class="meta-label"><i class="fas fa-tag"></i> Category:</span> 
+                        <a href="shop.php?category=${product.category_id}">${product.category_name || 'Uncategorized'}</a>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label"><i class="fas fa-certificate"></i> Condition:</span> 
+                        <span class="meta-value">${product.condition || 'New'}</span>
                     </div>
                 </div>
                 
-                <div class="product-tabs">
-                    <div class="tabs">
-                        <button class="tab-button active" onclick="showTab('shipping')">
-                            <i class="fas fa-truck"></i> Shipping & Pickup
-                        </button>
-                        <button class="tab-button" onclick="showTab('returns')">
-                            <i class="fas fa-undo"></i> Returns Policy
-                        </button>
-                    </div>
-                    
-                    <div class="tab-content active" id="shipping-tab">
-                        <div class="info-box">
-                            <h4><i class="fas fa-store"></i> Free Pickup Available</h4>
-                            <p>Pick up FREE from our Hamilton store at <strong>249 Kahikatea Drive, Greenlea Lane, Frankton, Hamilton</strong></p>
-                            <p>No minimum quantity required for pickup orders.</p>
-                        </div>
-                        <div class="info-box">
-                            <h4><i class="fas fa-truck"></i> Delivery Available</h4>
-                            <p><strong>Minimum Order:</strong> 10 sheets minimum for delivery</p>
-                            <p><strong>Freight Quote:</strong> Contact us for a delivery quote to your area</p>
-                            <p>Email: <a href="mailto:info@demolitiontraders.co.nz">info@demolitiontraders.co.nz</a></p>
-                            <p>Phone: <a href="tel:0800336548466">0800 DEMOLITION</a></p>
-                        </div>
-                    </div>
-                    
-                    <div class="tab-content" id="returns-tab">
-                        <div class="info-box">
-                            <h4><i class="fas fa-shield-alt"></i> Returns & Refunds</h4>
-                            <p>Please contact us <strong>before</strong> returning any items.</p>
-                            <p>Some products may not be eligible for return due to their nature.</p>
-                            <p>Contact us: <strong>0800 DEMOLITION</strong> or <a href="mailto:info@demolitiontraders.co.nz">info@demolitiontraders.co.nz</a></p>
-                        </div>
-                        <div class="info-box">
-                            <h4><i class="fas fa-question-circle"></i> Questions?</h4>
-                            <p>Our friendly staff are here to help Monday to Friday 8am - 5pm, Saturday 8am - 4pm</p>
-                        </div>
+                <div class="product-description">
+                    <h3><i class="fas fa-info-circle"></i> Description</h3>
+                    <div class="desc-content">${product.description || 'No description available.'}</div>
+                </div>
+                
+                ${product.specifications ? `
+                <div class="product-specs">
+                    <h3><i class="fas fa-clipboard-list"></i> Specifications</h3>
+                    <div class="specs-content">${product.specifications}</div>
+                </div>
+                ` : ''}
+                
+                ${showCollectionOptions ? `
+                <div class="product-collection-options" style="margin-top:32px; border-top:1px solid #eee; padding-top:24px;">
+                    <h3><i class="fas fa-box"></i> Collection & Delivery Options</h3>
+                    <div style="font-size:15px; color:#333; line-height:1.7;">
+                        <p><strong>OPTION A: FREE PICKUP</strong></p>
+                        <ul style="margin-left:20px; margin-bottom:15px;">
+                            <li>Pick up FREE from our Hamilton store.</li>
+                            <li>There is no minimum sheet quantity required for pickup orders.</li>
+                        </ul>
+                        
+                        <p><strong>OPTION B: DELIVERY - QUOTE REQUIRED</strong></p>
+                        <ol style="margin-left:20px; margin-bottom:15px;">
+                            <li><strong>Minimum Order:</strong> Strict 10-sheet minimum for delivery.</li>
+                            <li><strong>Freight Quote:</strong> Due to size/weight variability, freight is NOT included.</li>
+                        </ol>
+                        
+                        <p><strong>TO GET A QUOTE:</strong> Click 'Enquire' and provide your Quantity (min. 10) and Delivery Suburb & Postcode. We will reply with the freight cost to add to your order.</p>
                     </div>
                 </div>
-            `;
+                ` : ''}
+            </div>
+        </div>
+        
+        <div class="product-tabs">
+            <div class="tabs">
+                <button class="tab-button active" onclick="showTab('shipping')">
+                    <i class="fas fa-truck"></i> Shipping & Pickup
+                </button>
+                <button class="tab-button" onclick="showTab('returns')">
+                    <i class="fas fa-undo"></i> Returns Policy
+                </button>
+            </div>
             
-            document.getElementById('product-detail').innerHTML = html;
+            <div class="tab-content active" id="shipping-tab">
+                <div class="info-box">
+                    <h4><i class="fas fa-store"></i> Free Pickup Available</h4>
+                    <p>Pick up FREE from our Hamilton store at <strong>249 Kahikatea Drive, Greenlea Lane, Frankton, Hamilton</strong></p>
+                    <p>No minimum quantity required for pickup orders.</p>
+                </div>
+                <div class="info-box">
+                    <h4><i class="fas fa-truck"></i> Delivery Available</h4>
+                    <p><strong>Minimum Order:</strong> 10 sheets minimum for delivery</p>
+                    <p><strong>Freight Quote:</strong> Contact us for a delivery quote to your area</p>
+                    <p>Email: <a href="mailto:info@demolitiontraders.co.nz">info@demolitiontraders.co.nz</a></p>
+                    <p>Phone: <a href="tel:0800336548466">0800 DEMOLITION</a></p>
+                </div>
+            </div>
             
-            // Check if product is in wishlist
-            checkWishlistStatus(product.id);
-        }
+            <div class="tab-content" id="returns-tab">
+                <div class="info-box">
+                    <h4><i class="fas fa-shield-alt"></i> Returns & Refunds</h4>
+                    <p>Please contact us <strong>before</strong> returning any items.</p>
+                    <p>Some products may not be eligible for return due to their nature.</p>
+                    <p>Contact us: <strong>0800 DEMOLITION</strong> or <a href="mailto:info@demolitiontraders.co.nz">info@demolitiontraders.co.nz</a></p>
+                </div>
+                <div class="info-box">
+                    <h4><i class="fas fa-question-circle"></i> Questions?</h4>
+                    <p>Our friendly staff are here to help Monday to Friday 8am - 5pm, Saturday 8am - 4pm</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('product-detail').innerHTML = html;
+    
+    // Check if product is in wishlist
+    checkWishlistStatus(product.id);
+}
         
         // Check wishlist status
         function checkWishlistStatus(productId) {
@@ -240,7 +299,13 @@
         }
         
         // Buy now function
-        function buyNow(productId) {
+        function buyNow(productId, goDirectlyToCart = false) {
+            // If already at max stock, just go to cart
+            if (goDirectlyToCart) {
+                window.location.href = 'cart.php';
+                return;
+            }
+            
             const quantity = parseInt(document.getElementById('quantity').value) || 1;
             
             // Add loading state
@@ -248,17 +313,21 @@
             buyButton.style.pointerEvents = 'none';
             buyButton.style.opacity = '0.6';
             
-            fetch('/demolitiontraders/backend/api/index.php?request=cart/add', {
+            fetch('/demolitiontraders/backend/api/cart/add.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ product_id: productId, quantity: quantity })
+                body: JSON.stringify({ product_id: productId, quantity: quantity }),
+                credentials: 'same-origin'
             })
             .then(response => response.text())
             .then(text => {
                 const data = JSON.parse(text);
-                if (data.success !== false && (data.items || data.summary)) {
-                    // Redirect to checkout
-                    window.location.href = 'checkout.php';
+                if (data.success) {
+                    // Trigger cart update event
+                    localStorage.setItem('cartUpdated', Date.now());
+                    document.dispatchEvent(new Event('cartUpdated'));
+                    // Redirect to cart page
+                    window.location.href = 'cart.php';
                 } else {
                     showNotification(data.message || 'Failed to add product to cart', true);
                     buyButton.style.pointerEvents = '';
@@ -272,6 +341,35 @@
                 buyButton.style.opacity = '';
             });
         }
+        
+        // Listen for cart updates from other pages
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cartUpdated') {
+                // Re-fetch product to update button state
+                const productId = new URLSearchParams(window.location.search).get('id');
+                if (productId) {
+                    loadProduct(productId);
+                }
+            }
+        });
+        
+        // Also check on window focus (when user comes back from cart)
+        let lastCheckTime = 0;
+        window.addEventListener('focus', function() {
+            const now = Date.now();
+            // Prevent multiple checks within 2 seconds
+            if (now - lastCheckTime < 2000) return;
+            lastCheckTime = now;
+            
+            const lastUpdate = localStorage.getItem('cartUpdated');
+            if (lastUpdate && now - lastUpdate < 10000) {
+                // Cart was updated in last 10 seconds, reload product
+                const productId = new URLSearchParams(window.location.search).get('id');
+                if (productId) {
+                    loadProduct(productId);
+                }
+            }
+        });
         
         // Add to cart function
         function addToCart(productId) {
@@ -291,7 +389,7 @@
             addButton.style.pointerEvents = 'none';
             addButton.style.opacity = '0.6';
             
-            const url = '/demolitiontraders/backend/api/index.php?request=cart/add';
+            const url = '/demolitiontraders/backend/api/cart/add.php';
             const payload = { product_id: productId, quantity: quantity };
             
             console.log('Request URL:', url);
@@ -300,7 +398,8 @@
             fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                credentials: 'same-origin'
             })
             .then(response => {
                 console.log('Response status:', response.status);
@@ -312,34 +411,76 @@
                 try {
                     const data = JSON.parse(text);
                     console.log('Parsed response:', data);
-                    if (data.success !== false && (data.items || data.summary)) {
-                        showNotification(`${quantity} item(s) added to cart!`);
-                        if (typeof updateCartCount === 'function') {
-                            updateCartCount();
-                        }
-                        // Update stock display after add to cart
+                    
+                    // Check if we hit stock limit
+                    if (data.success === false && data.message && data.message.includes('stock limit reached')) {
+                        // Show "Already in Cart" modal as overlay
+                        const modalHTML = `
+                            <div id="already-in-cart-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;">
+                                <div style="background:white;border-radius:12px;padding:40px;max-width:500px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.3);text-align:center;">
+                                    <div style="width:80px;height:80px;background:#2f3192;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                                        <i class="fas fa-check" style="color:white;font-size:40px;"></i>
+                                    </div>
+                                    <h3 style="color:#2f3192;font-size:28px;margin:0 0 15px 0;font-weight:600;">Already in Your Cart!</h3>
+                                    <p style="color:#666;font-size:16px;margin:0 0 30px 0;line-height:1.5;">You have this product in your cart. Would you like to checkout or continue shopping?</p>
+                                    <div style="display:flex;gap:15px;justify-content:center;">
+                                        <a href="cart.php" style="flex:1;padding:14px 24px;background:#28a745;color:white;border:none;border-radius:8px;text-decoration:none;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                            <i class="fas fa-shopping-cart"></i> PROCEED TO CHECKOUT
+                                        </a>
+                                        <a href="shop.php" style="flex:1;padding:14px 24px;background:#6c757d;color:white;border:none;border-radius:8px;text-decoration:none;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                            <i class="fas fa-store"></i> CONTINUE SHOPPING
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.body.insertAdjacentHTML('beforeend', modalHTML);
+                        
+                        // Update stock display
                         const stockElem = document.querySelector('.product-stock .in-stock');
                         if (stockElem) {
-                            let currentStock = parseInt(stockElem.textContent.match(/\d+/));
-                            if (!isNaN(currentStock)) {
-                                let newStock = currentStock - quantity;
-                                if (newStock <= 0) {
-                                    stockElem.outerHTML = '<span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>';
-                                    // Hide Buy Now button
-                                    const buyNowBtn = document.getElementById('buy-now-btn');
-                                    if (buyNowBtn) buyNowBtn.style.display = 'none';
-                                } else {
-                                    stockElem.innerHTML = `<i class=\"fas fa-check-circle\"></i> In Stock (${newStock} available)`;
+                            stockElem.outerHTML = '<span class="in-cart"><i class="fas fa-shopping-cart"></i> Already in your cart - Ready to checkout!</span>';
+                        }
+                        return; // Exit early, don't show success notification
+                    }
+                    
+                    if (data.success !== false && (data.items || data.summary)) {
+                        // Product was successfully added
+                        showNotification(`${quantity} item(s) added to cart!`);
+                        
+                        // Trigger cart update event for header
+                        localStorage.setItem('cartUpdated', Date.now());
+                        document.dispatchEvent(new Event('cartUpdated'));
+                        
+                        // Reload product display to update buttons if stock is now 0
+                        const currentStock = parseInt(document.querySelector('.product-stock .in-stock')?.textContent.match(/\d+/)?.[0] || 0);
+                        const newStock = currentStock - quantity;
+                        
+                        if (newStock <= 0) {
+                            // Reload entire product to show "Go to Cart" button
+                            loadProductWithCart(productId);
+                        } else {
+                            // Just update stock display
+                            const stockElem = document.querySelector('.product-stock .in-stock');
+                            if (stockElem) {
+                                stockElem.innerHTML = `<i class="fas fa-check-circle"></i> In Stock (${newStock} available)`;
+                                // Update max quantity in input
+                                const qtyInput = document.getElementById('quantity');
+                                if (qtyInput) {
+                                    qtyInput.max = newStock;
+                                    if (parseInt(qtyInput.value) > newStock) {
+                                        qtyInput.value = newStock;
+                                    }
                                 }
                             }
                         }
                     } else {
                         // Check for out of stock or already in cart error
                         const msg = (data.message || data.error || '').toLowerCase();
-                        if (msg.includes('insufficient stock') || msg.includes('out of stock')) {
-                            showNotification('This product is out of stock', true);
+                        if (msg.includes('insufficient stock') || msg.includes('out of stock') || msg.includes('stock limit reached')) {
+                            showNotification('You already have all available stock in your cart. Ready to checkout?', true);
                         } else if (msg.includes('maximum available') || msg.includes('already in cart')) {
-                            showNotification('You have already added the maximum available stock to your cart.', true);
+                            showNotification('You already have this product in your cart. Ready to checkout?', true);
                         } else {
                             showNotification(data.message || data.error || 'Failed to add product to cart', true);
                         }
@@ -386,7 +527,8 @@
                         button.classList.remove('active');
                         isInWishlist = false;
                         showNotification('Removed from wishlist');
-                        updateWishlistCount();
+                        localStorage.setItem('wishlistUpdated', Date.now());
+                        document.dispatchEvent(new Event('wishlistUpdated'));
                     }
                 })
                 .catch(error => {
@@ -420,7 +562,8 @@
                         button.classList.add('heart-beat');
                         setTimeout(() => button.classList.remove('heart-beat'), 600);
                         showNotification('Added to wishlist');
-                        updateWishlistCount();
+                        localStorage.setItem('wishlistUpdated', Date.now());
+                        document.dispatchEvent(new Event('wishlistUpdated'));
                             // Update wishlist count on header
                             async function updateWishlistCount() {
                                 try {

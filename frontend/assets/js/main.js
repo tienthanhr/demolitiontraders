@@ -3,25 +3,58 @@
  * Demolition Traders E-commerce Platform
  */
 
-// API Base URL
-const API_URL = '/demolitiontraders/api';
+// Preserve native fetch and setup global helpers
+(function() {
+    // Store native fetch
+    window.nativeFetch = window.nativeFetch || window.fetch;
+    
+    // Get API URL helper
+    if (!window.getApiUrl) {
+        window.getApiUrl = function(path) {
+            const base = document.querySelector('base');
+            if (base) {
+                const baseUrl = base.href.replace(/\/frontend\/?$/, '');
+                return baseUrl + '/backend' + path;
+            }
+            return '/demolitiontraders/backend' + path;
+        };
+    }
+    
+    // Enhanced fetch for ngrok
+    if (!window.apiFetch) {
+        window.apiFetch = function(url, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['ngrok-skip-browser-warning'] = 'true';
+            return window.nativeFetch(url, options);
+        };
+    }
+    
+    // Restore native fetch after extensions load
+    setTimeout(function() {
+        if (window.nativeFetch) {
+            window.fetch = window.nativeFetch;
+        }
+    }, 100);
+})();
+
+// API Base URL - use getApiUrl helper
+const API_URL = window.getApiUrl ? window.getApiUrl('/api') : '/demolitiontraders/backend/api';
 
 // Add to cart function
 async function addToCart(productId, quantity = 1) {
     try {
-        const response = await fetch(`${API_URL}/cart/add`, {
+        const fetchFunc = window.apiFetch || fetch;
+        const data = await fetchFunc(`${API_URL}/cart/add`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ product_id: productId, quantity })
         });
         
-        if (response.ok) {
-            const data = await response.json();
+        if (data.success || data.ok !== false) {
             updateCartCount();
             showNotification('Product added to cart!', 'success');
         } else {
-            const error = await response.json();
-            showNotification(error.error || 'Failed to add to cart', 'error');
+            showNotification(data.error || 'Failed to add to cart', 'error');
         }
     } catch (error) {
         console.error('Add to cart error:', error);
@@ -32,17 +65,17 @@ async function addToCart(productId, quantity = 1) {
 // Add to wishlist
 async function addToWishlist(productId) {
     try {
-        const response = await fetch(`${API_URL}/wishlist/add`, {
+        const fetchFunc = window.apiFetch || fetch;
+        const data = await fetchFunc(`${API_URL}/wishlist/add`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ product_id: productId })
         });
         
-        if (response.ok) {
+        if (data.success || data.ok !== false) {
             showNotification('Added to wishlist!', 'success');
         } else {
-            const error = await response.json();
-            showNotification(error.error || 'Failed to add to wishlist', 'error');
+            showNotification(data.error || 'Failed to add to wishlist', 'error');
         }
     } catch (error) {
         console.error('Wishlist error:', error);
@@ -53,11 +86,11 @@ async function addToWishlist(productId) {
 // Update cart count
 async function updateCartCount() {
     try {
-        const response = await fetch(`${API_URL}/cart/get`);
-        const data = await response.json();
+        const fetchFunc = window.apiFetch || fetch;
+        const data = await fetchFunc(`${API_URL}/cart/get`);
         
         const cartCount = document.getElementById('cart-count');
-        if (cartCount) {
+        if (cartCount && data.summary) {
             cartCount.textContent = data.summary.item_count;
         }
     } catch (error) {
@@ -171,8 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (query.length < 3) return;
             
             try {
-                const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}&limit=5`);
-                const results = await response.json();
+                const results = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}&limit=5`);
                 
                 // Display autocomplete results
                 // (Implementation depends on your UI requirements)

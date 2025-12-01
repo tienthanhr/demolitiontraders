@@ -2862,3 +2862,116 @@ p.small.center {
         flex-direction: column;
     }
 }
+ 
+ /* Related Products - You May Also Like */
+.related-products-section {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 2px solid #eee;
+}
+
+.related-products-section .section-title {
+    font-size: 28px;
+    color: #2f3192;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.related-products-section .section-title i {
+    margin-right: 10px;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.related-product-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.related-product-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+}
+
+.related-product-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: #f8f8f8;
+}
+
+.related-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.related-product-card:hover .related-product-image img {
+    transform: scale(1.1);
+}
+
+.related-product-info {
+    padding: 15px;
+}
+
+.related-product-info h4 {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 8px;
+    height: 40px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.related-product-price {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2f3192;
+    margin-bottom: 12px;
+}
+
+.btn-related-add-cart {
+    width: 100%;
+    padding: 10px;
+    background: #2f3192;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-related-add-cart:hover {
+    background: #1f2166;
+    transform: translateY(-2px);
+}
+
+.btn-related-add-cart i {
+    margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .related-product-image {
+        height: 150px;
+    }
+}

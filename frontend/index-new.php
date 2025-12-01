@@ -121,7 +121,7 @@
                         <div class="product-card">
                             <div class="product-image">
                                 <a href="product-detail.php?id=${product.id}">
-                                    <img src="${product.image_url}" alt="${product.name}">
+                                    <img src="${product.image_url}" alt="${product.name}" onerror="this.src='assets/images/logo.png'">
                                 </a>
                                 <div class="product-actions">
                                     <a href="#" class="wishlist-btn"><i class="far fa-heart"></i></a>

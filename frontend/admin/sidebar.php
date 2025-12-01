@@ -19,6 +19,9 @@
         <a href="customers.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'customers.php' ? 'active' : ''; ?>">
             <i class="fas fa-users"></i> Customers
         </a>
+        <a href="admins.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admins.php' ? 'active' : ''; ?>">
+            <i class="fas fa-user-shield"></i> Admins
+        </a>
         <a href="low-stock.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'low-stock.php' ? 'active' : ''; ?>">
             <i class="fas fa-exclamation-triangle"></i> Low Stock
         </a>

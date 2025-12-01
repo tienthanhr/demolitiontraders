@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
-    role ENUM('customer', 'staff', 'admin') DEFAULT 'customer',
+    role ENUM('customer', 'admin') DEFAULT 'customer',
     status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
     idealpos_customer_id VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -327,7 +327,7 @@
                             <td>$${parseFloat(o.total_amount).toFixed(2)}</td>
                             <td><span class="badge badge-${statusColors[o.status] || 'secondary'}">${o.status}</span></td>
                             <td><span class="badge badge-${o.payment_status === 'paid' ? 'success' : 'warning'}">${o.payment_status}</span></td>
-                            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                            <td>${formatDate(o.created_at)}</td>
                         </tr>
                     `;
                 }).join('');
@@ -400,5 +400,6 @@
         loadOrders();
         loadProducts();
     </script>
+    <?php include 'components/toast-notification.php'; ?>
 </body>
 </html>

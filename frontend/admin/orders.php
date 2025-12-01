@@ -18,6 +18,176 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         <?php include 'admin-style.css'; ?>
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .stat-card i { font-size: 32px; color: #2f3192; margin-bottom: 10px; }
+        .stat-card h3 { font-size: 28px; margin: 8px 0; color: #2f3192; }
+        .stat-card p { color: #666; margin: 0; font-size: 14px; }
+        .bulk-actions { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        .bulk-actions button { margin: 0; }
+        .bulk-actions .selected-count { font-weight: 600; color: #2f3192; }
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { background: #e9ecef; }
+        .sort-icon { margin-left: 5px; font-size: 12px; color: #999; }
+        .sort-icon.active { color: #2f3192; }
+        
+        /* Revenue Filter Dropdown */
+        .stat-card {
+            position: relative;
+            overflow: visible !important;
+        }
+        
+        .stats-grid {
+            overflow: visible !important;
+            z-index: 1;
+            margin-bottom: 30px;
+        }
+        
+        .content-section {
+            overflow: visible !important;
+        }
+        
+        .revenue-filter-dropdown {
+            position: fixed;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 999999;
+            min-width: 200px;
+            overflow: hidden;
+            animation: dropdownFadeIn 0.2s ease-out;
+        }
+        
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .filter-option {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+        }
+        .filter-option:last-child {
+            border-bottom: none;
+        }
+        .filter-option:hover {
+            background: #f8f9fa;
+            padding-left: 24px;
+        }
+        .filter-option i {
+            margin-right: 10px;
+            color: #2f3192;
+            width: 16px;
+        }
+        
+        /* Custom Date Range Picker */
+        .date-range-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 9999999;
+            min-width: 400px;
+        }
+        
+        .date-range-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999998;
+        }
+        
+        .date-range-modal h4 {
+            margin: 0 0 20px 0;
+            color: #2f3192;
+            font-size: 18px;
+        }
+        
+        .date-range-inputs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .date-input-group {
+            flex: 1;
+        }
+        
+        .date-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .date-input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .date-input-group input:focus {
+            outline: none;
+            border-color: #2f3192;
+        }
+        
+        .date-range-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .date-range-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-apply-date {
+            background: #2f3192;
+            color: white;
+        }
+        
+        .btn-apply-date:hover {
+            background: #1f2170;
+        }
+        
+        .btn-cancel-date {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-cancel-date:hover {
+            background: #e0e0e0;
+        }
     </style>
 </head>
 <body>
@@ -36,6 +206,72 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
         </button>
     </div>
 
+    <!-- Statistics -->
+    <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+            <i class="fas fa-shopping-bag"></i>
+            <h3 id="stat-total">0</h3>
+            <p>Total Orders</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-clock"></i>
+            <h3 id="stat-pending">0</h3>
+            <p>Pending Orders</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-shipping-fast"></i>
+            <h3 id="stat-processing">0</h3>
+            <p>Processing/Shipped</p>
+        </div>
+        <div class="stat-card" onclick="toggleRevenueFilter()" style="cursor: pointer;">
+            <i class="fas fa-dollar-sign"></i>
+            <h3 id="stat-revenue">$0</h3>
+            <p id="revenue-period-label">Total Revenue</p>
+        </div>
+    </div>
+    
+    <!-- Revenue Filter Dropdown -->
+    <div class="revenue-filter-dropdown" id="revenueFilterDropdown" style="display: none;">
+        <div class="filter-option" onclick="event.stopPropagation(); setRevenuePeriod('today')">Today</div>
+        <div class="filter-option" onclick="event.stopPropagation(); setRevenuePeriod('yesterday')">Yesterday</div>
+        <div class="filter-option" onclick="event.stopPropagation(); setRevenuePeriod('this_week')">This Week</div>
+        <div class="filter-option" onclick="event.stopPropagation(); setRevenuePeriod('this_month')">This Month</div>
+        <div class="filter-option" onclick="event.stopPropagation(); setRevenuePeriod('this_year')">This Year</div>
+        <div class="filter-option" onclick="event.stopPropagation(); setRevenuePeriod('all')">All Time</div>
+        <div class="filter-option" onclick="event.stopPropagation(); showDatePicker()">
+            Custom Date
+        </div>
+    </div>
+    
+    <!-- Date Range Modal -->
+    <div class="date-range-backdrop" id="dateRangeBackdrop" onclick="closeDateRangeModal()"></div>
+    <div class="date-range-modal" id="dateRangeModal">
+        <h4>Select Custom Date Range</h4>
+        <div class="date-range-inputs">
+            <div class="date-input-group">
+                <label for="dateFrom">From Date</label>
+                <input type="date" id="dateFrom" />
+            </div>
+            <div class="date-input-group">
+                <label for="dateTo">To Date</label>
+                <input type="date" id="dateTo" />
+            </div>
+        </div>
+        <div class="date-range-buttons">
+            <button class="btn-cancel-date" onclick="closeDateRangeModal()">Cancel</button>
+            <button class="btn-apply-date" onclick="applyDateRange()">Apply</button>
+        </div>
+    </div>
+
+    <!-- Warning Notice -->
+    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; margin-bottom: 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-exclamation-triangle" style="color: #856404; font-size: 20px;"></i>
+        <div style="flex: 1;">
+            <strong style="color: #856404; font-size: 15px;">⚠️ Important Notice:</strong>
+            <p style="margin: 5px 0 0 0; color: #856404; font-size: 14px;">Deleted orders <strong>CANNOT be restored</strong> due to data integrity (stock updates, payment records, etc.). Please be careful when deleting orders.</p>
+        </div>
+    </div>
+
     <div class="search-box">
         <input type="text" id="search-orders" placeholder="Search by order ID, customer name..." onkeyup="searchOrders()">
         <select id="filter-status" class="form-control" style="max-width: 250px;" onchange="loadOrders()">
@@ -50,16 +286,55 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
         </select>
     </div>
 
+    <!-- Bulk Actions Bar (Products style) -->
+    <div id="bulk-actions-bar" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <span id="selected-count">
+                <i class="fas fa-check-circle"></i> <span id="selectedCount">0</span> items selected
+            </span>
+            <select id="bulk-action">
+                <option value="">Select Action</option>
+                <option value="delete">Delete Selected</option>
+            </select>
+            <button class="btn btn-light btn-sm" onclick="applyBulkAction()">
+                <i class="fas fa-bolt"></i> Apply
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="clearSelection()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Undo Bar -->
+    <div id="undo-bar" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 15px; justify-content: space-between;">
+            <span id="undo-message"></span>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-warning btn-sm" onclick="undoLastAction()">
+                    <i class="fas fa-undo"></i> Undo
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="dismissUndo()">
+                    <i class="fas fa-times"></i> Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="table-container">
         <table id="orders-table">
             <thead>
                 <tr>
-                    <th onclick="sortTable('id')" style="cursor: pointer;" title="Click to sort">
+                    <th style="width: 40px;">
+                        <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)">
+                    </th>
+                    <th class="sortable" onclick="sortTable('id')" title="Click to sort">
                         Order ID <span id="sort-icon-id" class="sort-icon">↕</span>
                     </th>
                     <th>Customer</th>
-                    <th>Date</th>
-                    <th onclick="sortTable('total')" style="cursor: pointer;" title="Click to sort">
+                    <th class="sortable" onclick="sortTable('date')" title="Click to sort">
+                        Date <span id="sort-icon-date" class="sort-icon">↕</span>
+                    </th>
+                    <th class="sortable" onclick="sortTable('total')" title="Click to sort">
                         Total <span id="sort-icon-total" class="sort-icon">↕</span>
                     </th>
                     <th>Status</th>
@@ -69,7 +344,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             </thead>
             <tbody id="orders-tbody">
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px;">
+                    <td colspan="8" style="text-align: center; padding: 40px;">
                         <div class="spinner"></div>
                         <p>Loading orders...</p>
                     </td>
@@ -138,11 +413,12 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
 let currentSortColumn = 'date';
 let currentSortDirection = 'desc';
 let allOrders = [];
+let currentRevenuePeriodFilter = null; // { period, customDate }
 
 // Load orders
 async function loadOrders() {
     const tbody = document.getElementById('orders-tbody');
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading orders...</p></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading orders...</p></td></tr>';
 
     try {
         const status = document.getElementById('filter-status').value;
@@ -162,14 +438,14 @@ async function loadOrders() {
             data = JSON.parse(text);
         } catch (e) {
             console.error('JSON parse error:', e);
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: red;">Invalid JSON response. Check console.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: red;">Invalid JSON response. Check console.</td></tr>';
             return;
         }
         
         console.log('Parsed data:', data);
 
         if (data.error) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: red;">Error: ${data.error}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: red;">Error: ${data.error}</td></tr>`;
             return;
         }
 
@@ -177,17 +453,220 @@ async function loadOrders() {
         const orders = Array.isArray(data) ? data : (data.data || []);
         
         if (!orders || orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No orders found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No orders found</td></tr>';
             allOrders = [];
+            updateStatistics([]);
             return;
         }
 
         // Store orders globally and apply current sort
         allOrders = orders;
+        updateStatistics(orders);
+        
+        // Update revenue for current period (default is 'all')
+        if (currentRevenuePeriod === 'all') {
+            const revenue = orders.reduce((sum, o) => {
+                if (o.status !== 'cancelled') {
+                    return sum + parseFloat(o.total_amount || o.total || 0);
+                }
+                return sum;
+            }, 0);
+            document.getElementById('stat-revenue').textContent = '$' + revenue.toFixed(2);
+        }
+        
         applySortAndRender();
     } catch (error) {
         console.error('Error loading orders:', error);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: red;">Error loading orders</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: red;">Error loading orders</td></tr>';
+    }
+}
+
+// Update statistics
+function updateStatistics(orders) {
+    const total = orders.length;
+    const pending = orders.filter(o => o.status === 'pending' || o.status === '').length;
+    const processing = orders.filter(o => ['processing', 'ready', 'shipped'].includes(o.status)).length;
+    
+    // Only update these stats, not revenue (revenue is updated separately)
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-processing').textContent = processing;
+    
+    // Update revenue based on current period if not already set
+    if (!document.getElementById('stat-revenue').textContent.includes('$')) {
+        const revenue = orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+        document.getElementById('stat-revenue').textContent = '$' + revenue.toFixed(2);
+    }
+}
+
+// Bulk actions
+function updateBulkActions() {
+    const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+    const count = checkboxes.length;
+    const bulkBar = document.getElementById('bulk-actions-bar');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const selectAll = document.getElementById('select-all');
+    
+    selectedCountSpan.textContent = count;
+    bulkBar.style.display = count > 0 ? 'block' : 'none';
+    
+    const allCheckboxes = document.querySelectorAll('.order-checkbox');
+    selectAll.checked = count > 0 && count === allCheckboxes.length;
+}
+
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.order-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateBulkActions();
+}
+
+function clearSelection() {
+    const checkboxes = document.querySelectorAll('.order-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    document.getElementById('select-all').checked = false;
+    updateBulkActions();
+}
+
+function applyBulkAction() {
+    const action = document.getElementById('bulk-action').value;
+    if (!action) {
+        showWarning('Please select an action');
+        return;
+    }
+    
+    if (action === 'delete') {
+        bulkDeleteOrders();
+    }
+}
+
+// Undo functionality
+let lastBulkAction = null;
+let undoTimeout = null;
+
+function showUndoBar(action, count) {
+    const undoBar = document.getElementById('undo-bar');
+    const undoMessage = document.getElementById('undo-message');
+    
+    undoMessage.innerHTML = `<i class="fas fa-info-circle"></i> ${count} order(s) ${action}d`;
+    undoBar.style.display = 'flex';
+    
+    if (undoTimeout) clearTimeout(undoTimeout);
+    undoTimeout = setTimeout(() => {
+        dismissUndo();
+    }, 10000);
+}
+
+function dismissUndo() {
+    const undoBar = document.getElementById('undo-bar');
+    undoBar.style.display = 'none';
+    lastBulkAction = null;
+    if (undoTimeout) {
+        clearTimeout(undoTimeout);
+        undoTimeout = null;
+    }
+}
+
+async function undoLastAction() {
+    if (!lastBulkAction) return;
+    
+    const { action, orders } = lastBulkAction;
+    dismissUndo();
+    
+    if (action === 'delete') {
+        // Note: Orders cannot be restored due to data integrity
+        // (stock quantities, cart items, payment records, etc.)
+        showWarning('Orders cannot be restored due to data integrity constraints.');
+    }
+}
+
+async function bulkDeleteOrders() {
+    const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+    const orderIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (orderIds.length === 0) {
+        showWarning('Please select orders to delete');
+        return;
+    }
+    
+    const confirmed = await showConfirm(
+        `Are you sure you want to delete ${orderIds.length} order(s)? This action cannot be undone.`,
+        'Delete Orders',
+        true
+    );
+    if (!confirmed) return;
+    
+    try {
+        let successCount = 0;
+        let failCount = 0;
+        const deletedOrders = [];
+        
+        // First, fetch all order data before deleting
+        for (const orderId of orderIds) {
+            try {
+                const orderRes = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${orderId}`);
+                if (orderRes.ok) {
+                    const orderData = await orderRes.json();
+                    const order = orderData.data || orderData;
+                    
+                    // Fetch order items
+                    const itemsRes = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${orderId}/items`);
+                    const itemsData = await itemsRes.json();
+                    order.items = itemsData.data || itemsData;
+                    
+                    deletedOrders.push(order);
+                }
+            } catch (err) {
+                console.error('Error fetching order data', orderId, err);
+            }
+        }
+        
+        // Now delete the orders
+        for (const orderId of orderIds) {
+            try {
+                const res = await fetch(`/demolitiontraders/backend/api/index.php?request=orders&id=${orderId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!res.ok) {
+                    failCount++;
+                    console.error('Failed to delete order', orderId, 'Status:', res.status);
+                    continue;
+                }
+                
+                const text = await res.text();
+                if (!text) {
+                    failCount++;
+                    console.error('Empty response for order', orderId);
+                    continue;
+                }
+                
+                const result = JSON.parse(text);
+                if (result.success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.error('Failed to delete order', orderId, result);
+                }
+            } catch (err) {
+                failCount++;
+                console.error('Error deleting order', orderId, err);
+            }
+        }
+        
+        // Note: Undo is not available for orders due to data integrity
+        // (stock updates, payment records, etc.)
+        
+        if (failCount > 0) {
+            showError(`${successCount} deleted, ${failCount} failed`);
+        } else {
+            showSuccess(`Deleted ${successCount} order(s)`);
+        }
+        loadOrders();
+        
+    } catch (err) {
+        showError('Server error. Please try again.');
+        console.error(err);
     }
 }
 
@@ -209,8 +688,14 @@ function sortTable(column) {
 function applySortAndRender() {
     if (!allOrders || allOrders.length === 0) return;
     
+    // Apply revenue period filter if active
+    let ordersToDisplay = allOrders;
+    if (currentRevenuePeriodFilter) {
+        ordersToDisplay = filterOrdersByPeriod(allOrders, currentRevenuePeriodFilter.period, currentRevenuePeriodFilter.customDate);
+    }
+    
     // Sort the orders
-    const sortedOrders = [...allOrders].sort((a, b) => {
+    const sortedOrders = [...ordersToDisplay].sort((a, b) => {
         let aVal, bVal;
         
         switch(currentSortColumn) {
@@ -248,14 +733,14 @@ function updateSortIcons() {
     // Reset all icons
     document.querySelectorAll('.sort-icon').forEach(icon => {
         icon.innerHTML = '↕';
-        icon.style.opacity = '0.3';
+        icon.classList.remove('active');
     });
     
     // Highlight active column
     const activeIcon = document.getElementById(`sort-icon-${currentSortColumn}`);
     if (activeIcon) {
         activeIcon.innerHTML = currentSortDirection === 'asc' ? '↑' : '↓';
-        activeIcon.style.opacity = '1';
+        activeIcon.classList.add('active');
     }
 }
 
@@ -295,10 +780,11 @@ function renderOrders(orders) {
             console.log('Order status:', order.status, 'Normalized:', orderStatus, 'Text:', statusText);
             
             return `
-            <tr>
+            <tr data-order-id="${order.id}">
+                <td><input type="checkbox" class="order-checkbox" value="${order.id}" onchange="updateBulkActions()"></td>
                 <td><strong>#${order.id}</strong></td>
                 <td>${customerName}<br><small>${customerEmail}</small></td>
-                <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                <td>${formatDate(order.created_at)}</td>
                 <td><strong>$${parseFloat(order.total_amount).toFixed(2)}</strong></td>
                 <td>
                     <div onclick="updateOrderStatus(${order.id})" style="cursor: pointer !important; display: inline-block !important; padding: 6px 12px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase !important; background-color: ${statusColor.bg} !important; color: ${statusColor.color} !important; line-height: normal !important; white-space: nowrap !important; text-align: center !important; vertical-align: middle !important; min-width: 80px !important;" title="Click to change status">${statusText}</div>
@@ -388,7 +874,7 @@ async function viewOrder(id) {
             <div style="margin-bottom: 20px;">
                 <h4>Order #${order.id}</h4>
                 <p><strong>Order Number:</strong> ${order.order_number}</p>
-                <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+                <p><strong>Date:</strong> ${formatDateTime(order.created_at)}</p>
                 <p><strong>Status:</strong> <span class="badge badge-${order.status}">${(order.status || 'pending').toUpperCase()}</span></p>
             </div>
 
@@ -814,7 +1300,7 @@ function generateTaxInvoice(order, billing) {
                     <div class="invoice-title">TAX INVOICE</div>
                     <div class="invoice-meta">
                         <strong>Invoice #:</strong> ${order.order_number}<br>
-                        <strong>Date:</strong> ${orderDate.toLocaleDateString('en-NZ')}<br>
+                        <strong>Date:</strong> ${formatDate(order.created_at)}<br>
                         <strong>Time:</strong> ${orderDate.toLocaleTimeString('en-NZ')}
                     </div>
                 </div>
@@ -1100,7 +1586,7 @@ function generateReceipt(order, billing) {
                     <div class="invoice-title">RECEIPT</div>
                     <div class="invoice-meta">
                         <strong>Receipt #:</strong> ${order.order_number}<br>
-                        <strong>Date:</strong> ${paidDate.toLocaleDateString('en-NZ')}<br>
+                        <strong>Date:</strong> ${formatDate(order.created_at)}<br>
                         <strong>Time:</strong> ${paidDate.toLocaleTimeString('en-NZ')}
                     </div>
                 </div>
@@ -1198,9 +1684,12 @@ function generateReceipt(order, billing) {
 
 // Delete order
 async function deleteOrder(id) {
-    if (!confirm(`Are you sure you want to delete Order #${id}? This action cannot be undone.`)) {
-        return;
-    }
+    const confirmed = await showConfirm(
+        `Are you sure you want to delete Order #${id}? This action cannot be undone.`,
+        'Delete Order',
+        true
+    );
+    if (!confirmed) return;
     
     try {
         const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`, {
@@ -1213,8 +1702,8 @@ async function deleteOrder(id) {
             // Show success message
             const successMsg = document.createElement('div');
             successMsg.className = 'alert alert-success';
-            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #dc3545; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-            successMsg.innerHTML = `<i class="fas fa-trash"></i> Order deleted successfully!`;
+            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            successMsg.innerHTML = `<i class="fas fa-check"></i> Order deleted successfully!`;
             document.body.appendChild(successMsg);
             setTimeout(() => successMsg.remove(), 3000);
         } else {
@@ -1301,10 +1790,224 @@ async function sendTaxInvoice(id) {
     }
 }
 
+// Revenue Filter Functions
+let currentRevenuePeriod = 'all';
+
+function toggleRevenueFilter() {
+    const dropdown = document.getElementById('revenueFilterDropdown');
+    const revenueCard = document.querySelector('.stat-card:last-child');
+    
+    if (dropdown.style.display === 'none') {
+        // Position dropdown below revenue card
+        const rect = revenueCard.getBoundingClientRect();
+        dropdown.style.top = (rect.bottom + 10) + 'px';
+        dropdown.style.left = (rect.left + rect.width / 2) + 'px';
+        dropdown.style.transform = 'translateX(-50%)';
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.style.display = 'none';
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('revenueFilterDropdown');
+    const revenueCard = document.querySelector('.stat-card:last-child');
+    if (dropdown && !revenueCard.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+async function setRevenuePeriod(period) {
+    currentRevenuePeriod = period;
+    const dropdown = document.getElementById('revenueFilterDropdown');
+    dropdown.style.display = 'none';
+    
+    // Update label
+    const labels = {
+        'today': 'Today\'s Revenue',
+        'yesterday': 'Yesterday\'s Revenue',
+        'this_week': 'This Week\'s Revenue',
+        'this_month': 'This Month\'s Revenue',
+        'this_year': 'This Year\'s Revenue',
+        'all': 'Total Revenue'
+    };
+    document.getElementById('revenue-period-label').textContent = labels[period] || 'Total Revenue';
+    
+    // Store filter for table display
+    currentRevenuePeriodFilter = period === 'all' ? null : { period, customDate: null };
+    
+    // Fetch revenue for period
+    await updateRevenue(period);
+    
+    // Re-render table with filter
+    applySortAndRender();
+}
+
+async function updateRevenue(period, customDate = null) {
+    try {
+        let url = '/demolitiontraders/backend/api/index.php?request=orders';
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        // Handle both array and object with data property
+        const allOrders = Array.isArray(data) ? data : (data.data || []);
+        
+        if (!allOrders || allOrders.length === 0) {
+            document.getElementById('stat-revenue').textContent = '$0.00';
+            return;
+        }
+        
+        // Filter orders based on period
+        const filteredOrders = filterOrdersByPeriod(allOrders, period, customDate);
+        
+        // Calculate revenue (exclude cancelled orders)
+        let revenue = 0;
+        filteredOrders.forEach(order => {
+            if (order.status !== 'cancelled') {
+                revenue += parseFloat(order.total_amount || order.total || 0);
+            }
+        });
+        
+        document.getElementById('stat-revenue').textContent = '$' + revenue.toFixed(2);
+    } catch (error) {
+        console.error('Error updating revenue:', error);
+        document.getElementById('stat-revenue').textContent = '$0.00';
+    }
+}
+
+function filterOrdersByPeriod(orders, period, customDate = null) {
+    if (period === 'all') {
+        return orders;
+    }
+    
+    const now = new Date();
+    return orders.filter(order => {
+        const orderDate = new Date(order.created_at || order.order_date);
+                
+                switch(period) {
+                    case 'today':
+                        return orderDate.toDateString() === now.toDateString();
+                    
+                    case 'yesterday':
+                        const yesterday = new Date(now);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        return orderDate.toDateString() === yesterday.toDateString();
+                    
+                    case 'this_week':
+                        const weekStart = new Date(now);
+                        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                        weekStart.setHours(0, 0, 0, 0);
+                        return orderDate >= weekStart && orderDate <= now;
+                    
+                    case 'this_month':
+                        return orderDate.getMonth() === now.getMonth() && 
+                               orderDate.getFullYear() === now.getFullYear();
+                    
+                    case 'this_year':
+                        return orderDate.getFullYear() === now.getFullYear();
+                    
+                    case 'custom':
+                        if (customDate) {
+                            if (typeof customDate === 'object' && customDate.from && customDate.to) {
+                                // Date range
+                                const fromDate = new Date(customDate.from);
+                                const toDate = new Date(customDate.to);
+                                fromDate.setHours(0, 0, 0, 0);
+                                toDate.setHours(23, 59, 59, 999);
+                                return orderDate >= fromDate && orderDate <= toDate;
+                            } else {
+                                // Single date (backward compatibility)
+                                const targetDate = new Date(customDate);
+                                return orderDate.toDateString() === targetDate.toDateString();
+                            }
+                        }
+                        return true;
+                    
+                default:
+                    return true;
+        }
+    });
+}
+
+function showDatePicker() {
+    const modal = document.getElementById('dateRangeModal');
+    const backdrop = document.getElementById('dateRangeBackdrop');
+    const dropdown = document.getElementById('revenueFilterDropdown');
+    
+    // Set default dates (today)
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateFrom').value = today;
+    document.getElementById('dateTo').value = today;
+    
+    dropdown.style.display = 'none';
+    backdrop.style.display = 'block';
+    modal.style.display = 'block';
+}
+
+function closeDateRangeModal() {
+    document.getElementById('dateRangeModal').style.display = 'none';
+    document.getElementById('dateRangeBackdrop').style.display = 'none';
+}
+
+function applyDateRange() {
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    
+    if (!dateFrom || !dateTo) {
+        showError('Please select both from and to dates');
+        return;
+    }
+    
+    if (new Date(dateFrom) > new Date(dateTo)) {
+        showError('From date must be before or equal to To date');
+        return;
+    }
+    
+    currentRevenuePeriod = 'custom';
+    
+    // Format dates as dd/mm/yy
+    const formatDate = (dateStr) => {
+        const d = new Date(dateStr);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = String(d.getFullYear()).slice(-2);
+        return `${day}/${month}/${year}`;
+    };
+    
+    // Update label
+    if (dateFrom === dateTo) {
+        document.getElementById('revenue-period-label').textContent = `Revenue on ${formatDate(dateFrom)}`;
+    } else {
+        document.getElementById('revenue-period-label').textContent = `Revenue: ${formatDate(dateFrom)} to ${formatDate(dateTo)}`;
+    }
+    
+    // Store filter for table display
+    currentRevenuePeriodFilter = { period: 'custom', customDate: { from: dateFrom, to: dateTo } };
+    
+    updateRevenue('custom', { from: dateFrom, to: dateTo });
+    closeDateRangeModal();
+    
+    // Re-render table with filter
+    applySortAndRender();
+}
+
+function setCustomDate(date) {
+    // Deprecated - keeping for compatibility
+    if (date) {
+        currentRevenuePeriod = 'custom';
+        document.getElementById('revenue-period-label').textContent = `Revenue on ${date}`;
+        updateRevenue('custom', date);
+    }
+}
+
 // Initialize
 loadOrders();
 </script>
         </main>
     </div>
+    <?php include '../components/toast-notification.php'; ?>
+    <script src="../assets/js/date-formatter.js"></script>
 </body>
 </html>

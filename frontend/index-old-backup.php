@@ -208,7 +208,7 @@
                     <div class="product-card">
                         <a href="product.php?slug=${product.slug}">
                             <div class="product-image">
-                                <img src="${product.image || 'assets/images/no-image.jpg'}" alt="${product.name}">
+                                <img src="${product.image || 'assets/images/logo.png'}" alt="${product.name}" onerror="this.src='assets/images/logo.png'">
                                 ${product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : ''}
                             </div>
                             <div class="product-info">

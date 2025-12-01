@@ -105,75 +105,317 @@ class EmailService {
     }
     
     /**
-     * Generate Tax Invoice HTML for email
+     * Generate Tax Invoice HTML for email (matching print template)
      */
     private function generateTaxInvoiceHTML($order, $billing) {
         $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Guest';
         $orderDate = new DateTime($order['created_at']);
         $items = $order['items'] ?? [];
+        
+        // Pre-calculate formatted values
+        $totalAmountFormatted = number_format($order['total_amount'], 2);
+        $subtotalFormatted = number_format($order['subtotal'], 2);
+        $taxAmountFormatted = number_format($order['tax_amount'], 2);
+        
         $itemsHtml = '';
         foreach ($items as $item) {
+            $unitPriceFormatted = number_format($item['unit_price'], 2);
+            $lineTotal = number_format($item['unit_price'] * $item['quantity'], 2);
             $itemsHtml .= "<tr>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6;'><strong>{$item['product_name']}</strong></td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6;'>{$item['sku']}</td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6; text-align: right;'>{$item['quantity']}</td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6; text-align: right;'>$" . number_format($item['unit_price'], 2) . "</td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6; text-align: right;'><strong>$" . number_format($item['subtotal'], 2) . "</strong></td>"
+                . "<td><strong>{$item['product_name']}</strong></td>"
+                . "<td>{$item['sku']}</td>"
+                . "<td class='text-right'>{$item['quantity']}</td>"
+                . "<td class='text-right'>\${$unitPriceFormatted}</td>"
+                . "<td class='text-right'><strong>\${$lineTotal}</strong></td>"
                 . "</tr>";
         }
-        $html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Tax Invoice - Order #{$order['order_number']}</title></head><body style='margin:0;padding:0;font-family:Arial,sans-serif;background:#f8f9fa;'>"
-            . "<div style='max-width:800px;margin:0 auto;background:white;padding:30px;border-radius:5px;'>"
-            . "<div style='background:#2f3192;color:white;padding:30px;text-align:center;border-radius:5px 5px 0 0;'><h1 style='margin:0;font-size:32px;'>TAX INVOICE</h1><p style='margin:10px 0 0 0;font-size:18px;'>Demolition Traders</p></div>"
-            . "<div style='display:flex;justify-content:space-between;margin:30px 0;'>"
-            . "<div><strong style='color:#2f3192;'>Demolition Traders</strong><br>249 Kahikatea Drive<br>Hamilton 3204<br>Phone: 07-847-4989<br>Email: admin@demolitiontraders.co.nz<br><strong>GST: 45-514-609</strong></div>"
-            . "<div style='text-align:right;'><strong>Invoice #:</strong> {$order['order_number']}<br><strong>Date:</strong>" . $orderDate->format('d/m/Y') . "<br><strong>Time:</strong>" . $orderDate->format('h:i A') . "</div>"
-            . "</div>"
-            . "<div style='background:#f8f9fa;padding:20px;margin-bottom:30px;border-left:4px solid #2f3192;'><strong style='color:#2f3192;'>BILL TO:</strong><br><strong>{$customerName}</strong><br>" . ($billing['address'] ?? '') . "<br>" . ($billing['city'] ?? '') . " " . ($billing['postcode'] ?? '') . "<br>Email: " . ($billing['email'] ?? $order['guest_email'] ?? 'N/A') . "<br>Phone: " . ($billing['phone'] ?? 'N/A') . "</div>"
-            . "<table style='width:100%;border-collapse:collapse;margin-bottom:30px;'><thead style='background:#2f3192;color:white;'><tr><th style='padding:12px;text-align:left;'>Description</th><th style='padding:12px;text-align:left;'>SKU</th><th style='padding:12px;text-align:right;'>Qty</th><th style='padding:12px;text-align:right;'>Unit Price</th><th style='padding:12px;text-align:right;'>Amount</th></tr></thead><tbody>{$itemsHtml}</tbody></table>"
-            . "<div style='text-align:right;'><div style='display:inline-block;min-width:300px;'><div style='background:#2f3192;color:white;padding:20px;font-size:18px;font-weight:bold;margin-bottom:15px;'><div style='display:flex;justify-content:space-between;'><span>TOTAL AMOUNT DUE</span><span>$" . number_format($order['total_amount'], 2) . "</span></div></div>"
-            . "<div style='background:#f8f9fa;padding:15px;border:1px solid #dee2e6;'><div style='display:flex;justify-content:space-between;padding:5px 0;'><span>Subtotal (excl GST):</span><span>$" . number_format($order['subtotal'], 2) . "</span></div><div style='display:flex;justify-content:space-between;padding:5px 0;'><span>GST (15%):</span><span>$" . number_format($order['tax_amount'], 2) . "</span></div>"
-            . (floatval($order['shipping_amount']) > 0 ? "<div style='display:flex;justify-content:space-between;padding:5px 0;'><span>Shipping:</span><span>$" . number_format($order['shipping_amount'], 2) . "</span></div>" : "")
-            . "<div style='display:flex;justify-content:space-between;padding:10px 0 5px 0;border-top:2px solid #dee2e6;margin-top:10px;font-weight:bold;font-size:16px;'><span>Total (incl GST):</span><span>$" . number_format($order['total_amount'], 2) . "</span></div></div></div></div>"
-            . "<div style='background:#fff3cd;border:2px solid #ffc107;padding:20px;margin-top:30px;border-radius:5px;'><h3 style='margin:0 0 15px 0;color:#856404;'>PAYMENT INFORMATION</h3><table style='width:100%;font-size:14px;'><tr><td style='padding:5px;width:150px;'><strong style='color:#856404;'>Bank:</strong></td><td style='padding:5px;'>BNZ (Bank of New Zealand)</td></tr><tr><td style='padding:5px;'><strong style='color:#856404;'>Account Name:</strong></td><td style='padding:5px;'>Demolition Traders</td></tr><tr><td style='padding:5px;'><strong style='color:#856404;'>Account Number:</strong></td><td style='padding:5px;'>02-0341-0083457-00</td></tr><tr><td style='padding:5px;'><strong style='color:#856404;'>Reference:</strong></td><td style='padding:5px;'>" . ($billing['last_name'] ?? 'Customer') . "</td></tr></table><p style='margin:15px 0 0 0;'><strong>Please use your last name as payment reference.</strong></p></div>"
-            . "<div style='background:#f8f9fa;border:2px solid #dee2e6;padding:20px;margin-top:30px;border-radius:5px;'><h3 style='margin:0 0 15px 0;color:#2f3192;'>Company Terms of Trade</h3><div style='font-size:13px;color:#333;'>Demolition Traders Ltd offers a 30 day refund period on all goods.<br>Goods must be returned and inspected within 30 days of original purchase date for a refund.<br>Proof of original purchase is required as a condition of the returns policy.<br>Goods must be returned in the original purchase condition and be unused and undamaged.<br>Any items with scratch or scuff marks and that have been cut down or altered will not be refunded - whether in transit or during 3rd party handling.<br>Items with custom liners are non-refundable.<br>Any credit card transaction fees are non-refundable.</div></div>"
-            . "</div></body></html>";
-        return $html;
+        
+        $shippingRow = floatval($order['shipping_amount']) > 0 
+            ? "<tr><td>Shipping:</td><td align='right'>$" . number_format($order['shipping_amount'], 2) . "</td></tr>"
+            : '';
+        
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tax Invoice - Order #{$order['order_number']}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4; margin: 0; padding: 0; }
+        .company-name { font-size: 20pt; font-weight: bold; color: #2f3192; margin-bottom: 8px; }
+        .company-details { font-size: 9pt; line-height: 1.5; }
+        .invoice-title { font-size: 24pt; font-weight: bold; color: #2f3192; }
+        .invoice-meta { font-size: 9pt; }
+        .bill-to-section { margin: 15px 0; padding: 12px; background: #f8f9fa; border-left: 4px solid #2f3192; }
+        .bill-to-title { font-weight: bold; font-size: 11pt; margin-bottom: 8px; color: #2f3192; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .items-table thead { background: #2f3192; color: white; }
+        .items-table th { padding: 8px; text-align: left; font-weight: bold; font-size: 10pt; }
+        .items-table td { padding: 8px; border-bottom: 1px solid #dee2e6; font-size: 10pt; }
+        .text-right { text-align: right; }
+        .totals-table { width: 100%; margin-top: 15px; font-size: 10pt; }
+        .totals-table td { padding: 5px; }
+        .grand-total { font-size: 14pt; font-weight: bold; background: #2f3192; color: white; padding: 12px; text-align: center; margin-top: 10px; }
+        .gst-breakdown { margin-top: 12px; padding: 12px; background: #f8f9fa; border: 1px solid #dee2e6; }
+        .gst-breakdown h4 { margin: 0 0 8px 0; color: #2f3192; font-size: 10pt; }
+        .payment-info { margin: 15px 0; padding: 12px; background: #fff3cd; border: 2px solid #ffc107; }
+        .payment-info h4 { margin: 0 0 10px 0; color: #856404; font-size: 10pt; }
+        .bank-table { width: 100%; font-size: 9pt; }
+        .bank-table td { padding: 3px; }
+        .terms { margin-top: 15px; padding: 12px; background: #f8f9fa; border-top: 2px solid #dee2e6; font-size: 8pt; line-height: 1.5; }
+        .terms h4 { margin: 0 0 8px 0; color: #2f3192; font-size: 9pt; }
+        .footer { margin-top: 15px; text-align: center; font-size: 8pt; color: #6c757d; border-top: 2px solid #dee2e6; padding-top: 12px; }
+    </style>
+</head>
+<body>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-bottom: 3px solid #2f3192; padding-bottom: 12px; margin-bottom: 15px;">
+        <tr>
+            <td width="60%" valign="top">
+                <div class="company-name">Demolition Traders</div>
+                <div class="company-details">
+                    249 Kahikatea Drive<br>
+                    Hamilton 3204<br>
+                    Phone: 07-847-4989<br>
+                    Email: admin@demolitiontraders.co.nz<br>
+                    <strong>GST Number: 45-514-609</strong>
+                </div>
+            </td>
+            <td width="40%" valign="top" align="right">
+                <div class="invoice-title">TAX INVOICE</div>
+                <div class="invoice-meta">
+                    <strong>Invoice #:</strong> {$order['order_number']}<br>
+                    <strong>Date:</strong> {$orderDate->format('d/m/y')}<br>
+                    <strong>Time:</strong> {$orderDate->format('H:i')}
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <div class="bill-to-section">
+        <div class="bill-to-title">BILL TO:</div>
+        <strong>{$customerName}</strong><br>
+        {$billing['address']}<br>
+        {$billing['city']} {$billing['postcode']}<br>
+        Email: {$billing['email']}<br>
+        Phone: {$billing['phone']}
+    </div>
+    
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Description</th>
+                <th style="width: 15%;">SKU</th>
+                <th style="width: 10%;" class="text-right">Qty</th>
+                <th style="width: 12%;" class="text-right">Unit Price</th>
+                <th style="width: 13%;" class="text-right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>{$itemsHtml}</tbody>
+    </table>
+    
+    <div class="grand-total">TOTAL AMOUNT DUE: \${$totalAmountFormatted}</div>
+    
+    <div class="gst-breakdown">
+        <h4>GST Breakdown</h4>
+        <table class="totals-table">
+            <tr>
+                <td width="60%">Subtotal (excl GST):</td>
+                <td width="40%" align="right">\${$subtotalFormatted}</td>
+            </tr>
+            <tr>
+                <td>GST Amount (15%):</td>
+                <td align="right">\${$taxAmountFormatted}</td>
+            </tr>
+            {$shippingRow}
+            <tr style="font-weight: bold;">
+                <td>Total (incl GST):</td>
+                <td align="right">\${$totalAmountFormatted}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="payment-info">
+        <h4>PAYMENT INFORMATION</h4>
+        <table class="bank-table">
+            <tr>
+                <td width="150"><strong>Bank:</strong></td>
+                <td>BNZ (Bank of New Zealand)</td>
+            </tr>
+            <tr>
+                <td><strong>Account Name:</strong></td>
+                <td>Demolition Traders</td>
+            </tr>
+            <tr>
+                <td><strong>Account Number:</strong></td>
+                <td>02-0341-0083457-00</td>
+            </tr>
+            <tr>
+                <td><strong>Reference:</strong></td>
+                <td>{$billing['last_name']}</td>
+            </tr>
+        </table>
+        <p style="margin-top: 10px; font-size: 9pt;"><strong>Please use your last name as payment reference.</strong></p>
+    </div>
+    
+    <div class="terms">
+        <h4>TERMS & CONDITIONS</h4>
+        <p><strong>Payment Terms:</strong> Payment due within 7 days of invoice date.</p>
+        <p><strong>Refund Policy:</strong> Demolition Traders Ltd offers a 30 day refund period on all goods. Goods must be returned and inspected within 30 days of original purchase date for a refund. Proof of original purchase is required as a condition of the returns policy.</p>
+        <p><strong>Returns:</strong> Goods must be returned in the original purchase condition and be unused and undamaged. Any items with scratch or scuff marks and that have been cut down or altered will not be refunded - whether in transit or during 3rd party handling.</p>
+        <p><strong>Non-Refundable Items:</strong> Items with custom liners are non-refundable. Any credit card transaction fees are non-refundable.</p>
+    </div>
+    
+    <div class="footer">
+        Thank you for your business!<br>
+        For any queries, please contact us at 07-847-4989 or info@demolitiontraders.co.nz
+    </div>
+</body>
+</html>
+HTML;
     }
     
     /**
-     * Generate Receipt HTML for email
+     * Generate Receipt HTML for email (matching print template)
      */
     private function generateReceiptHTML($order, $billing) {
         $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Guest';
         $orderDate = new DateTime($order['created_at']);
         $items = $order['items'] ?? [];
+        
+        // Pre-calculate formatted values
+        $totalAmountFormatted = number_format($order['total_amount'], 2);
+        $subtotalFormatted = number_format($order['subtotal'], 2);
+        $taxAmountFormatted = number_format($order['tax_amount'], 2);
+        
         $itemsHtml = '';
         foreach ($items as $item) {
+            $unitPriceFormatted = number_format($item['unit_price'], 2);
+            $lineTotal = number_format($item['unit_price'] * $item['quantity'], 2);
             $itemsHtml .= "<tr>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6;'><strong>{$item['product_name']}</strong></td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6;'>{$item['sku']}</td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6; text-align: right;'>{$item['quantity']}</td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6; text-align: right;'>$" . number_format($item['unit_price'], 2) . "</td>"
-                . "<td style='padding: 12px; border-bottom: 1px solid #dee2e6; text-align: right;'><strong>$" . number_format($item['subtotal'], 2) . "</strong></td>"
+                . "<td><strong>{$item['product_name']}</strong></td>"
+                . "<td>{$item['sku']}</td>"
+                . "<td class='text-right'>{$item['quantity']}</td>"
+                . "<td class='text-right'>\${$unitPriceFormatted}</td>"
+                . "<td class='text-right'><strong>\${$lineTotal}</strong></td>"
                 . "</tr>";
         }
-        $html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Receipt - Order #{$order['order_number']}</title></head><body style='margin:0;padding:0;font-family:Arial,sans-serif;background:#f8f9fa;'>"
-            . "<div style='max-width:800px;margin:0 auto;background:white;padding:30px;border-radius:5px;'>"
-            . "<div style='background:#2f3192;color:white;padding:30px;text-align:center;border-radius:5px 5px 0 0;'><h1 style='margin:0;font-size:32px;'>RECEIPT</h1><p style='margin:10px 0 0 0;font-size:18px;'>Demolition Traders</p></div>"
-            . "<div style='display:flex;justify-content:space-between;margin:30px 0;'>"
-            . "<div><strong style='color:#2f3192;'>Demolition Traders</strong><br>249 Kahikatea Drive<br>Hamilton 3204<br>Phone: 07-847-4989<br>Email: admin@demolitiontraders.co.nz<br><strong>GST: 45-514-609</strong></div>"
-            . "<div style='text-align:right;'><strong>Receipt #:</strong> {$order['order_number']}<br><strong>Date:</strong>" . $orderDate->format('d/m/Y') . "<br><strong>Time:</strong>" . $orderDate->format('h:i A') . "</div>"
-            . "</div>"
-            . "<div style='background:#f8f9fa;padding:20px;margin-bottom:30px;border-left:4px solid #2f3192;'><strong style='color:#2f3192;'>BILL TO:</strong><br><strong>{$customerName}</strong><br>" . ($billing['address'] ?? '') . "<br>" . ($billing['city'] ?? '') . " " . ($billing['postcode'] ?? '') . "<br>Email: " . ($billing['email'] ?? $order['guest_email'] ?? 'N/A') . "<br>Phone: " . ($billing['phone'] ?? 'N/A') . "</div>"
-            . "<table style='width:100%;border-collapse:collapse;margin-bottom:30px;'><thead style='background:#2f3192;color:white;'><tr><th style='padding:12px;text-align:left;'>Description</th><th style='padding:12px;text-align:left;'>SKU</th><th style='padding:12px;text-align:right;'>Qty</th><th style='padding:12px;text-align:right;'>Unit Price</th><th style='padding:12px;text-align:right;'>Amount</th></tr></thead><tbody>{$itemsHtml}</tbody></table>"
-            . "<div style='text-align:right;'><div style='display:inline-block;min-width:300px;'><div style='background:#2f3192;color:white;padding:20px;font-size:18px;font-weight:bold;margin-bottom:15px;'><div style='display:flex;justify-content:space-between;'><span>TOTAL PAID</span><span>$" . number_format($order['total_amount'], 2) . "</span></div></div>"
-            . "<div style='background:#f8f9fa;padding:15px;border:1px solid #dee2e6;'><div style='display:flex;justify-content:space-between;padding:5px 0;'><span>Subtotal (excl GST):</span><span>$" . number_format($order['subtotal'], 2) . "</span></div><div style='display:flex;justify-content:space-between;padding:5px 0;'><span>GST (15%):</span><span>$" . number_format($order['tax_amount'], 2) . "</span></div>"
-            . (floatval($order['shipping_amount']) > 0 ? "<div style='display:flex;justify-content:space-between;padding:5px 0;'><span>Shipping:</span><span>$" . number_format($order['shipping_amount'], 2) . "</span></div>" : "")
-            . "<div style='display:flex;justify-content:space-between;padding:10px 0 5px 0;border-top:2px solid #dee2e6;margin-top:10px;font-weight:bold;font-size:16px;'><span>Total (incl GST):</span><span>$" . number_format($order['total_amount'], 2) . "</span></div></div></div></div>"
-            . "<div style='background:#28a745;color:white;padding:15px 0;text-align:center;font-size:20px;font-weight:bold;margin:30px 0 0 0;border-radius:5px;'>PAID IN FULL</div>"
-            . "<div style='background:#f8f9fa;border:2px solid #dee2e6;padding:20px;margin-top:30px;border-radius:5px;'><h3 style='margin:0 0 15px 0;color:#2f3192;'>Company Terms of Trade</h3><div style='font-size:13px;color:#333;'>Demolition Traders Ltd offers a 30 day refund period on all goods.<br>Goods must be returned and inspected within 30 days of original purchase date for a refund.<br>Proof of original purchase is required as a condition of the returns policy.<br>Goods must be returned in the original purchase condition and be unused and undamaged.<br>Any items with scratch or scuff marks and that have been cut down or altered will not be refunded - whether in transit or during 3rd party handling.<br>Items with custom liners are non-refundable.<br>Any credit card transaction fees are non-refundable.</div></div>"
-            . "</div></body></html>";
-        return $html;
+        
+        $shippingRow = floatval($order['shipping_amount']) > 0 
+            ? "<tr><td>Shipping:</td><td align='right'>$" . number_format($order['shipping_amount'], 2) . "</td></tr>"
+            : '';
+        
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt - Order #{$order['order_number']}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4; margin: 0; padding: 0; }
+        .company-name { font-size: 20pt; font-weight: bold; color: #2f3192; margin-bottom: 8px; }
+        .company-details { font-size: 9pt; line-height: 1.5; }
+        .invoice-title { font-size: 24pt; font-weight: bold; color: #2f3192; text-transform: uppercase; }
+        .invoice-meta { font-size: 9pt; }
+        .bill-to-section { margin: 15px 0; padding: 12px; background: #f8f9fa; border-left: 4px solid #2f3192; }
+        .bill-to-title { font-weight: bold; font-size: 11pt; margin-bottom: 8px; color: #2f3192; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .items-table thead { background: #2f3192; color: white; }
+        .items-table th { padding: 8px; text-align: left; font-weight: bold; font-size: 10pt; }
+        .items-table td { padding: 8px; border-bottom: 1px solid #dee2e6; font-size: 10pt; }
+        .text-right { text-align: right; }
+        .totals-table { width: 100%; margin-top: 15px; font-size: 10pt; }
+        .totals-table td { padding: 5px; }
+        .grand-total { font-size: 14pt; font-weight: bold; background: #2f3192; color: white; padding: 12px; text-align: center; margin-top: 10px; }
+        .gst-breakdown { margin-top: 12px; padding: 12px; background: #f8f9fa; border: 1px solid #dee2e6; }
+        .gst-breakdown h4 { margin: 0 0 8px 0; color: #2f3192; font-size: 10pt; }
+        .paid-box { margin: 15px 0; padding: 15px; background: #d4edda; border: 2px solid #28a745; text-align: center; font-size: 14pt; font-weight: bold; color: #155724; }
+        .terms { margin-top: 15px; padding: 12px; background: #f8f9fa; border-top: 2px solid #dee2e6; font-size: 8pt; line-height: 1.5; }
+        .terms h4 { margin: 0 0 8px 0; color: #2f3192; font-size: 9pt; }
+        .footer { margin-top: 15px; text-align: center; font-size: 8pt; color: #6c757d; border-top: 2px solid #dee2e6; padding-top: 12px; }
+    </style>
+</head>
+<body>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-bottom: 3px solid #2f3192; padding-bottom: 12px; margin-bottom: 15px;">
+        <tr>
+            <td width="60%" valign="top">
+                <div class="company-name">Demolition Traders</div>
+                <div class="company-details">
+                    249 Kahikatea Drive<br>
+                    Hamilton 3204<br>
+                    Phone: 07-847-4989<br>
+                    Email: admin@demolitiontraders.co.nz<br>
+                    <strong>GST Number: 45-514-609</strong>
+                </div>
+            </td>
+            <td width="40%" valign="top" align="right">
+                <div class="invoice-title">RECEIPT</div>
+                <div class="invoice-meta">
+                    <strong>Receipt #:</strong> {$order['order_number']}<br>
+                    <strong>Date:</strong> {$orderDate->format('d/m/y')}<br>
+                    <strong>Time:</strong> {$orderDate->format('H:i')}
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <div class="bill-to-section">
+        <div class="bill-to-title">CUSTOMER:</div>
+        <strong>{$customerName}</strong><br>
+        {$billing['address']}<br>
+        {$billing['city']} {$billing['postcode']}<br>
+        Email: {$billing['email']}<br>
+        Phone: {$billing['phone']}
+    </div>
+    
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Description</th>
+                <th style="width: 15%;">SKU</th>
+                <th style="width: 10%;" class="text-right">Qty</th>
+                <th style="width: 12%;" class="text-right">Unit Price</th>
+                <th style="width: 13%;" class="text-right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>{$itemsHtml}</tbody>
+    </table>
+    
+    <div class="grand-total">TOTAL PAID: \${$totalAmountFormatted}</div>
+    
+    <div class="gst-breakdown">
+        <h4>GST Breakdown</h4>
+        <table class="totals-table">
+            <tr>
+                <td width="60%">Subtotal (excl GST):</td>
+                <td width="40%" align="right">\${$subtotalFormatted}</td>
+            </tr>
+            <tr>
+                <td>GST Amount (15%):</td>
+                <td align="right">\${$taxAmountFormatted}</td>
+            </tr>
+            {$shippingRow}
+            <tr style="font-weight: bold;">
+                <td>Total (incl GST):</td>
+                <td align="right">\${$totalAmountFormatted}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="paid-box">PAID IN FULL</div>
+    
+    <div class="terms">
+        <h4>TERMS & CONDITIONS</h4>
+        <p><strong>Payment Terms:</strong> Payment has been received in full for goods listed above.</p>
+        <p><strong>Refund Policy:</strong> Demolition Traders Ltd offers a 30 day refund period on all goods. Goods must be returned and inspected within 30 days of original purchase date for a refund. Proof of original purchase is required as a condition of the returns policy.</p>
+        <p><strong>Returns:</strong> Goods must be returned in the original purchase condition and be unused and undamaged. Any items with scratch or scuff marks and that have been cut down or altered will not be refunded - whether in transit or during 3rd party handling.</p>
+        <p><strong>Non-Refundable Items:</strong> Items with custom liners are non-refundable. Any credit card transaction fees are non-refundable.</p>
+    </div>
+    
+    <div class="footer">
+        Thank you for your purchase!<br>
+        For any queries, please contact 07-847-4989 or info@demolitiontraders.co.nz
+    </div>
+</body>
+</html>
+HTML;
     }
     
   
@@ -217,5 +459,36 @@ class EmailService {
         </body>
         </html>
         ";
+    }
+    
+    /**
+     * Generic send email method
+     */
+    public function sendEmail($to, $subject, $body, $altBody = '') {
+        if (!$this->config['enabled']) {
+            error_log("Email sending is disabled");
+            return false;
+        }
+        
+        try {
+            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $to;
+            
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($toEmail);
+            $this->mailer->Subject = $subject;
+            $this->mailer->Body = $body;
+            
+            if ($altBody) {
+                $this->mailer->AltBody = $altBody;
+            }
+            
+            $this->mailer->send();
+            error_log("Email sent successfully to: $toEmail - Subject: $subject");
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Failed to send email: " . $e->getMessage());
+            return false;
+        }
     }
 }

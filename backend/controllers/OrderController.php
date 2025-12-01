@@ -105,7 +105,9 @@ class OrderController {
      */
     public function create($data) {
         $userId = $_SESSION['user_id'] ?? null;
-        $sessionId = $_SESSION['cart_id'] ?? null;
+        $sessionId = session_id(); // Get actual PHP session ID
+        
+        error_log("OrderController::create - userId: " . var_export($userId, true) . ", sessionId: " . var_export($sessionId, true));
         
         // Validate required fields
         $required = ['billing_address', 'shipping_address', 'payment_method'];
@@ -134,6 +136,8 @@ class OrderController {
             );
         }
         
+        error_log("OrderController::create - Cart items count: " . count($cartItems));
+        
         if (empty($cartItems)) {
             throw new Exception('Cart is empty');
         }
@@ -146,16 +150,20 @@ class OrderController {
         }
         
         // Calculate totals
-        $subtotal = 0;
+        // Note: All prices already include GST (15%)
+        $totalInclGST = 0;
         foreach ($cartItems as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
+            $totalInclGST += $item['price'] * $item['quantity'];
         }
         
-        $taxRate = 0.15; // 15% GST
-        $taxAmount = $subtotal * $taxRate;
+        // Calculate GST component from GST-inclusive prices
+        // If price includes GST: GST Amount = Total / 1.15 * 0.15
+        // Subtotal (excl GST) = Total / 1.15
+        $subtotal = $totalInclGST / 1.15; // Subtotal excluding GST
+        $taxAmount = $subtotal * 0.15; // GST amount (15% of excl GST price)
         $shippingAmount = floatval($data['shipping_amount'] ?? 0);
         $discountAmount = floatval($data['discount_amount'] ?? 0);
-        $total = $subtotal + $taxAmount + $shippingAmount - $discountAmount;
+        $total = $totalInclGST + $shippingAmount - $discountAmount;
         
         // Start transaction
         $this->db->beginTransaction();
@@ -167,7 +175,7 @@ class OrderController {
             $orderId = $this->db->insert('orders', [
                 'order_number' => $orderNumber,
                 'user_id' => $userId,
-                'guest_email' => $data['email'] ?? null,
+                'guest_email' => $userId ? null : ($data['email'] ?? null),
                 'status' => 'pending',
                 'payment_status' => 'pending',
                 'payment_method' => $data['payment_method'],
@@ -183,8 +191,10 @@ class OrderController {
             
             // Create order items
             foreach ($cartItems as $item) {
-                $itemTotal = $item['price'] * $item['quantity'];
-                $itemTax = $itemTotal * $taxRate;
+                // Price already includes GST
+                $itemTotalInclGST = $item['price'] * $item['quantity'];
+                $itemSubtotal = $itemTotalInclGST / 1.15; // Excl GST
+                $itemTax = $itemSubtotal * 0.15; // GST component
                 
                 $this->db->insert('order_items', [
                     'order_id' => $orderId,
@@ -192,10 +202,10 @@ class OrderController {
                     'sku' => $item['sku'],
                     'product_name' => $item['name'],
                     'quantity' => $item['quantity'],
-                    'unit_price' => $item['price'],
-                    'subtotal' => $itemTotal,
-                    'tax_amount' => $itemTax,
-                    'total' => $itemTotal + $itemTax
+                    'unit_price' => $item['price'], // This is GST-inclusive price
+                    'subtotal' => $itemSubtotal, // Excl GST
+                    'tax_amount' => $itemTax, // GST amount
+                    'total' => $itemTotalInclGST // Incl GST (same as unit_price * quantity)
                 ]);
                 
                 // Update product stock
@@ -210,6 +220,18 @@ class OrderController {
                 $this->db->delete('cart', 'user_id = :user_id', ['user_id' => $userId]);
             } else {
                 $this->db->delete('cart', 'session_id = :session_id', ['session_id' => $sessionId]);
+            }
+            
+            // Save address to user account if logged in and requested
+            if ($userId) {
+                error_log("OrderController::create - userId: $userId, save_address flag: " . var_export($data['save_address'] ?? null, true));
+                // Only save if explicitly requested via save_address flag
+                if (!empty($data['save_address'])) {
+                    error_log("OrderController::create - Calling saveAddressToUserAccount");
+                    $this->saveAddressToUserAccount($userId, $data['billing_address'], $data['shipping_address']);
+                } else {
+                    error_log("OrderController::create - Not saving address (flag not set)");
+                }
             }
             
             // Commit transaction
@@ -378,5 +400,95 @@ class OrderController {
         $this->db->delete('orders', 'id = :id', ['id' => $id]);
         
         return ['success' => true, 'message' => 'Order deleted successfully'];
+    }
+    
+    /**
+     * Save address to user account (max 5 addresses)
+     */
+    private function saveAddressToUserAccount($userId, $billingAddress, $shippingAddress) {
+        try {
+            // Get existing addresses
+            $existingAddresses = $this->db->fetchAll(
+                "SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC",
+                [$userId]
+            );
+            
+            // Check if billing address already exists
+            $billingExists = false;
+            foreach ($existingAddresses as $addr) {
+                if ($this->isSameAddress($addr, $billingAddress)) {
+                    $billingExists = true;
+                    break;
+                }
+            }
+            
+            // Add billing address if not exists and under limit
+            if (!$billingExists && count($existingAddresses) < 5) {
+                $isDefault = count($existingAddresses) === 0 ? 1 : 0;
+                $addressId = $this->db->insert('addresses', [
+                    'user_id' => $userId,
+                    'address_type' => 'both',
+                    'street_address' => $billingAddress['address'] ?? '',
+                    'suburb' => $billingAddress['suburb'] ?? null,
+                    'city' => $billingAddress['city'] ?? '',
+                    'state' => $billingAddress['state'] ?? null,
+                    'postcode' => $billingAddress['postcode'] ?? '',
+                    'country' => $billingAddress['country'] ?? 'NZ',
+                    'is_default' => $isDefault
+                ]);
+                error_log("Saved new billing address for user #$userId, address_id: $addressId");
+            } elseif (!$billingExists) {
+                error_log("Cannot save address - user #$userId already has 5 addresses (limit reached)");
+            }
+            
+            // Check if shipping address is different and save if needed
+            if (!$this->isSameAddress($billingAddress, $shippingAddress)) {
+                $shippingExists = false;
+                foreach ($existingAddresses as $addr) {
+                    if ($this->isSameAddress($addr, $shippingAddress)) {
+                        $shippingExists = true;
+                        break;
+                    }
+                }
+                
+                // Refresh count after billing address might have been added
+                $currentCount = $this->db->fetchOne(
+                    "SELECT COUNT(*) as count FROM addresses WHERE user_id = ?",
+                    [$userId]
+                );
+                $addressCount = $currentCount['count'] ?? 0;
+                
+                if (!$shippingExists && $addressCount < 5) {
+                    $shippingAddressId = $this->db->insert('addresses', [
+                        'user_id' => $userId,
+                        'address_type' => 'shipping',
+                        'street_address' => $shippingAddress['address'] ?? '',
+                        'suburb' => $shippingAddress['suburb'] ?? null,
+                        'city' => $shippingAddress['city'] ?? '',
+                        'state' => $shippingAddress['state'] ?? null,
+                        'postcode' => $shippingAddress['postcode'] ?? '',
+                        'country' => $shippingAddress['country'] ?? 'NZ',
+                        'is_default' => 0
+                    ]);
+                    error_log("Saved shipping address for user #$userId, address_id: $shippingAddressId");
+                }
+            }
+        } catch (Exception $e) {
+            // Don't throw - address saving failure shouldn't break order creation
+            error_log("Failed to save address: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Check if two addresses are the same
+     */
+    private function isSameAddress($addr1, $addr2) {
+        $normalize = function($str) {
+            return strtolower(trim(preg_replace('/\s+/', '', $str ?? '')));
+        };
+        
+        return $normalize($addr1['address'] ?? '') === $normalize($addr2['address'] ?? '') &&
+               $normalize($addr1['city'] ?? '') === $normalize($addr2['city'] ?? '') &&
+               $normalize($addr1['postcode'] ?? '') === $normalize($addr2['postcode'] ?? '');
     }
 }

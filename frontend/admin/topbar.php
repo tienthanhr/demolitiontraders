@@ -19,8 +19,17 @@
             <?php echo strtoupper(substr($_SESSION['first_name'] ?? 'A', 0, 1)); ?>
         </div>
         <span><?php echo $_SESSION['first_name'] ?? 'Admin'; ?></span>
-        <a href="../../logout.php" class="logout-btn">
+        <a href="#" onclick="confirmLogout(event)" class="logout-btn">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </div>
 </div>
+
+<script>
+function confirmLogout(event) {
+    event.preventDefault();
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '../../logout.php';
+    }
+}
+</script>

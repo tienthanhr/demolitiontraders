@@ -1,4 +1,7 @@
 <!-- Header Component -->
+<!-- Load API Helper First -->
+<script src="assets/js/api-helper.js?v=1"></script>
+
 <!-- Top Navigation Bar -->
 <div class="header-top">
     <div class="container">
@@ -11,10 +14,10 @@
             <a href="faqs.php">FAQs</a>
             <a href="about.php">About Us</a>
             <a href="contact.php">Contact Us</a>
-            <a href="https://www.facebook.com/DemolitionTraders" target="_blank"><i class="fa-brands fa-facebook-square"></i></a>
+            <a href="https://www.facebook.com/profile.php?id=100063449630280#" target="_blank"><i class="fa-brands fa-facebook-square"></i></a>
         </div>
-        <div class="header-top-right">
-            <a href="login.php" id="login-link">Login</a>
+        <div class="header-top-right" id="header-top-right">
+            <a href="login.php" id="login-link"><i class="fa-solid fa-user"></i> Login</a>
             <a href="wishlist.php" class="wishlist-link"><i class="fa-regular fa-heart"></i> <span id="wishlist-count">0</span></a>
             <a href="cart.php" class="cart-link"><i class="fa-solid fa-cart-shopping"></i> <span id="cart-count">0</span></a>
         </div>
@@ -190,8 +193,7 @@
         // Update wishlist count
         async function updateWishlistCount() {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/wishlist/get.php');
-                const data = await response.json();
+                const data = await apiFetch(getApiUrl('/api/wishlist/get.php'));
                 const count = data.wishlist ? data.wishlist.length : 0;
                 const el = document.getElementById('wishlist-count');
                 if (el) el.textContent = count;
@@ -202,9 +204,11 @@
     // Update cart count
     async function updateCartCount() {
         try {
-            const response = await fetch('/demolitiontraders/api/cart/get');
-            const data = await response.json();
-            document.getElementById('cart-count').textContent = data.summary.item_count;
+            const data = await apiFetch(getApiUrl('/api/cart/get.php'), {
+                credentials: 'same-origin'
+            });
+            const el = document.getElementById('cart-count');
+            if (el && data.summary) el.textContent = data.summary.item_count;
         } catch (error) {
             console.error('Error updating cart count:', error);
         }
@@ -213,26 +217,38 @@
     // Check authentication
     async function checkAuth() {
         try {
-            const response = await fetch('/demolitiontraders/api/auth/me');
-            if (response.ok) {
-                const data = await response.json();
-                document.getElementById('auth-links').innerHTML = `
-                    <a href="account.php"><i class="fa-solid fa-user"></i> ${data.first_name}</a>
-                    <a href="#" onclick="logout()">Logout</a>
-                `;
+            const data = await apiFetch(getApiUrl('/api/user/me.php'));
+            if (data.success && data.user) {
+                const headerRight = document.getElementById('header-top-right');
+                if (headerRight) {
+                    headerRight.innerHTML = `
+                        <a href="profile.php"><i class="fa-solid fa-user"></i> ${data.user.first_name}</a>
+                        <a href="#" onclick="logout(); return false;"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+                        <a href="wishlist.php" class="wishlist-link"><i class="fa-regular fa-heart"></i> <span id="wishlist-count">0</span></a>
+                        <a href="cart.php" class="cart-link"><i class="fa-solid fa-cart-shopping"></i> <span id="cart-count">0</span></a>
+                    `;
+                }
+                // Update counts after DOM update
+                updateWishlistCount();
+                updateCartCount();
+            } else {
+                // Not authenticated - this is expected for guest users
+                console.log('User not authenticated (guest mode)');
             }
         } catch (error) {
-            // Not authenticated
+            // Network or other errors - not a problem for guest users
+            console.log('Auth check skipped:', error.message);
         }
     }
     
     // Logout function
     async function logout() {
         try {
-            await fetch('/demolitiontraders/api/auth/logout', { method: 'POST' });
+            await apiFetch(getApiUrl('/api/user/logout.php'), { method: 'POST' });
             window.location.href = 'index.php';
         } catch (error) {
             console.error('Logout error:', error);
+            window.location.href = 'index.php';
         }
     }
     
@@ -261,8 +277,7 @@
     
     async function fetchOpeningHours() {
         try {
-            const response = await fetch('/demolitiontraders/backend/api/opening-hours.php');
-            const data = await response.json();
+            const data = await apiFetch(getApiUrl('/api/opening-hours.php'));
             
             if (data.success && data.today_hours) {
                 const displayElement = document.getElementById('opening-hours-display');
@@ -355,4 +370,31 @@
     updateWishlistCount();
     checkAuth();
     fetchOpeningHours();
+    
+    // Listen for cart/wishlist updates from other pages (localStorage for cross-tab)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'cartUpdated') {
+            updateCartCount();
+        }
+        if (e.key === 'wishlistUpdated') {
+            updateWishlistCount();
+        }
+    });
+    
+    // Listen for cart/wishlist updates in same tab (custom events)
+    document.addEventListener('cartUpdated', function() {
+        updateCartCount();
+    });
+    
+    document.addEventListener('wishlistUpdated', function() {
+        updateWishlistCount();
+    });
+    
+    // Update when window gets focus (after navigating back)
+    window.addEventListener('focus', function() {
+        updateCartCount();
+        updateWishlistCount();
+    });
 </script>
+
+<?php include 'url-cleaner.php'; ?>

@@ -544,3 +544,260 @@ textarea.form-control {
     justify-content: space-between;
     padding: 5px 0;
 }
+
+/* Bulk Actions Styling */
+#bulk-actions-bar {
+    background: linear-gradient(135deg, #2f3192 0%, #1a1d5c 100%);
+    color: white;
+    padding: 15px 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(47, 49, 146, 0.3);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Undo Bar Styling */
+#undo-bar {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #000;
+    padding: 15px 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    animation: slideDown 0.3s ease-out;
+    font-weight: 500;
+}
+
+#undo-bar .btn {
+    padding: 6px 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+#undo-bar .btn-warning {
+    background: #fff;
+    color: #ff9800;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#undo-bar .btn-warning:hover {
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#undo-bar .btn-secondary {
+    background: rgba(0, 0, 0, 0.1);
+    color: #000;
+}
+
+#undo-bar .btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+#undo-message {
+    font-size: 15px;
+}
+
+#undo-message i {
+    margin-right: 8px;
+}
+
+#selected-count {
+    font-weight: 600;
+    font-size: 15px;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+#bulk-action {
+    background: white;
+    color: #2f3192;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#bulk-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Checkbox Styling - Larger for better visibility */
+.product-checkbox,
+.order-checkbox,
+.customer-checkbox,
+.category-checkbox,
+#select-all,
+#selectAll,
+#selectAllHeader {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #2f3192;
+    transition: transform 0.2s ease;
+}
+
+.product-checkbox:hover,
+.order-checkbox:hover,
+.customer-checkbox:hover,
+.category-checkbox:hover,
+#select-all:hover,
+#selectAll:hover,
+#selectAllHeader:hover {
+    transform: scale(1.15);
+}
+
+.product-checkbox:checked,
+.order-checkbox:checked,
+.customer-checkbox:checked,
+.category-checkbox:checked,
+#select-all:checked,
+#selectAll:checked,
+#selectAllHeader:checked {
+    animation: checkBounce 0.3s ease;
+}
+
+@keyframes checkBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+}
+
+/* Table row hover effect with checkbox */
+#products-table tbody tr,
+#orders-table tbody tr,
+#customers-table tbody tr,
+#categories-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+#products-table tbody tr:hover,
+#orders-table tbody tr:hover,
+#customers-table tbody tr:hover,
+#categories-table tbody tr:hover {
+    background: #f0f4ff;
+    transform: translateX(3px);
+    box-shadow: -3px 0 0 #2f3192;
+}
+
+#products-table tbody tr:has(.product-checkbox:checked),
+#orders-table tbody tr:has(.order-checkbox:checked),
+#customers-table tbody tr:has(.customer-checkbox:checked),
+#categories-table tbody tr:has(.category-checkbox:checked) {
+    background: #e8f0fe;
+    border-left: 3px solid #2f3192;
+}
+
+/* Enhanced buttons in bulk bar */
+#bulk-actions-bar .btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+#bulk-actions-bar .btn-light {
+    background: white;
+    color: #2f3192;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#bulk-actions-bar .btn-light:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#bulk-actions-bar .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#bulk-actions-bar .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Action buttons cell styling */
+.action-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.action-btns .btn {
+    transition: all 0.2s ease;
+}
+
+.action-btns .btn:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Notification animations */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+}
+
+/* Loading state for bulk bar */
+#bulk-actions-bar[style*="opacity: 0.7"] {
+    position: relative;
+}
+
+#bulk-actions-bar[style*="opacity: 0.7"]::after {
+    content: "Processing...";
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    opacity: 0.8;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+

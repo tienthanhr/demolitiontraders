@@ -29,6 +29,7 @@
     </section>
     
     <?php include 'components/footer.php'; ?>
+    <?php include 'components/toast-notification.php'; ?>
     
     <script src="assets/js/main.js"></script>
     <script>
@@ -69,11 +70,28 @@
                 '<span class="in-stock"><i class="fas fa-check-circle"></i> In Stock (' + product.stock_quantity + ' available)</span>' : 
                 '<span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>';
             
+            let collectionOptionsHtml = '';
+            if (product.show_collection_options == 1 || product.show_collection_options === true) {
+                collectionOptionsHtml = `
+                <div class="product-collection-options" style="margin-top:32px; border-top:1px solid #eee; padding-top:24px;">
+                    <h3><i class="fas fa-box"></i> Collection & Delivery Options</h3>
+                    <div style="font-size:15px; color:#333;">
+                        <b>OPTION A: FREE PICKUP</b><br>
+                        - Pick up FREE from our Hamilton store.<br>
+                        (There is no minimum sheet quantity required for pickup orders.)<br><br>
+                        <b>OPTION B: DELIVERY - QUOTE REQUIRED</b><br>
+                        1. Minimum Order: Strict 10-sheet minimum for delivery.<br>
+                        2. Freight Quote: Due to size/weight variability, freight is NOT included.<br><br>
+                        <b>TO GET A QUOTE:</b> Click 'Enquire' and provide your Quantity (min. 10) and Delivery Suburb & Postcode. We will reply with the freight cost to add to your order.
+                    </div>
+                </div>
+                `;
+            }
             const html = `
                 <div class="product-layout">
                     <div class="product-images">
                         <div class="main-image">
-                            <img src="${imageUrl}" alt="${product.name}" id="main-product-image">
+                            <img src="${imageUrl}" alt="${product.name}" id="main-product-image" onerror="this.src='assets/images/logo.png'">
                         </div>
                     </div>
                     
@@ -178,6 +196,10 @@
             `;
             
             document.getElementById('product-detail').innerHTML = html;
+                    // Append collection options to product detail if enabled
+                    if (collectionOptionsHtml) {
+                        document.getElementById('product-detail').innerHTML += collectionOptionsHtml;
+                    }
         }
         
         // Quantity controls
@@ -211,7 +233,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success || data.cart) {
-                    window.location.href = 'checkout.php';
+                    // Trigger cart update event
+                    localStorage.setItem('cartUpdated', Date.now());
+                    // Redirect to cart page
+                    window.location.href = 'cart.php';
                 } else {
                     alert('Failed to add product to cart');
                 }
@@ -260,6 +285,29 @@
             document.getElementById(tabName + '-tab').classList.add('active');
             event.target.classList.add('active');
         }
+        
+        // Listen for cart updates from other pages
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cartUpdated') {
+                // Re-load product to update button state
+                loadProduct();
+            }
+        });
+        
+        // Also check on window focus (when user comes back from cart)
+        let lastCheckTime = 0;
+        window.addEventListener('focus', function() {
+            const now = Date.now();
+            // Prevent multiple checks within 2 seconds
+            if (now - lastCheckTime < 2000) return;
+            lastCheckTime = now;
+            
+            const lastUpdate = localStorage.getItem('cartUpdated');
+            if (lastUpdate && now - lastUpdate < 10000) {
+                // Cart was updated in last 10 seconds, reload product
+                loadProduct();
+            }
+        });
     </script>
 </body>
 </html>

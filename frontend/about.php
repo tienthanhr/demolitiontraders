@@ -7,6 +7,191 @@
     <base href="/demolitiontraders/frontend/">
     <link rel="stylesheet" href="assets/css/new-style.css?v=4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Subtle animations và improvements */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .page-header {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .content-main {
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .content-main p {
+            animation: fadeInUp 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .content-main p:nth-child(1) { animation-delay: 0.1s; }
+        .content-main p:nth-child(2) { animation-delay: 0.2s; }
+        .content-main p:nth-child(3) { animation-delay: 0.3s; }
+        .content-main p:nth-child(4) { animation-delay: 0.4s; }
+        .content-main p:nth-child(5) { animation-delay: 0.5s; }
+        .content-main p:nth-child(6) { animation-delay: 0.6s; }
+
+        .sidebar {
+            animation: slideInRight 0.8s ease-out 0.2s both;
+        }
+
+        .sidebar-box {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .sidebar-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .content-main img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-main img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .btn:hover:before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .service-list li {
+            transition: all 0.3s ease;
+        }
+
+        .service-list li:hover {
+            transform: translateX(8px);
+            background: rgba(0, 123, 255, 0.05);
+            padding-left: 10px;
+        }
+
+        .service-list a {
+            transition: color 0.3s ease;
+        }
+
+        #opening-hours-about > div {
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        #opening-hours-about > div:nth-child(1) { animation-delay: 0.1s; }
+        #opening-hours-about > div:nth-child(2) { animation-delay: 0.2s; }
+        #opening-hours-about > div:nth-child(3) { animation-delay: 0.3s; }
+        #opening-hours-about > div:nth-child(4) { animation-delay: 0.4s; }
+        #opening-hours-about > div:nth-child(5) { animation-delay: 0.5s; }
+        #opening-hours-about > div:nth-child(6) { animation-delay: 0.6s; }
+        #opening-hours-about > div:nth-child(7) { animation-delay: 0.7s; }
+
+        /* Subtle gradient text effect */
+        .page-header h1 {
+            background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Smooth spinner rotation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Enhanced shadow for boxes */
+        .sidebar-box {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Subtle hover effect for contact info */
+        .sidebar-box p {
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-box p:hover {
+            color: #007bff;
+        }
+
+        /* Add smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .content-main, .sidebar {
+                animation: fadeIn 0.8s ease-out;
+            }
+        }
+    </style>
 </head>
 <body>
     <?php include 'components/header.php'; ?>
@@ -22,111 +207,42 @@
     
     <section class="content-section">
         <div class="container">
-            <div class="about-intro">
-                <h2>Waikato's Iconic Building Materials Destination Since 1984</h2>
-                <p class="lead">Demolition Traders is one of the largest privately owned companies of its type in New Zealand, offering a unique shopping experience across our 3-acre village-style yard in Hamilton.</p>
-            </div>
-            
             <div class="two-column-layout">
                 <div class="content-main">
-                    <div style="background: linear-gradient(135deg, #2f3192 0%, #1a1d5c 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
-                        <h3 style="color: #ffca0d; margin-top: 0;">🏆 Established 1984 - Over 40 Years of Excellence</h3>
-                        <p style="margin-bottom: 0; font-size: 16px;">One of Waikato's most iconic private businesses, trusted by generations of builders and renovators.</p>
-                    </div>
-                    
-                    <h3>Our Story</h3>
-                  
-                    <p>Since 1984, Demolition Traders has been Hamilton's premier destination for quality building materials. What sets us apart is our expansive 3-acre yard, thoughtfully laid out with a village-style atmosphere that makes shopping for renovation materials an enjoyable experience.</p>
-                    
-                    <p>The vast majority of our stock is displayed under cover in our many barns and sheds, each containing a specific range of products. Our dedicated merchandising staff take pride in the layout, making options for your project as visible and accessible as possible.</p>
-                      <div style="text-align:center; margin: 18px 0 28px 0;">
+                    <div style="margin-bottom: 30px;"></div>
+                    <p>Established in 1984, Demolition Traders is one of the Waikato's iconic, privately owned businesses. The premises covers 3.5 acres allowing for easy access, parking & loading.</p>
+                    <p>Demolition Traders offer a comprehensive range of both new and recycled building materials at discounted prices. The stock is sourced from manufacturers' surplus stock and cancelled orders, or end of line items & downgraded products, or direct from importers & national suppliers, or demolition projects. They also have new products made specifically for Demolition Traders.</p>
+                    <p>The company has expanded to supply value to customers nationwide. This is achieved by offering delivery solutions by courier, carrier & fragile freight contacts.</p>
+                    <p>The new Aluminium Joinery is supplied by a leading NZ based manufacturer with comprehensive guarantees. This ensures NZ manufacturing standards are upheld as the joinery is built by professionals, not staff members.</p>
+                    <p>Over the years Demolition Traders has expanded to become the largest supplier of materials to tiny home builders & granny flats. Their tiny home product range includes, new timber, new roofing & flashings, pack lots of treated & untreated plywood, double glazed Aluminium Joinery, & much more. New Zealand's largest range of Double Glazed Ready-Made Aluminium Joinery.</p>
+                    <p>Their employees are very friendly, helpful & knowledgeable. Mike & Wayne have been with Demolition Traders for 20 plus years, Karl & Bundy for 10 plus years, while other team members have several years' experience with Demolition Traders & other building related positions.</p>
+                    <div style="text-align:center; margin: 18px 0 28px 0;">
                         <img src="assets/images/demoteam.jpg" alt="Demolition Traders Team" style="max-width:320px;width:100%;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.10);margin-bottom:8px;">
                         <div style="font-size:13px;color:#666;">The Demolition Traders Team</div>
                     </div>
-                    <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #2f3192; margin: 30px 0;">
-                        <h4 style="margin-top: 0; color: #2f3192;">💡 What Makes Us Different</h4>
-                        <ul style="margin-bottom: 0;">
-                            <li><strong>3 Acres of Covered Display:</strong> Browse comfortably in any weather</li>
-                            <li><strong>Village-Style Layout:</strong> Easy navigation through specialized product barns</li>
-                            <li><strong>New & Recycled Materials:</strong> Huge range for every project and budget</li>
-                            <li><strong>Weekly New Stock:</strong> Fresh inventory from demolition sites and manufacturers</li>
-                        </ul>
-                    </div>
-                    
-                    <h3>Our Product Range</h3>
-                    <p>We obtain our stock from a diverse range of sources using our bulk buying power:</p>
-                    <ul>
-                        <li><strong>Demolition Projects:</strong> Quality salvaged materials from sites across New Zealand</li>
-                        <li><strong>Manufacturer Surplus:</strong> Brand new products at discounted prices</li>
-                        <li><strong>Cancelled Orders:</strong> Premium materials available at great value</li>
-                        <li><strong>Custom Products:</strong> New French doors and aluminium joinery made specifically for Demolition Traders</li>
-                    </ul>
-                    
-                    <div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
-                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-                            <h4 style="color: #2f3192; margin-top: 0;">Native Timber</h4>
-                            <p style="font-size: 14px; margin: 0; color: #666;">Rimu, Kauri, Matai & more</p>
-                        </div>
-                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-                            <h4 style="color: #2f3192; margin-top: 0;">Doors & Windows</h4>
-                            <p style="font-size: 14px; margin: 0; color: #666;">Character & modern styles</p>
-                        </div>
-                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-                            <h4 style="color: #2f3192; margin-top: 0;">Kitchen Sets</h4>
-                            <p style="font-size: 14px; margin: 0; color: #666;">Complete kitchens ready to install</p>
-                        </div>
-                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-                            <h4 style="color: #2f3192; margin-top: 0;">Bathrooms</h4>
-                            <p style="font-size: 14px; margin: 0; color: #666;">Fixtures, fittings & vanities</p>
-                        </div>
-                    </div>
-                    
-                    <h3>Our Quality Guarantee</h3>
-                    <p>As one of Waikato's iconic private businesses, we guarantee all our products are offered in good sound condition. We carefully inspect every item before it goes on display.</p>
-                    
-                    <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h4 style="margin-top: 0; color: #e65100;"><i class="fa-solid fa-shield-halved"></i> 28-Day Return Policy</h4>
-                        <p style="margin-bottom: 0;">We always endeavour to satisfy your needs. Should you have a change of plans, or if the goods are not suitable for your project, we will happily refund you within 28 days with proof of purchase for a full refund of the purchase price.</p>
-                    </div>
-                    
-                    <h3>Our Commitment to You</h3>
-                    <ul>
-                        <li><strong>Sustainability:</strong> Giving quality materials a second life reduces waste and environmental impact</li>
-                        <li><strong>Value for Money:</strong> The right products at the right price - that's our objective</li>
-                        <li><strong>Expert Service:</strong> Knowledgeable staff to help you find exactly what you need</li>
-                        <li><strong>Unique Experience:</strong> Our village-style layout makes shopping enjoyable</li>
-                        <li><strong>Honest Pricing:</strong> All prices quoted include GST - no hidden surprises</li>
-                    </ul>
-                    
-                    <div style="background: linear-gradient(135deg, #ffca0d 0%, #ffa000 100%); padding: 30px; border-radius: 10px; margin-top: 40px; text-align: center;">
-                        <h3 style="margin-top: 0; color: #1a1d5c;">Come Visit Us!</h3>
-                        <p style="font-size: 18px; margin-bottom: 20px; color: #333;">We invite you to come in and take a look... we are sure you will be pleasantly surprised!</p>
-                        <a href="contact.php" class="btn" style="background: #2f3192; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: 600;">Get Directions</a>
-                    </div>
+                    <p>For a unique shopping experience, come in & meet the team!</p>
                 </div>
-                
                 <aside class="sidebar">
                     <div class="sidebar-box">
                         <h3>Visit Our Yard</h3>
                         <p><strong>Address:</strong><br>249 Kahikatea Drive, Greenlea Lane<br>Frankton, Hamilton<br>New Zealand</p>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=249+Kahikatea+Drive+Greenlea+Lane+Frankton+Hamilton+New+Zealand" target="_blank" class="btn btn-primary" style="display: block; text-align: center;">
+                            <i class="fa-solid fa-map-location-dot"></i> Get Directions
+                        </a>
+                        <br></br>
                         <p><strong>Opening Hours:</strong></p>
                         <div id="opening-hours-about" style="margin-left: 0; line-height: 1.8;">
                             <div style="text-align: center; padding: 10px;">
                                 <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
                             </div>
                         </div>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=249+Kahikatea+Drive+Greenlea+Lane+Frankton+Hamilton+New+Zealand" target="_blank" class="btn btn-primary" style="display: block; text-align: center;">
-                            <i class="fa-solid fa-map-location-dot"></i> Get Directions
-                        </a>
                     </div>
-                    
                     <div class="sidebar-box">
                         <h3>Contact Us</h3>
                         <p><strong>Phone:</strong><br>07 847 4989</p>
                         <p><strong>Freephone:</strong><br>0800 DEMOLITION</p>
                         <p><strong>Email:</strong><br>info@demolitiontraders.co.nz</p>
                     </div>
-                    
                     <div class="sidebar-box">
                         <h3>Services</h3>
                         <ul class="service-list">
@@ -139,29 +255,11 @@
                     </div>
                 </aside>
             </div>
-            
-            <div class="stats-section">
-                <div class="stat-box">
-                    <h3>3 Acres</h3>
-                    <p>Massive yard space</p>
-                </div>
-                <div class="stat-box">
-                    <h3>50,000+</h3>
-                    <p>Products in stock</p>
-                </div>
-                <div class="stat-box">
-                    <h3>Weekly</h3>
-                    <p>New stock arrivals</p>
-                </div>
-                <div class="stat-box">
-                    <h3>Expert</h3>
-                    <p>Friendly staff</p>
-                </div>
-            </div>
         </div>
     </section>
     
     <?php include 'components/footer.php'; ?>
+    <?php include 'components/toast-notification.php'; ?>
     
     <script>
     // Load opening hours from Google Places API

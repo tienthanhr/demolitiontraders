@@ -1,51 +1,75 @@
 <?php
+session_start();
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-session_start();
+require_once '../../config/database.php';
 
-try {
-    // Get POST data
-    $data = json_decode(file_get_contents("php://input"), true);
+$data = json_decode(file_get_contents("php://input"), true);
+if (!isset($data['product_id'])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Product ID is required'
+    ]);
+    exit;
+}
+$product_id = intval($data['product_id']);
+
+if (isset($_SESSION['user_id'])) {
+    // Logged in user - remove from database
+    $user_id = $_SESSION['user_id'];
     
-    if (!isset($data['product_id'])) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Product ID is required'
-        ]);
-        exit;
-    }
-    
-    $product_id = $data['product_id'];
-    
-    // Initialize wishlist in session if not exists
-    if (!isset($_SESSION['wishlist'])) {
-        $_SESSION['wishlist'] = [];
-    }
-    
-    // Remove from wishlist
-    $key = array_search((string)$product_id, $_SESSION['wishlist']);
-    if ($key !== false) {
-        unset($_SESSION['wishlist'][$key]);
-        $_SESSION['wishlist'] = array_values($_SESSION['wishlist']); // Re-index array
+    try {
+        $db = Database::getInstance();
+        
+        $result = $db->query(
+            "DELETE FROM wishlist WHERE user_id = ? AND product_id = ?",
+            [$user_id, $product_id]
+        );
+        
+        // Get updated count
+        $count = $db->fetchOne(
+            "SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?",
+            [$user_id]
+        );
         
         echo json_encode([
             'success' => true,
             'message' => 'Product removed from wishlist',
-            'wishlist_count' => count($_SESSION['wishlist'])
+            'wishlist_count' => $count['count']
         ]);
-    } else {
+        exit;
+        
+    } catch (Exception $e) {
+        error_log('Wishlist remove error: ' . $e->getMessage());
         echo json_encode([
             'success' => false,
-            'message' => 'Product not in wishlist'
+            'message' => 'Failed to remove from wishlist'
         ]);
+        exit;
     }
-    
-} catch (Exception $e) {
+}
+
+// Guest user - remove from session
+if (!isset($_SESSION['wishlist'])) {
+    $_SESSION['wishlist'] = [];
+}
+
+$key = array_search((string)$product_id, $_SESSION['wishlist']);
+if ($key !== false) {
+    unset($_SESSION['wishlist'][$key]);
+    $_SESSION['wishlist'] = array_values($_SESSION['wishlist']); // Re-index array
+    echo json_encode([
+        'success' => true,
+        'message' => 'Product removed from wishlist',
+        'wishlist_count' => count($_SESSION['wishlist'])
+    ]);
+} else {
     echo json_encode([
         'success' => false,
-        'message' => 'Error: ' . $e->getMessage()
+        'message' => 'Product not found in wishlist'
     ]);
 }

@@ -252,6 +252,290 @@
             font-size: 11px;
             color: #666;
         }
+        .guest-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .guest-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        .guest-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+        }
+        .guest-banner-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .guest-banner-icon i {
+            font-size: 28px;
+            color: white;
+        }
+        .guest-banner-content {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        .guest-banner-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .guest-banner-content p {
+            margin: 0;
+            opacity: 0.95;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .guest-banner .btn-login {
+            background: white;
+            color: #667eea;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            white-space: nowrap;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .guest-banner .btn-login i {
+            font-size: 16px;
+        }
+        .guest-banner .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            background: #f8f9ff;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2f3192;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-content h3 {
+            margin: 0 0 10px 0;
+            color: #2f3192;
+        }
+        .loading-content p {
+            margin: 0;
+            color: #666;
+        }
+        
+        /* Success Modal */
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .success-modal.active {
+            display: flex;
+        }
+        .success-modal-content {
+            background: white;
+            padding: 0;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: modalSlideIn 0.4s ease;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .success-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        .success-modal-header i {
+            font-size: 64px;
+            margin-bottom: 15px;
+            animation: successPulse 1s ease;
+        }
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .success-modal-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .success-modal-body {
+            padding: 30px;
+        }
+        .order-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .order-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .order-info-item:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 2px solid #dee2e6;
+            font-weight: 700;
+            font-size: 18px;
+            color: #2f3192;
+        }
+        .account-offer {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .account-offer h3 {
+            margin: 0 0 12px 0;
+            font-size: 20px;
+        }
+        .account-offer ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        .account-offer li {
+            margin-bottom: 8px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-create-account {
+            background: #2f3192;
+            color: white;
+        }
+        .btn-create-account:hover {
+            background: #1f2170;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(47, 49, 146, 0.3);
+        }
+        .btn-skip {
+            background: #e9ecef;
+            color: #495057;
+        }
+        .btn-skip:hover {
+            background: #dee2e6;
+        }
+        
+        /* Email exists alert */
+        .email-exists-badge {
+            display: none;
+            margin-top: 8px;
+            padding: 12px 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #856404;
+            animation: slideDown 0.3s ease;
+        }
+        .email-exists-badge.show {
+            display: block;
+        }
+        .email-exists-badge i {
+            margin-right: 8px;
+        }
+        .email-exists-badge a {
+            color: #856404;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         @media (max-width: 768px) {
             .checkout-container {
                 grid-template-columns: 1fr;
@@ -278,6 +562,20 @@
         <div class="container">
             <div class="checkout-container">
             <div class="checkout-form">
+                <!-- Guest Checkout Banner (shown only if not logged in) -->
+                <div class="guest-banner" id="guest-banner" style="display: none;">
+                    <div class="guest-banner-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="guest-banner-content">
+                        <h3>Continue as Guest</h3>
+                        <p>You can checkout without an account. We'll ask if you'd like to create one after your order.</p>
+                    </div>
+                    <a href="login.php?redirect=checkout.php" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </div>
+
                 <form id="checkout-form">
                     <!-- Contact Information -->
                     <div class="form-section">
@@ -299,7 +597,12 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Email <span class="required">*</span></label>
-                                    <input type="email" name="billing_email" required>
+                                    <input type="email" name="billing_email" id="billing_email" required>
+                                    <div class="email-exists-badge" id="email-exists-badge">
+                                        <i class="fas fa-info-circle"></i>
+                                        This email already has an account. 
+                                        <a href="login.php?redirect=checkout.php">Login here</a> to link your order.
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label>Phone <span class="required">*</span></label>
@@ -316,6 +619,15 @@
                             <i class="fas fa-chevron-down toggle-icon"></i>
                         </h2>
                         <div class="form-section-content">
+                        <!-- Saved Addresses Dropdown (only for logged-in users) -->
+                        <div class="form-group" id="saved-addresses-container" style="display: none;">
+                            <label>Saved Addresses</label>
+                            <select id="saved-addresses-select" onchange="fillAddressFromSaved(this.value)" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                                <option value="">-- Select a saved address --</option>
+                                <option value="new">+ Enter new address</option>
+                            </select>
+                        </div>
+                        
                         <div class="form-group">
                             <label>Street Address <span class="required">*</span></label>
                             <input type="text" name="billing_address" placeholder="House number and street name" required>
@@ -563,28 +875,47 @@
     </section>
     
     <?php include 'components/footer.php'; ?>
+<?php include 'components/toast-notification.php'; ?>
     
     <script src="assets/js/main.js"></script>
     <script>
         // Load cart summary
         async function loadCartSummary() {
             try {
-                const response = await fetch('/demolitiontraders/api/cart/get');
-                const data = await response.json();
+                const response = await fetch('/demolitiontraders/backend/api/cart/get.php');
                 
-                if (data.items.length === 0) {
+                if (!response.ok) {
+                    throw new Error('Failed to load cart');
+                }
+                
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('Invalid JSON response:', text);
+                    throw new Error('Invalid response from server');
+                }
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to load cart');
+                }
+                
+                if (!data.items || data.items.length === 0) {
                     alert('Your cart is empty!');
                     window.location.href = 'shop.php';
                     return;
                 }
                 
                 // Display items
-                document.getElementById('order-items').innerHTML = data.items.map(item => `
+                document.getElementById('order-items').innerHTML = data.items.map(item => {
+                    const itemTotal = parseFloat(item.price) * parseInt(item.quantity);
+                    return `
                     <div class="summary-item">
                         <span>${item.name} × ${item.quantity}</span>
-                        <span>$${parseFloat(item.total).toFixed(2)}</span>
+                        <span>$${itemTotal.toFixed(2)}</span>
                     </div>
-                `).join('');
+                `}).join('');
                 
                 // Display totals
                 document.getElementById('summary-subtotal').textContent = '$' + data.summary.subtotal;
@@ -592,6 +923,8 @@
                 
             } catch (error) {
                 console.error('Error loading cart:', error);
+                alert('Error loading cart. Please try again.');
+                window.location.href = 'cart.php';
             }
         }
         
@@ -727,6 +1060,9 @@
         document.getElementById('checkout-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Show loading overlay
+            showLoading('Processing your order...');
+            
             const formData = new FormData(this);
             const sameAsBilling = document.getElementById('same-as-billing').checked;
             
@@ -760,12 +1096,26 @@
                 discount_amount: 0
             };
             
+            // Check if logged in user wants to save new address
+            if (window.currentUser && window.currentUser.id) {
+                const isNewAddress = await checkIfNewAddress(billingAddress);
+                console.log('Is new address:', isNewAddress);
+                if (isNewAddress) {
+                    const shouldSave = confirm('Would you like to save this address to your account for future use?');
+                    console.log('User chose to save:', shouldSave);
+                    if (shouldSave) {
+                        orderData.save_address = true;
+                    }
+                }
+            }
+            
             try {
                 console.log('Sending order data:', orderData);
                 
-                const response = await fetch('/demolitiontraders/api/orders', {
+                const response = await fetch('/demolitiontraders/backend/api/index.php?request=orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify(orderData)
                 });
                 
@@ -779,23 +1129,471 @@
                     result = JSON.parse(responseText);
                 } catch (e) {
                     console.error('Failed to parse response:', e);
+                    hideLoading();
                     alert('Server returned invalid response. Check console for details.');
                     return;
                 }
                 
                 if (response.ok) {
-                    alert(`✓ Order placed successfully!\n\nOrder Number: ${result.order_number}\nTotal: $${parseFloat(result.total_amount).toFixed(2)}\n\nThank you for your order!`);
-                    window.location.href = 'index.php';
+                    hideLoading();
+                    
+                    // Check if user is logged in
+                    const isLoggedIn = window.currentUser && window.currentUser.id;
+                    
+                    if (!isLoggedIn && !window.emailExists) {
+                        // Guest user who hasn't registered - offer account creation
+                        window.pendingOrderId = result.id;
+                        showSuccessModal(result, billingAddress, true);
+                    } else {
+                        // Logged in user or email exists - just show success without account offer
+                        showSuccessModal(result, null, false);
+                    }
                 } else {
                     console.error('Order error:', result);
+                    hideLoading();
                     alert('Error: ' + (result.error || 'Failed to place order'));
                 }
             } catch (error) {
                 console.error('Checkout error:', error);
+                hideLoading();
                 alert('An error occurred while processing your order. Please try again.');
             }
         });
         
+        // Loading overlay functions
+        function showLoading(message = 'Processing...') {
+            let overlay = document.getElementById('loading-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'loading-overlay';
+                overlay.className = 'loading-overlay';
+                overlay.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <h3 id="loading-message">${message}</h3>
+                        <p>Please wait...</p>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+            document.getElementById('loading-message').textContent = message;
+            overlay.classList.add('active');
+        }
+        
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        // Show success modal
+        function showSuccessModal(orderResult, billingAddress, showAccountOffer) {
+            const modal = document.createElement('div');
+            modal.className = 'success-modal active';
+            modal.id = 'success-modal';
+            
+            modal.innerHTML = `
+                <div class="success-modal-content">
+                    <div class="success-modal-header">
+                        <i class="fas fa-check-circle"></i>
+                        <h2>Order Placed Successfully!</h2>
+                    </div>
+                    <div class="success-modal-body">
+                        <div class="order-info">
+                            <div class="order-info-item">
+                                <span>Order Number:</span>
+                                <strong>${orderResult.order_number}</strong>
+                            </div>
+                            <div class="order-info-item">
+                                <span>Total Amount:</span>
+                                <strong>$${parseFloat(orderResult.total_amount).toFixed(2)}</strong>
+                            </div>
+                        </div>
+                        
+                        ${showAccountOffer ? `
+                        <div class="account-offer">
+                            <h3>🎉 Create Your Account Now!</h3>
+                            <p>Save time on your next order with these benefits:</p>
+                            <ul>
+                                <li>✓ Track orders easily</li>
+                                <li>✓ Save addresses for faster checkout</li>
+                                <li>✓ View complete order history</li>
+                                <li>✓ Manage your wishlist</li>
+                                <li>✓ Get exclusive member deals</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button class="btn-create-account" onclick="createAccountFromModal()">
+                                <i class="fas fa-user-plus"></i> Create Account
+                            </button>
+                            <button class="btn-skip" onclick="closeSuccessModal()">
+                                Skip for Now
+                            </button>
+                        </div>
+                        ` : `
+                        <div class="modal-actions" style="display: flex; gap: 10px;">
+                            <button class="btn-primary" onclick="window.location.href='profile.php'" style="flex: 1; padding: 15px; font-size: 16px;">
+                                <i class="fas fa-receipt"></i> View Order
+                            </button>
+                            <button class="btn-secondary" onclick="closeSuccessModal()" style="flex: 1; padding: 15px; font-size: 16px;">
+                                Continue Shopping
+                            </button>
+                        </div>
+                        `}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Store billing address for account creation (only if offering account)
+            if (showAccountOffer && billingAddress) {
+                window.pendingAccountData = billingAddress;
+            }
+        }
+        
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            if (modal) modal.remove();
+            window.location.href = 'index.php';
+        }
+        
+        async function createAccountFromModal() {
+            const billingAddress = window.pendingAccountData;
+            if (!billingAddress) {
+                window.location.href = 'index.php';
+                return;
+            }
+            
+            const modal = document.getElementById('success-modal');
+            if (modal) modal.remove();
+            
+            await offerAccountCreation(billingAddress);
+        }
+        
+        // Offer account creation for guest users
+        async function offerAccountCreation(billingAddress) {
+            // Create registration modal
+            const modal = document.createElement('div');
+            modal.id = 'register-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10001;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; padding: 40px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #2f3192, #4a4eb8); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <i class="fas fa-user-plus" style="color: white; font-size: 36px;"></i>
+                        </div>
+                        <h2 style="color: #2f3192; margin: 0 0 10px 0; font-size: 28px;">Create Your Account</h2>
+                        <p style="color: #666; margin: 0;">Track your order and enjoy member benefits!</p>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #2f3192;">Email:</strong>
+                            <div style="color: #333;">${billingAddress.email}</div>
+                        </div>
+                        <div>
+                            <strong style="color: #2f3192;">Name:</strong>
+                            <div style="color: #333;">${billingAddress.first_name} ${billingAddress.last_name}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600;">Create Password</label>
+                        <input type="password" id="register-password" placeholder="Minimum 8 characters" 
+                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box;" />
+                        <div style="color: #666; font-size: 12px; margin-top: 5px;">Must be at least 8 characters</div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="submitRegistration()" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #2f3192, #4a4eb8); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                            <i class="fas fa-check"></i> Create Account
+                        </button>
+                        <button onclick="dismissRegistration()" style="flex: 1; padding: 14px; background: #6c757d; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                            <i class="fas fa-times"></i> Dismiss
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+                        Already have an account? <a href="login.php" style="color: #2f3192; text-decoration: none; font-weight: 600;">Login here</a>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Focus password field
+            setTimeout(() => {
+                document.getElementById('register-password').focus();
+            }, 100);
+            
+            // Store billing data for submission
+            window.pendingRegistration = billingAddress;
+        }
+        
+        function dismissRegistration() {
+            const modal = document.getElementById('register-modal');
+            if (modal) modal.remove();
+            window.location.href = 'index.php';
+        }
+        
+        async function submitRegistration() {
+            const password = document.getElementById('register-password').value;
+            const billingAddress = window.pendingRegistration;
+            
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+            
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters long');
+                return;
+            }
+            
+            showLoading('Creating your account...');
+            
+            try {
+                const response = await fetch('/demolitiontraders/backend/api/user/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        first_name: billingAddress.first_name,
+                        last_name: billingAddress.last_name,
+                        email: billingAddress.email,
+                        phone: billingAddress.phone,
+                        password: password,
+                        order_id: window.pendingOrderId || null
+                    })
+                });
+                
+                const result = await response.json();
+                hideLoading();
+                
+                if (result.success) {
+                    const modal = document.getElementById('register-modal');
+                    if (modal) modal.remove();
+                    
+                    alert(
+                        `✓ Account created successfully!\n\n` +
+                        `You are now logged in.\n` +
+                        `You can view your order in your profile.`
+                    );
+                    window.location.href = 'profile.php';
+                } else {
+                    alert('Account creation failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Account creation error:', error);
+                hideLoading();
+                alert('Failed to create account. Please try again later.');
+            }
+        }
+        
+        // Check email when user finishes typing
+        let emailCheckTimeout;
+        document.getElementById('billing_email').addEventListener('input', function() {
+            clearTimeout(emailCheckTimeout);
+            const email = this.value.trim();
+            const badge = document.getElementById('email-exists-badge');
+            
+            if (!email || !email.includes('@')) {
+                badge.classList.remove('show');
+                window.emailExists = false;
+                return;
+            }
+            
+            // Skip check if user is logged in and using their own email
+            if (window.currentUser && window.currentUser.email === email) {
+                badge.classList.remove('show');
+                window.emailExists = false;
+                return;
+            }
+            
+            emailCheckTimeout = setTimeout(async () => {
+                try {
+                    console.log('Checking email:', email);
+                    const response = await fetch('/demolitiontraders/backend/api/user/check-email.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('Email check response:', result);
+                    
+                    if (result.exists) {
+                        badge.classList.add('show');
+                        window.emailExists = true;
+                        console.log('Email exists in database');
+                    } else {
+                        badge.classList.remove('show');
+                        window.emailExists = false;
+                        console.log('Email is available');
+                    }
+                } catch (error) {
+                    console.error('Error checking email:', error);
+                    // On error, assume email doesn't exist to allow checkout
+                    badge.classList.remove('show');
+                    window.emailExists = false;
+                }
+            }, 500); // Wait 500ms after user stops typing
+        });
+        
+        // Check if user is logged in and auto-fill form
+        async function checkUserAndAutoFill() {
+            try {
+                const response = await fetch('/demolitiontraders/backend/api/user/me.php');
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Not authenticated - guest mode
+                        console.log('Guest checkout mode');
+                        window.currentUser = null;
+                        document.getElementById('guest-banner').style.display = 'flex';
+                        return;
+                    }
+                    throw new Error('Failed to check user status');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.user) {
+                    // User is logged in
+                    window.currentUser = result.user;
+                    
+                    // Auto-fill form
+                    document.querySelector('[name="billing_first_name"]').value = result.user.first_name || '';
+                    document.querySelector('[name="billing_last_name"]').value = result.user.last_name || '';
+                    document.querySelector('[name="billing_email"]').value = result.user.email || '';
+                    document.querySelector('[name="billing_phone"]').value = result.user.phone || '';
+                    
+                    // Load and show saved addresses
+                    const addressResponse = await fetch('/demolitiontraders/backend/api/user/addresses.php');
+                    if (addressResponse.ok) {
+                        const addressResult = await addressResponse.json();
+                        
+                        if (addressResult.success && addressResult.addresses && addressResult.addresses.length > 0) {
+                            // Store addresses globally
+                            window.savedAddresses = addressResult.addresses;
+                            
+                            // Show saved addresses dropdown
+                            document.getElementById('saved-addresses-container').style.display = 'block';
+                            
+                            // Populate dropdown
+                            const select = document.getElementById('saved-addresses-select');
+                            addressResult.addresses.forEach((addr, index) => {
+                                const option = document.createElement('option');
+                                option.value = index;
+                                option.textContent = `${addr.street_address}, ${addr.city} ${addr.postcode}${addr.is_default ? ' (Default)' : ''}`;
+                                select.appendChild(option);
+                            });
+                            
+                            // Auto-fill with default address
+                            const defaultAddress = addressResult.addresses.find(a => a.is_default) || addressResult.addresses[0];
+                            if (defaultAddress) {
+                                fillAddressFields(defaultAddress);
+                                // Select it in dropdown
+                                const defaultIndex = addressResult.addresses.indexOf(defaultAddress);
+                                select.value = defaultIndex;
+                            }
+                        }
+                    }
+                } else {
+                    // User is guest - show guest banner
+                    window.currentUser = null;
+                    document.getElementById('guest-banner').style.display = 'flex';
+                }
+            } catch (error) {
+                console.log('Not logged in, continuing as guest:', error.message);
+                window.currentUser = null;
+                document.getElementById('guest-banner').style.display = 'flex';
+            }
+        }
+        
+        // Helper function to fill address fields
+        function fillAddressFields(address) {
+            document.querySelector('[name="billing_address"]').value = address.street_address || '';
+            document.querySelector('[name="billing_city"]').value = address.city || '';
+            document.querySelector('[name="billing_postcode"]').value = address.postcode || '';
+            
+            // Also update shipping if "same as billing" is checked
+            const sameAsBilling = document.getElementById('same-as-billing');
+            if (sameAsBilling && sameAsBilling.checked) {
+                document.getElementById('shipping_address').value = address.street_address || '';
+                document.getElementById('shipping_city').value = address.city || '';
+                document.getElementById('shipping_postcode').value = address.postcode || '';
+            }
+        }
+        
+        // Function to fill address from saved addresses dropdown
+        function fillAddressFromSaved(index) {
+            if (index === '') return;
+            
+            if (index === 'new') {
+                // Clear all address fields for manual input
+                document.querySelector('[name="billing_address"]').value = '';
+                document.querySelector('[name="billing_city"]').value = '';
+                document.querySelector('[name="billing_postcode"]').value = '';
+                
+                // Also clear shipping if same as billing
+                const sameAsBilling = document.getElementById('same-as-billing');
+                if (sameAsBilling && sameAsBilling.checked) {
+                    document.getElementById('shipping_address').value = '';
+                    document.getElementById('shipping_city').value = '';
+                    document.getElementById('shipping_postcode').value = '';
+                }
+                
+                // Focus on address field
+                document.querySelector('[name="billing_address"]').focus();
+                return;
+            }
+            
+            if (!window.savedAddresses) return;
+            
+            const address = window.savedAddresses[index];
+            if (address) {
+                fillAddressFields(address);
+            }
+        }
+        
+        // Function to check if address is new (not in saved addresses)
+        async function checkIfNewAddress(billingAddress) {
+            if (!window.savedAddresses || window.savedAddresses.length === 0) {
+                return true; // No saved addresses, definitely new
+            }
+            
+            // Normalize address for comparison
+            const normalize = (str) => (str || '').toLowerCase().trim();
+            
+            // Check if this address matches any saved address
+            for (const saved of window.savedAddresses) {
+                if (normalize(saved.street_address) === normalize(billingAddress.address) &&
+                    normalize(saved.city) === normalize(billingAddress.city) &&
+                    normalize(saved.postcode) === normalize(billingAddress.postcode)) {
+                    return false; // Address already exists
+                }
+            }
+            
+            return true; // This is a new address
+        }
+        
+        // Initialize
+        checkUserAndAutoFill();
         loadCartSummary();
     </script>
 

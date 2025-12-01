@@ -274,8 +274,8 @@ while (($row = fgetcsv($handle)) !== false) {
                 INSERT INTO products (
                     sku, name, slug, description, short_description, price, compare_at_price,
                     category_id, stock_quantity, weight, condition_type, is_featured, is_active,
-                    meta_title, meta_description
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    meta_title, meta_description, show_collection_options
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $stmt->execute([
@@ -293,7 +293,8 @@ while (($row = fgetcsv($handle)) !== false) {
                 $isFeatured ? 1 : 0,
                 $showOnline ? 1 : 0,
                 $metaTitle ?: $productName,
-                $metaDescription ?: $shortDescription
+                $metaDescription ?: $shortDescription,
+                isset($showCollectionOptions) ? (int)$showCollectionOptions : 0
             ]);
             
             $productId = $db->lastInsertId();

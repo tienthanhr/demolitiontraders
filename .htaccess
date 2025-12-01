@@ -1,23 +1,43 @@
 RewriteEngine On
+RewriteBase /demolitiontraders/
 
 # Prevent directory listing
 Options -Indexes
 
-# Redirect to HTTPS (uncomment in production)
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Force HTTPS (enable in production)
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} !^localhost [NC]
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# API Routes
-RewriteCond %{REQUEST_URI} ^/demolitiontraders/api/
-RewriteRule ^api/(.*)$ backend/api/index.php?request=$1 [QSA,L]
+# Fix mixed content by upgrading insecure requests - DISABLED for testing
+# <IfModule mod_headers.c>
+#     Header always set Content-Security-Policy "upgrade-insecure-requests"
+# </IfModule>
 
-# Redirect root to frontend
-DirectoryIndex index.php
+# API Routes - backend/api/* (allow direct access, NO REDIRECT)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^backend/api/.*\.php$ - [L]
 
-# Frontend Routes - serve static files directly
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
+# Static files (images, css, js) - serve directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^(.*\.(jpg|jpeg|png|gif|css|js|svg|webp|ico|woff|woff2|ttf|pdf))$ - [L]
+
+# Remove /frontend/ from URLs - 301 redirect
+RewriteRule ^frontend/(.+)$ /demolitiontraders/$1 [R=301,L]
+
+# Map root to frontend/index.php
+RewriteRule ^$ frontend/index.php [L]
+
+# Map clean URLs to frontend/*.php (only if file exists)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/demolitiontraders/frontend/$1.php -f
+RewriteRule ^([a-zA-Z0-9_-]+)/?$ frontend/$1.php [L,QSA]
+
+# If nothing matched, serve 404 (don't fallback to frontend/)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ - [R=404,L]
 
 # Security Headers
 <IfModule mod_headers.c>

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Demolition Traders</title>
     <base href="/demolitiontraders/frontend/">
+    
+    <!-- Load API Helper -->
+    <script src="assets/js/api-helper.js?v=1"></script>
+    
     <link rel="stylesheet" href="assets/css/style.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -132,44 +136,32 @@
             alert.textContent = 'Logging in...';
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/index.php?request=auth/login', {
+                const data = await apiFetch(getApiUrl('/api/user/login.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
                 
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                
-                // Get response text first
-                const responseText = await response.text();
-                console.log('Response text:', responseText);
-                
-                // Try to parse as JSON
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('JSON parse error:', parseError);
-                    alert.className = 'alert alert-error show';
-                    alert.textContent = '✗ Invalid response from server. Check console.';
-                    return;
-                }
-                
-                if (response.ok) {
-                    alert.className = 'alert alert-success show';
-                    alert.textContent = '✓ Login successful! Redirecting...';
-                    
-                    setTimeout(() => {
-                        window.location.href = 'admin/index.php';
-                    }, 1000);
+                if (data.success) {
+                    // Check if user is admin
+                    if (data.user && data.user.role === 'admin') {
+                        alert.className = 'alert alert-success show';
+                        alert.textContent = '✓ Login successful! Redirecting...';
+                        
+                        setTimeout(() => {
+                            window.location.href = 'admin/index.php';
+                        }, 1000);
+                    } else {
+                        alert.className = 'alert alert-error show';
+                        alert.textContent = '✗ Access denied. Admin account required.';
+                    }
                 } else {
                     alert.className = 'alert alert-error show';
-                    alert.textContent = '✗ ' + (data.error || 'Login failed');
+                    alert.textContent = '✗ ' + (data.message || 'Login failed');
                 }
             } catch (error) {
                 alert.className = 'alert alert-error show';
-                alert.textContent = '✗ Connection error. Please check if API is working.';
+                alert.textContent = '✗ Connection error. Please try again.';
                 console.error('Login error:', error);
             }
         });

@@ -36,6 +36,15 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
         </button>
     </div>
 
+    <!-- Info Notice -->
+    <div style="background: #d1ecf1; border-left: 4px solid #17a2b8; padding: 15px 20px; margin-bottom: 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-info-circle" style="color: #0c5460; font-size: 20px;"></i>
+        <div style="flex: 1;">
+            <strong style="color: #0c5460; font-size: 15px;">ℹ️ Undo Available:</strong>
+            <p style="margin: 5px 0 0 0; color: #0c5460; font-size: 14px;">Deleted categories can be <strong>restored within 10 seconds</strong> using the Undo button.</p>
+        </div>
+    </div>
+
     <div class="search-box">
         <input type="text" id="search-categories" placeholder="Search categories..." onkeyup="searchCategories()">
         <select id="sort-by" class="form-control" style="max-width: 200px;" onchange="sortCategories()">
@@ -49,10 +58,47 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
         </select>
     </div>
 
+    <!-- Bulk Actions Bar -->
+    <div id="bulk-actions-bar" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <span id="selected-count">
+                <i class="fas fa-check-circle"></i> <span id="selectedCount">0</span> items selected
+            </span>
+            <select id="bulk-action">
+                <option value="">Select Action</option>
+                <option value="delete">Delete Selected</option>
+            </select>
+            <button class="btn btn-light btn-sm" onclick="applyBulkAction()">
+                <i class="fas fa-bolt"></i> Apply
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="clearSelection()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Undo Bar -->
+    <div id="undo-bar" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 15px; justify-content: space-between;">
+            <span id="undo-message"></span>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-warning btn-sm" onclick="undoLastAction()">
+                    <i class="fas fa-undo"></i> Undo
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="dismissUndo()">
+                    <i class="fas fa-times"></i> Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="table-container">
         <table id="categories-table">
             <thead>
                 <tr>
+                    <th style="width: 40px;">
+                        <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)">
+                    </th>
                     <th onclick="sortTable('id')" style="cursor: pointer;" title="Click to sort">
                         ID <i class="fas fa-sort" style="opacity: 0.3;"></i>
                     </th>
@@ -69,7 +115,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             </thead>
             <tbody id="categories-tbody">
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 40px;">
+                    <td colspan="7" style="text-align: center; padding: 40px;">
                         <div class="spinner"></div>
                         <p>Loading categories...</p>
                     </td>
@@ -167,6 +213,9 @@ function renderCategories() {
     const tbody = document.getElementById('categories-tbody');
     tbody.innerHTML = categoriesData.map(category => `
         <tr data-id="${category.id}" data-name="${category.name.toLowerCase()}" data-count="${productCounts[category.id] || 0}">
+            <td>
+                <input type="checkbox" class="category-checkbox" value="${category.id}" onchange="updateBulkActions()">
+            </td>
             <td><strong>${category.id}</strong></td>
             <td>${category.name}</td>
             <td><code>${category.slug}</code></td>
@@ -188,6 +237,7 @@ function renderCategories() {
             </td>
         </tr>
     `).join('');
+    updateBulkActions();
 }
 
 // Sort categories by dropdown
@@ -357,15 +407,38 @@ async function saveCategory(event) {
 
 // Delete category
 async function deleteCategory(id, name) {
-    if (!confirm(`Are you sure you want to delete "${name}"? This will affect all products in this category!`)) return;
+    const confirmed = await showConfirm(
+        `Are you sure you want to delete "${name}"? You can undo this within 10 seconds.`,
+        'Delete Category',
+        true
+    );
+    if (!confirmed) return;
 
     try {
+        // Get category data before deletion for undo
+        const categoryResponse = await fetch(`/demolitiontraders/backend/api/index.php?request=categories/${id}`);
+        const categoryData = await categoryResponse.json();
+        const originalCategory = categoryData.data || categoryData;
+
         const response = await fetch(`/demolitiontraders/backend/api/index.php?request=categories/${id}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
-            alert('Category deleted successfully!');
+            // Store action for undo
+            lastBulkAction = {
+                action: 'delete',
+                categories: [{
+                    id: id,
+                    name: originalCategory.name,
+                    slug: originalCategory.slug,
+                    description: originalCategory.description,
+                    display_order: originalCategory.display_order,
+                    is_active: originalCategory.is_active
+                }]
+            };
+            
+            showUndoBar('delete', 1);
             loadCategories();
         } else {
             alert('Error deleting category');
@@ -375,10 +448,172 @@ async function deleteCategory(id, name) {
     }
 }
 
+// Bulk Actions
+function updateBulkActions() {
+    const checkboxes = document.querySelectorAll('.category-checkbox:checked');
+    const count = checkboxes.length;
+    const bulkBar = document.getElementById('bulk-actions-bar');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const selectAll = document.getElementById('select-all');
+    
+    selectedCountSpan.textContent = count;
+    bulkBar.style.display = count > 0 ? 'block' : 'none';
+    
+    const allCheckboxes = document.querySelectorAll('.category-checkbox');
+    selectAll.checked = count > 0 && count === allCheckboxes.length;
+}
+
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.category-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateBulkActions();
+}
+
+function clearSelection() {
+    const checkboxes = document.querySelectorAll('.category-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    document.getElementById('select-all').checked = false;
+    updateBulkActions();
+}
+
+function applyBulkAction() {
+    const action = document.getElementById('bulk-action').value;
+    if (!action) {
+        alert('Please select an action');
+        return;
+    }
+    
+    if (action === 'delete') {
+        bulkDeleteCategories();
+    }
+}
+
+// Undo functionality
+let lastBulkAction = null;
+let undoTimeout = null;
+
+function showUndoBar(action, count) {
+    const undoBar = document.getElementById('undo-bar');
+    const undoMessage = document.getElementById('undo-message');
+    
+    undoMessage.innerHTML = `<i class="fas fa-info-circle"></i> ${count} categor${count !== 1 ? 'ies' : 'y'} ${action}d`;
+    undoBar.style.display = 'flex';
+    
+    if (undoTimeout) clearTimeout(undoTimeout);
+    undoTimeout = setTimeout(() => {
+        dismissUndo();
+    }, 10000);
+}
+
+function dismissUndo() {
+    const undoBar = document.getElementById('undo-bar');
+    undoBar.style.display = 'none';
+    lastBulkAction = null;
+    if (undoTimeout) {
+        clearTimeout(undoTimeout);
+        undoTimeout = null;
+    }
+}
+
+async function undoLastAction() {
+    if (!lastBulkAction) return;
+    
+    const { action, categories } = lastBulkAction;
+    dismissUndo();
+    
+    if (action === 'delete') {
+        let successCount = 0;
+        for (const catData of categories) {
+            try {
+                const res = await fetch('/demolitiontraders/backend/api/index.php?request=categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(catData)
+                });
+                if (res.ok) successCount++;
+            } catch (err) {
+                console.error('Undo failed for category:', catData.name, err);
+            }
+        }
+        alert(`Restored ${successCount} categor${successCount !== 1 ? 'ies' : 'y'}`);
+        loadCategories();
+    }
+}
+
+async function bulkDeleteCategories() {
+    const checkboxes = document.querySelectorAll('.category-checkbox:checked');
+    const categoryIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (categoryIds.length === 0) {
+        alert('Please select categories to delete');
+        return;
+    }
+    
+    const confirmed = await showConfirm(
+        `Are you sure you want to delete ${categoryIds.length} categor${categoryIds.length > 1 ? 'ies' : 'y'}? This action cannot be undone.`,
+        'Delete Categories',
+        true
+    );
+    if (!confirmed) return;
+    
+    try {
+        // Save category data for undo
+        const deletedCategories = [];
+        for (const id of categoryIds) {
+            const category = categoriesData.find(c => c.id == id);
+            if (category) {
+                deletedCategories.push({
+                    name: category.name,
+                    slug: category.slug,
+                    description: category.description || '',
+                    is_active: category.is_active
+                });
+            }
+        }
+        
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const categoryId of categoryIds) {
+            try {
+                const res = await fetch(`/demolitiontraders/backend/api/index.php?request=categories/${categoryId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.error('Failed to delete category', categoryId);
+                }
+            } catch (err) {
+                failCount++;
+                console.error('Error deleting category', categoryId, err);
+            }
+        }
+        
+        if (successCount > 0) {
+            lastBulkAction = { action: 'delete', categories: deletedCategories };
+            showUndoBar('delete', successCount);
+        }
+        
+        if (failCount > 0) {
+            alert(`${successCount} deleted, ${failCount} failed`);
+        }
+        loadCategories();
+        clearSelection();
+        
+    } catch (err) {
+        alert('Server error. Please try again.');
+        console.error(err);
+    }
+}
+
 // Initialize
 loadCategories();
 </script>
         </main>
     </div>
+    <?php include '../components/toast-notification.php'; ?>
 </body>
 </html>

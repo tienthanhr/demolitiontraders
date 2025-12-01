@@ -22,100 +22,66 @@
     
     <section class="content-section">
         <div class="container">
-            <h2 class="center">Quality Portable Cabins</h2>
-            <p class="center">Perfect for site offices, storage, sleepouts, or additional accommodation</p>
-            
-            <div class="cabins-grid">
-                <div class="cabin-card">
-                    <img src="assets/images/cabin-office.jpg" alt="Office Cabin" onerror="this.src='assets/images/placeholder.jpg'">
-                    <h3>Site Office Cabins</h3>
-                    <p>Ideal for construction sites and temporary workspaces. Fully insulated with power and lighting.</p>
-                    <ul>
-                        <li>Multiple sizes available</li>
-                        <li>Pre-wired for power</li>
-                        <li>Insulated walls and ceiling</li>
-                        <li>Windows and door included</li>
-                    </ul>
-                    <a href="contact.php" class="btn btn-primary">Enquire Now</a>
-                </div>
-                
-                <div class="cabin-card">
-                    <img src="assets/images/cabin-storage.jpg" alt="Storage Cabin" onerror="this.src='assets/images/placeholder.jpg'">
-                    <h3>Storage Cabins</h3>
-                    <p>Secure storage solutions for tools, equipment, and materials. Weather-proof and durable.</p>
-                    <ul>
-                        <li>Various sizes from 10m² to 40m²</li>
-                        <li>Lockable security doors</li>
-                        <li>Weather-proof construction</li>
-                        <li>Optional shelving</li>
-                    </ul>
-                    <a href="contact.php" class="btn btn-primary">Enquire Now</a>
-                </div>
-                
-                <div class="cabin-card">
-                    <img src="assets/images/cabin-sleepout.jpg" alt="Sleepout Cabin" onerror="this.src='assets/images/placeholder.jpg'">
-                    <h3>Sleepout Cabins</h3>
-                    <p>Extra living space for guests, teenagers, or home offices. Comfortable and well-insulated.</p>
-                    <ul>
-                        <li>Fully lined and insulated</li>
-                        <li>Power points and lighting</li>
-                        <li>Quality windows</li>
-                        <li>Can include bathroom option</li>
-                    </ul>
-                    <a href="contact.php" class="btn btn-primary">Enquire Now</a>
-                </div>
-                
-                <div class="cabin-card">
-                    <img src="assets/images/cabin-custom.jpg" alt="Custom Cabin" onerror="this.src='assets/images/placeholder.jpg'">
-                    <h3>Custom Cabins</h3>
-                    <p>Need something specific? We can customize cabins to meet your exact requirements.</p>
-                    <ul>
-                        <li>Custom sizes and layouts</li>
-                        <li>Choose your finishes</li>
-                        <li>Additional features available</li>
-                        <li>Bathroom and kitchen options</li>
-                    </ul>
-                    <a href="contact.php" class="btn btn-primary">Enquire Now</a>
-                </div>
-            </div>
-            
-            <div class="info-section">
-                <h2>Why Choose Our Cabins?</h2>
-                <div class="features-grid">
-                    <div class="feature-box">
-                        <i class="fa-solid fa-dollar-sign"></i>
-                        <h4>Affordable Prices</h4>
-                        <p>Quality cabins at competitive prices that won't break the bank</p>
-                    </div>
-                    <div class="feature-box">
-                        <i class="fa-solid fa-truck"></i>
-                        <h4>Delivery Available</h4>
-                        <p>We can deliver and install your cabin anywhere in the Waikato region</p>
-                    </div>
-                    <div class="feature-box">
-                        <i class="fa-solid fa-hammer"></i>
-                        <h4>Quality Construction</h4>
-                        <p>Built to last with quality materials and expert craftsmanship</p>
-                    </div>
-                    <div class="feature-box">
-                        <i class="fa-solid fa-clock"></i>
-                        <h4>Quick Setup</h4>
-                        <p>Fast delivery and installation, ready to use in no time</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="cta-section center">
-                <h2>Interested in a Cabin?</h2>
-                <p>Contact us today for a quote or to discuss your requirements</p>
-                <div class="cta-buttons">
-                    <a href="tel:078474989" class="btn btn-primary">Call 07 847 4989</a>
-                    <a href="contact.php" class="btn btn-secondary">Contact Form</a>
-                </div>
-            </div>
+            <h2 style="margin-bottom:24px;">Thinking of building a cabin? Building cabins to sell?</h2>
+            <p>Demolition Traders has the range of products to get the job started.</p>
+
+            <h3><a href="shop.php?category=interior-linings">Interior Linings</a></h3>
+            <ul>
+                <li>Okoume Poplar Core is finished with a hardwood veneer, perfect for adding a rustic feel or a spot of character.</li>
+                <li>Grooved plywood</li>
+                <li>Poplar Pine is an excellent value plywood. A clean pine veneer paired with stable poplar core this board is very versatile.</li>
+            </ul>
+
+            <h3><a href="shop.php?category=flooring-plywood">Flooring Plywood</a></h3>
+            <ul>
+                <li>19mm Treated Flooring Plywood</li>
+            </ul>
+
+            <h3><a href="shop.php?category=exterior-cladding">Exterior Cladding</a></h3>
+            <ul>
+                <li>Utility clad Seconds grade Shadow clad, quick and efficient way to line the outside of your cabin</li>
+                <li>Weather Board New seconds and pre primed pine, classic look to match in with the house</li>
+            </ul>
+
+            <h3><a href="shop.php?category=aluminium-joinery">New Aluminium Joinery</a></h3>
+            <p>Brand new aluminium joinery, we order in advance so you don't have to, browse through our range of new joinery to pick the items that will best match your design. Available in four colours, Arctic White, Silver Pearl, Matte Black or Ironsand.</p>
+            <ul>
+                <li><a href="shop.php?category=doors">Doors</a></li>
+                <li><a href="shop.php?category=sliding-doors">Sliding Doors</a></li>
+                <li><a href="shop.php?category=windows">Windows</a></li>
+            </ul>
+
+            <h3><a href="shop.php?category=kitchenettes">Kitchenettes</a></h3>
+            <p>New Kitchenettes in a variety of sizes to suit. Stainless steel benchtops available or you are welcome to source another top to fit your style.</p>
+            <ul>
+                <li>Units</li>
+                <li>Stainless Steel tops</li>
+            </ul>
+
+            <h3><a href="shop.php?category=framing-timber">Framing Timber</a></h3>
+            <ul>
+                <li>SG8 framing timber, lengths may vary depending on the pack.</li>
+                <li>90 x 45 H3.2</li>
+            </ul>
+
+            <h3><a href="shop.php?category=roofing">Roofing Iron</a></h3>
+            <ul>
+                <li>New Zincalume roofing iron available.</li>
+                <li>Zinc</li>
+            </ul>
+
+            <h3><a href="shop.php?category=flashings">Flashing</a></h3>
+            <p>New flashings available for the roof and the joinery. Head flashings available in matching colours to the new joinery.</p>
+            <ul>
+                <li>Head Flashing</li>
+                <li>Ridge Capping</li>
+                <li>Barge Flashing</li>
+                <li>Corner Flashing</li>
+            </ul>
         </div>
     </section>
     
     <?php include 'components/footer.php'; ?>
+    <?php include 'components/toast-notification.php'; ?>
 </body>
 </html>

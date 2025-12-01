@@ -1,15 +1,3 @@
-<!-- Newsletter Section --> 
-<div class="newsletter-section">
-    <div class="container">
-        <h3>Join our newsletter</h3>
-        <form id="newsletter-form" class="newsletter-form">
-            <input type="text" name="first_name" placeholder="First Name" required>
-            <input type="email" name="email" placeholder="Email Address" required>
-            <button type="submit" class="btn-subscribe">Subscribe</button>
-        </form>
-    </div>
-</div>
-
 <!-- Footer Component -->
 <footer class="site-footer">
     <div class="container">
@@ -72,7 +60,7 @@
 <div class="footer-base">
     <div class="container">
         <div class="social-links">
-            <a href="https://www.facebook.com/Demolition-Traders-1729677290681389/" target="_blank" title="Facebook">
+            <a href="https://www.facebook.com/profile.php?id=100063449630280#" target="_blank" title="Facebook">
                 <i class="fa-brands fa-facebook"></i>
             </a>
             <a href="https://www.instagram.com/demolition_traders/" target="_blank" title="Instagram">
@@ -85,29 +73,63 @@
     </div>
 </div>
 
+<!-- Back to Top Button -->
+<button id="backToTop" class="back-to-top" title="Back to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<style>
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(255,107,53,0.4);
+    z-index: 999;
+    transition: all 0.3s ease;
+}
+
+.back-to-top:hover {
+    background: #e55a2b;
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.6);
+}
+
+.back-to-top.show {
+    display: flex;
+}
+</style>
+
 <script>
-    // Newsletter subscription
-    document.getElementById('newsletter-form')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = this.querySelector('input[name="email"]').value;
-        
-        try {
-            const response = await fetch('/demolitiontraders/api/newsletter/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            
-            if (response.ok) {
-                alert('Thank you for subscribing!');
-                this.reset();
-            } else {
-                alert('Subscription failed. Please try again.');
-            }
-        } catch (error) {
-            console.error('Newsletter error:', error);
-            alert('An error occurred. Please try again.');
+// Back to top button functionality
+(function() {
+    const backToTopBtn = document.getElementById('backToTop');
+    
+    // Show/hide button on scroll
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
         }
     });
+    
+    // Smooth scroll to top
+    backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+})();
 </script>

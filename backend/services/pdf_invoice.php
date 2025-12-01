@@ -21,7 +21,7 @@ function generate_invoice_pdf($order, $billing, $type = 'invoice') {
     $pdf->Cell(0, 10, 'GST: 45-514-609', 0, 1, 'C');
     $pdf->Ln(10);
     $pdf->Cell(0, 10, 'Order #: ' . $order['order_number'], 0, 1);
-    $pdf->Cell(0, 10, 'Date: ' . date('d/m/Y', strtotime($order['created_at'])), 0, 1);
+    $pdf->Cell(0, 10, 'Date: ' . date('d/m/y', strtotime($order['created_at'])), 0, 1);
     $pdf->Ln(5);
     $pdf->Cell(0, 10, 'Bill To: ' . ($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? ''), 0, 1);
     $pdf->Cell(0, 10, 'Email: ' . ($billing['email'] ?? ''), 0, 1);

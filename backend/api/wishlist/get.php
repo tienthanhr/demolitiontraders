@@ -1,15 +1,45 @@
 <?php
+session_start();
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-session_start();
+require_once '../../config/database.php';
 
 try {
-    // Get wishlist from session
-    $wishlist = isset($_SESSION['wishlist']) ? $_SESSION['wishlist'] : [];
-
-    // Nếu wishlist rỗng thì trả về luôn
-    if (empty($wishlist)) {
+    $db = Database::getInstance();
+    
+    if (isset($_SESSION['user_id'])) {
+        // Logged in user - get from database
+        $user_id = $_SESSION['user_id'];
+        
+        $count = $db->fetchOne(
+            "SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?",
+            [$user_id]
+        );
+        
+        $wishlist = $db->fetchAll(
+            "SELECT w.product_id, p.name, p.price, c.name as category,
+                    (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
+             FROM wishlist w
+             JOIN products p ON w.product_id = p.id
+             LEFT JOIN categories c ON p.category_id = c.id
+             WHERE w.user_id = ? AND p.is_active = 1",
+            [$user_id]
+        );
+        
+        echo json_encode([
+            'success' => true,
+            'wishlist' => $wishlist,
+            'wishlist_count' => $count['count']
+        ]);
+        exit;
+    }
+    
+    // Guest user - get from session
+    $sessionWishlist = isset($_SESSION['wishlist']) ? $_SESSION['wishlist'] : [];
+    
+    if (empty($sessionWishlist)) {
         echo json_encode([
             'success' => true,
             'wishlist' => [],
@@ -17,22 +47,18 @@ try {
         ]);
         exit;
     }
-
-    // Lấy thông tin chi tiết sản phẩm từ DB
-    require_once __DIR__ . '/../../config/database.php';
-    $db = Database::getInstance();
-
-    // Chuẩn bị câu truy vấn lấy nhiều sản phẩm theo ID
-    $placeholders = implode(',', array_fill(0, count($wishlist), '?'));
-    $sql = "SELECT p.id as product_id, p.name, p.price, c.name as category, 
+    
+    // Get product details
+    $placeholders = implode(',', array_fill(0, count($sessionWishlist), '?'));
+    $products = $db->fetchAll(
+        "SELECT p.id as product_id, p.name, p.price, c.name as category,
                 (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.id
-            WHERE p.id IN ($placeholders) AND p.is_active = 1";
-    $stmt = $db->getConnection()->prepare($sql);
-    $stmt->execute($wishlist);
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+         FROM products p
+         LEFT JOIN categories c ON p.category_id = c.id
+         WHERE p.id IN ($placeholders) AND p.is_active = 1",
+        $sessionWishlist
+    );
+    
     echo json_encode([
         'success' => true,
         'wishlist' => $products,
@@ -40,8 +66,10 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log('Wishlist get error: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Error: ' . $e->getMessage()
+        'message' => 'Error loading wishlist',
+        'wishlist_count' => 0
     ]);
 }

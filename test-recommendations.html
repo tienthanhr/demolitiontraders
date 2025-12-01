@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Recommendations API</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .result { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+        pre { background: white; padding: 10px; overflow-x: auto; }
+        button { padding: 10px 20px; background: #2f3192; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Recommendations API</h1>
+    
+    <div>
+        <label>Product IDs (comma-separated):</label><br>
+        <input type="text" id="productIds" value="1,2,3" style="width: 400px; padding: 8px;">
+        <button onclick="testAPI()">Test API</button>
+    </div>
+    
+    <div class="result" id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            const input = document.getElementById('productIds').value;
+            const ids = input.split(',').map(id => parseInt(id.trim()));
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Loading...</p>';
+            
+            try {
+                const response = await fetch('/demolitiontraders/backend/api/products/recommendations.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_ids: ids })
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h3>Response:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    
+                    ${data.recommendations && data.recommendations.length > 0 ? `
+                        <h3>Recommendations Found: ${data.recommendations.length}</h3>
+                        <ul>
+                            ${data.recommendations.map(item => `
+                                <li><strong>${item.name}</strong> - $${item.price}</li>
+                            `).join('')}
+                        </ul>
+                    ` : '<p style="color:red;">No recommendations found!</p>'}
+                    
+                    ${data.debug ? `
+                        <h3>Debug Info:</h3>
+                        <ul>
+                            <li>Cart products: ${data.debug.cart_products}</li>
+                            <li>Keywords found: ${data.debug.keywords_found ? data.debug.keywords_found.join(', ') : 'none'}</li>
+                            <li>Category IDs: ${data.debug.category_ids ? data.debug.category_ids.join(', ') : 'none'}</li>
+                        </ul>
+                    ` : ''}
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Auto-test on load
+        window.onload = () => testAPI();
+    </script>
+</body>
+</html>

@@ -66,6 +66,8 @@ class Database {
             $stmt->execute($params);
             return $stmt;
         } catch (PDOException $e) {
+            // Log to file only, never echo
+            $this->log("[SQL ERROR][QUERY] " . $e->getMessage() . "\nSQL: $sql\nPARAMS: " . var_export($params, true));
             error_log("Query error: " . $e->getMessage());
             throw $e;
         }
@@ -91,13 +93,39 @@ class Database {
      * Insert record and return last insert ID
      */
     public function insert($table, $data) {
-        $columns = implode(', ', array_keys($data));
-        $placeholders = ':' . implode(', :', array_keys($data));
-        
-        $sql = "INSERT INTO {$table} ({$columns}) VALUES ({$placeholders})";
-        
-        $this->query($sql, $data);
-        return $this->connection->lastInsertId();
+        if (empty($data)) {
+            $this->log("[INSERT][ERROR] Empty data for table $table");
+            return false;
+        }
+
+        $columns = array_keys($data);
+        $placeholders = array_map(function ($col) {
+            return ':' . $col;
+        }, $columns);
+
+        $sql = "INSERT INTO `$table` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
+
+        // Prepare params - convert to string except null
+        $params = [];
+        foreach ($data as $k => $v) {
+            $params[$k] = is_null($v) ? null : (string)$v;
+        }
+
+        // Validate counts match
+        if (count($columns) !== count($params) || count($columns) !== count($placeholders)) {
+            $this->log("[INSERT][ERROR] MISMATCH: columns=" . count($columns) . ", placeholders=" . count($placeholders) . ", params=" . count($params));
+            return false;
+        }
+
+        try {
+            $this->query($sql, $params);
+            $insertId = $this->connection->lastInsertId();
+            $this->log("[INSERT][SUCCESS] Table: $table, ID: $insertId");
+            return $insertId;
+        } catch (PDOException $e) {
+            $this->log("[INSERT][ERROR] " . $e->getMessage() . "\nSQL: $sql");
+            return false;
+        }
     }
     
     /**
@@ -109,11 +137,17 @@ class Database {
             $set[] = "{$column} = :{$column}";
         }
         $set = implode(', ', $set);
-        
         $sql = "UPDATE {$table} SET {$set} WHERE {$where}";
-        
         $params = array_merge($data, $whereParams);
-        return $this->query($sql, $params);
+        
+        try {
+            $result = $this->query($sql, $params);
+            $this->log("[UPDATE][SUCCESS] Table: $table");
+            return $result;
+        } catch (PDOException $e) {
+            $this->log("[UPDATE][ERROR] " . $e->getMessage() . "\nSQL: $sql");
+            throw $e;
+        }
     }
     
     /**
@@ -121,7 +155,14 @@ class Database {
      */
     public function delete($table, $where, $params = []) {
         $sql = "DELETE FROM {$table} WHERE {$where}";
-        return $this->query($sql, $params);
+        try {
+            $result = $this->query($sql, $params);
+            $this->log("[DELETE][SUCCESS] Table: $table");
+            return $result;
+        } catch (PDOException $e) {
+            $this->log("[DELETE][ERROR] " . $e->getMessage() . "\nSQL: $sql");
+            throw $e;
+        }
     }
     
     /**
@@ -156,7 +197,42 @@ class Database {
             return false;
         }
     }
+    
+    /**
+     * Internal logging method - writes to file only, NEVER echo
+     */
+    private function log($message) {
+        // Only log to file, never output to stdout
+        $logDir = __DIR__ . '/../../logs/';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0755, true);
+        }
+        
+        $logFile = $logDir . 'database_debug.log';
+        $timestamp = date('Y-m-d H:i:s');
+        
+        @file_put_contents(
+            $logFile,
+            "[{$timestamp}] {$message}\n",
+            FILE_APPEND
+        );
+        
+        // Also use error_log for system logs
+        error_log($message);
+    }
+    
+    /**
+     * Prevent cloning
+     */
+    private function __clone() {}
+    
+    /**
+     * Prevent unserialization
+     */
+    public function __wakeup() {
+        throw new Exception("Cannot unserialize singleton");
+    }
 }
 
-// Prevent cloning and unserialization
+// Alias for convenience
 class_alias('Database', 'DB');

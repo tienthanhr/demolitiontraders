@@ -124,6 +124,7 @@
     </section>
     
     <?php include 'components/footer.php'; ?>
+    <?php include 'components/toast-notification.php'; ?>
     
     <script>
         document.getElementById('wanted-form').addEventListener('submit', async function(e) {
