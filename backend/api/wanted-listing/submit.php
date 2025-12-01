@@ -95,11 +95,6 @@ try {
             }
         }
         
-        if (!empty($category)) {
-            $searchConditions[] = "p.category = ?";
-            $searchParams[] = $category;
-        }
-        
         if (!empty($searchConditions)) {
             $searchQuery .= implode(' OR ', $searchConditions) . ") LIMIT 10";
             $stmt = $db->prepare($searchQuery);
