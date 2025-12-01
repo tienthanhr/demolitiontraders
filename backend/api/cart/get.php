@@ -1,13 +1,5 @@
 <?php
-// Configure session for cross-domain if needed
-ini_set('session.cookie_samesite', 'Lax');
-session_start();
-
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Credentials: true');
-
-require_once '../../config/database.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 try {
     $db = Database::getInstance()->getConnection();
