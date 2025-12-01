@@ -6,7 +6,8 @@
 session_start();
 
 // Store user role before clearing session
-$wasAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+$wasAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') || 
+            (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin');
 
 // Clear all session variables
 $_SESSION = array();
