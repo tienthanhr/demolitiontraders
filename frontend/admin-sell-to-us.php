@@ -439,8 +439,7 @@ include __DIR__ . '/components/admin-header.php';
         // Load submissions from API
         async function loadSubmissions() {
             try {
-                const response = await apiFetch(getApiUrl('/api/sell-to-us/list.php'));
-                const result = await response.json();
+                const result = await apiFetch(getApiUrl('/api/sell-to-us/list.php'));
                 
                 if (result.success) {
                     allSubmissions = result.data;
@@ -621,7 +620,7 @@ include __DIR__ . '/components/admin-header.php';
             const notes = document.getElementById('editNotes').value;
             
             try {
-                const response = await apiFetch(getApiUrl('/api/sell-to-us/update.php'), {
+                const result = await apiFetch(getApiUrl('/api/sell-to-us/update.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -631,8 +630,6 @@ include __DIR__ . '/components/admin-header.php';
                         notes
                     })
                 });
-                
-                const result = await response.json();
                 
                 if (result.success) {
                     closeModal('editModal');
@@ -654,13 +651,11 @@ include __DIR__ . '/components/admin-header.php';
             }
             
             try {
-                const response = await apiFetch(getApiUrl('/api/sell-to-us/delete.php'), {
+                const result = await apiFetch(getApiUrl('/api/sell-to-us/delete.php'), {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id })
                 });
-                
-                const result = await response.json();
                 
                 if (result.success) {
                     await loadSubmissions();
