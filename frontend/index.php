@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demolition Traders Hamilton - NZ's Largest Demolition Yard</title>
     <meta name="description" content="Browse thousands of new & recycled renovation materials. New Zealand's largest supplier of demolition materials.">
-    <base href="/demolitiontraders/frontend/">
+    <base href="<?php echo FRONTEND_PATH; ?>">
     
     <!-- Load API Helper -->
-    <script src="assets/js/api-helper.js?v=1"></script>
+    <script src="<?php echo asset('assets/js/api-helper.js?v=1'); ?>"></script>
     
-    <link rel="stylesheet" href="assets/css/new-style.css?v=6">
+    <link rel="stylesheet" href="<?php echo asset('assets/css/new-style.css?v=6'); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/tiny-slider.css">
     <style>

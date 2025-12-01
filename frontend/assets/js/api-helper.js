@@ -18,7 +18,17 @@
             const baseUrl = base.href.replace(/\/frontend\/?$/, '');
             return baseUrl + '/backend' + path;
         }
-        return '/demolitiontraders/backend' + path;
+        
+        // Fallback: detect if localhost or production
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1';
+        
+        if (isLocalhost) {
+            return '/demolitiontraders/backend' + path;
+        } else {
+            // Production
+            return '/backend' + path;
+        }
     };
 
     /**
