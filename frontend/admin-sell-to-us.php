@@ -439,17 +439,6 @@ include __DIR__ . '/components/admin-header.php';
             </div>
         </div>
 
-        <!-- Undo notification -->
-        <div id="undoNotification" style="display: none; background: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #ffc107;">
-            <strong>Note:</strong> <span id="undoMessage"></span>
-            <button class="btn-sm" onclick="undoDelete()" style="background: #28a745; color: white; margin-left: 10px;">
-                <i class="fas fa-undo"></i> Undo
-            </button>
-            <button class="btn-sm" onclick="closeUndo()" style="background: #6c757d; color: white;">
-                <i class="fas fa-times"></i> Dismiss
-            </button>
-        </div>
-
         <!-- Submissions Table -->
         <table>
             <thead>
@@ -695,10 +684,8 @@ include __DIR__ . '/components/admin-header.php';
                     ? `<img src="${fullPhotoUrl}" class="item-thumbnail" onclick="viewSubmission(${sub.id})" title="Click to view details">`
                     : '<i class="fas fa-image" style="color: #ccc; font-size: 24px;"></i>';
                 
-                const isDeleted = sub.notes && sub.notes.includes('[DELETED]');
-                
                 return `
-                <tr ${isDeleted ? 'style="opacity: 0.5; background: #fff3cd;"' : ''}>
+                <tr>
                     <td><input type="checkbox" class="row-checkbox" value="${sub.id}" onchange="updateBulkActions()"></td>
                     <td>${sub.id}</td>
                     <td>${thumbnail}</td>
@@ -711,27 +698,18 @@ include __DIR__ . '/components/admin-header.php';
                     <td>${escapeHtml(sub.item_name)}</td>
                     <td><span class="status-badge ${sub.pickup_delivery.toLowerCase().includes('pickup') ? 'status-contacted' : 'status-reviewing'}">${escapeHtml(sub.pickup_delivery)}</span></td>
                     <td>${sub.pickup_date ? formatDate(sub.pickup_date) : '<em>Not set</em>'}</td>
-                    <td>
-                        <span class="status-badge status-${sub.status}">${capitalize(sub.status)}</span>
-                        ${isDeleted ? '<br><small style="color: #856404;">Deleted - can restore</small>' : ''}
-                    </td>
+                    <td><span class="status-badge status-${sub.status}">${capitalize(sub.status)}</span></td>
                     <td>
                         <div class="action-btns">
-                            ${isDeleted ? `
-                                <button class="btn-sm" onclick="restoreSubmission(${sub.id})" title="Restore" style="background: #28a745; color: white;">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                            ` : `
-                                <button class="btn-sm btn-view" onclick="viewSubmission(${sub.id})" title="View details">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn-sm btn-edit" onclick="editSubmission(${sub.id})" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-sm btn-delete" onclick="deleteSubmission(${sub.id})" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            `}
+                            <button class="btn-sm btn-view" onclick="viewSubmission(${sub.id})" title="View details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-sm btn-edit" onclick="editSubmission(${sub.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-sm btn-delete" onclick="deleteSubmission(${sub.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -900,50 +878,28 @@ include __DIR__ . '/components/admin-header.php';
             }
         }
         
-        // Delete submission (soft delete)
+        // Delete submission
         async function deleteSubmission(id) {
-            if (!confirm('Are you sure you want to delete this submission? You can restore it later.')) {
+            if (!confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
                 return;
             }
             
             try {
-                const result = await apiFetch(getApiUrl('/api/sell-to-us/soft-delete.php'), {
-                    method: 'POST',
+                const result = await apiFetch(getApiUrl('/api/sell-to-us/delete.php'), {
+                    method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id })
                 });
                 
                 if (result.success) {
-                    window.lastDeletedIds = [id];
                     await loadSubmissions();
-                    showUndoNotification('1 submission deleted. You can undo this action.');
+                    showSuccess('Submission deleted successfully');
                 } else {
                     showError(result.error || 'Failed to delete submission');
                 }
             } catch (error) {
                 console.error('Delete error:', error);
                 showError('Failed to delete submission');
-            }
-        }
-        
-        // Restore submission
-        async function restoreSubmission(id) {
-            try {
-                const result = await apiFetch(getApiUrl('/api/sell-to-us/restore.php'), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                
-                if (result.success) {
-                    await loadSubmissions();
-                    showSuccess('Submission restored successfully');
-                } else {
-                    showError(result.error || 'Failed to restore submission');
-                }
-            } catch (error) {
-                console.error('Restore error:', error);
-                showError('Failed to restore submission');
             }
         }
         
@@ -954,64 +910,26 @@ include __DIR__ . '/components/admin-header.php';
             
             if (ids.length === 0) return;
             
-            if (!confirm(`Delete ${ids.length} submission(s)? You can restore them later.`)) {
+            if (!confirm(`Delete ${ids.length} submission(s)? This action cannot be undone.`)) {
                 return;
             }
             
             try {
-                const result = await apiFetch(getApiUrl('/api/sell-to-us/bulk-delete.php'), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids })
-                });
-                
-                if (result.success) {
-                    window.lastDeletedIds = ids;
-                    document.getElementById('selectAll').checked = false;
-                    await loadSubmissions();
-                    showUndoNotification(`${ids.length} submission(s) deleted. You can undo this action.`);
-                } else {
-                    showError(result.error || 'Failed to delete submissions');
-                }
-            } catch (error) {
-                console.error('Bulk delete error:', error);
-                showError('Failed to delete submissions');
-            }
-        }
-        
-        // Undo last delete
-        async function undoDelete() {
-            if (!window.lastDeletedIds || window.lastDeletedIds.length === 0) return;
-            
-            try {
-                for (const id of window.lastDeletedIds) {
-                    await apiFetch(getApiUrl('/api/sell-to-us/restore.php'), {
-                        method: 'POST',
+                for (const id of ids) {
+                    await apiFetch(getApiUrl('/api/sell-to-us/delete.php'), {
+                        method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id })
                     });
                 }
                 
-                window.lastDeletedIds = [];
-                closeUndo();
+                document.getElementById('selectAll').checked = false;
                 await loadSubmissions();
-                showSuccess('Delete action undone successfully');
+                showSuccess(`${ids.length} submission(s) deleted successfully`);
             } catch (error) {
-                console.error('Undo error:', error);
-                showError('Failed to undo delete');
+                console.error('Bulk delete error:', error);
+                showError('Failed to delete submissions');
             }
-        }
-        
-        // Show undo notification
-        function showUndoNotification(message) {
-            document.getElementById('undoMessage').textContent = message;
-            document.getElementById('undoNotification').style.display = 'block';
-        }
-        
-        // Close undo notification
-        function closeUndo() {
-            document.getElementById('undoNotification').style.display = 'none';
-            window.lastDeletedIds = [];
         }
         
         // Toggle select all
@@ -1059,11 +977,56 @@ include __DIR__ . '/components/admin-header.php';
         }
         
         function showSuccess(message) {
-            alert('✓ ' + message);
+            showNotification(message, 'success');
         }
         
         function showError(message) {
-            alert('✗ ' + message);
+            showNotification(message, 'error');
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: ${type === 'success' ? '#d4edda' : '#f8d7da'};
+                color: ${type === 'success' ? '#155724' : '#721c24'};
+                border: 1px solid ${type === 'success' ? '#c3e6cb' : '#f5c6cb'};
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            const icon = type === 'success' ? '✓' : '✗';
+            notification.innerHTML = `<span style="font-size: 18px; margin-right: 8px;">${icon}</span>${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Add CSS animations
+        if (!document.getElementById('notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(400px); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(400px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
         }
     </script>
 

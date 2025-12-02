@@ -538,13 +538,13 @@ include __DIR__ . '/components/admin-header.php';
             if (result.success) {
                 closeModal('statusModal');
                 await loadMessages();
-                alert('✓ Status updated successfully');
+                showNotification('Status updated successfully', 'success');
             } else {
-                alert('✗ ' + (result.error || 'Failed to update status'));
+                showNotification(result.error || 'Failed to update status', 'error');
             }
         } catch (error) {
             console.error('Update error:', error);
-            alert('✗ Failed to update status');
+            showNotification('Failed to update status', 'error');
         }
     }
     
@@ -562,13 +562,13 @@ include __DIR__ . '/components/admin-header.php';
             
             if (result.success) {
                 await loadMessages();
-                alert('✓ Message deleted successfully');
+                showNotification('Message deleted successfully', 'success');
             } else {
-                alert('✗ ' + (result.error || 'Failed to delete message'));
+                showNotification(result.error || 'Failed to delete message', 'error');
             }
         } catch (error) {
             console.error('Delete error:', error);
-            alert('✗ Failed to delete message');
+            showNotification('Failed to delete message', 'error');
         }
     }
     
@@ -609,6 +609,50 @@ include __DIR__ . '/components/admin-header.php';
     function truncate(text, length) {
         if (text.length <= length) return text;
         return text.substring(0, length) + '...';
+    }
+    
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            background: ${type === 'success' ? '#d4edda' : '#f8d7da'};
+            color: ${type === 'success' ? '#155724' : '#721c24'};
+            border: 1px solid ${type === 'success' ? '#c3e6cb' : '#f5c6cb'};
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        const icon = type === 'success' ? '✓' : '✗';
+        notification.innerHTML = `<span style="font-size: 18px; margin-right: 8px;">${icon}</span>${message}`;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    if (!document.getElementById('notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     }
 </script>
 
