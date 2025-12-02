@@ -687,8 +687,9 @@ include __DIR__ . '/components/admin-header.php';
             
             tbody.innerHTML = submissions.map(sub => {
                 const photoUrl = sub.photos && sub.photos.length > 0 ? sub.photos[0] : '';
-                const thumbnail = photoUrl 
-                    ? `<img src="${photoUrl}" class="item-thumbnail" onclick="viewSubmission(${sub.id})" title="Click to view details">`
+                const fullPhotoUrl = photoUrl ? getApiUrl('/' + photoUrl) : '';
+                const thumbnail = fullPhotoUrl 
+                    ? `<img src="${fullPhotoUrl}" class="item-thumbnail" onclick="viewSubmission(${sub.id})" title="Click to view details">`
                     : '<i class="fas fa-image" style="color: #ccc; font-size: 24px;"></i>';
                 
                 const isDeleted = sub.notes && sub.notes.includes('[DELETED]');
@@ -781,7 +782,10 @@ include __DIR__ . '/components/admin-header.php';
             
             const photos = sub.photos && sub.photos.length > 0 
                 ? `<div class="photo-gallery">
-                    ${sub.photos.map(photo => `<img src="${photo}" onclick="window.open('${photo}', '_blank')">`).join('')}
+                    ${sub.photos.map(photo => {
+                        const fullUrl = getApiUrl('/' + photo);
+                        return `<img src="${fullUrl}" onclick="window.open('${fullUrl}', '_blank')">`;
+                    }).join('')}
                    </div>`
                 : '<em>No photos uploaded</em>';
             
