@@ -29,11 +29,15 @@ try {
 
     $db = Database::getInstance();
     
+    error_log("Checking if user exists: $email");
+    
     // Check if user exists
     $existing = $db->fetchOne(
         "SELECT id FROM users WHERE email = :email",
         ['email' => $email]
     );
+    
+    error_log("Existing user check result: " . ($existing ? "Found ID " . $existing['id'] : "Not found"));
     
     if ($existing) {
         throw new Exception('Email already registered.');
@@ -54,6 +58,12 @@ try {
     ]);
     
     error_log("User registered successfully: ID = $userId, Email = $email");
+    
+    // Validate user was created
+    if (!$userId || !is_numeric($userId)) {
+        error_log("Registration failed - invalid user ID: " . var_export($userId, true));
+        throw new Exception('Registration failed. Please try again.');
+    }
     
     // Link pending guest order to new user account
     $order_id = $data['order_id'] ?? null;

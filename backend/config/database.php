@@ -179,7 +179,7 @@ class Database {
             return ':' . $col;
         }, $columns);
 
-        $sql = "INSERT INTO `$table` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
+        $sql = "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ") RETURNING id";
 
         // Prepare params - convert to string except null
         $params = [];
@@ -194,8 +194,9 @@ class Database {
         }
 
         try {
-            $this->query($sql, $params);
-            $insertId = $this->connection->lastInsertId();
+            $result = $this->query($sql, $params);
+            $row = $result->fetch(PDO::FETCH_ASSOC);
+            $insertId = $row['id'] ?? null;
             $this->log("[INSERT][SUCCESS] Table: $table, ID: $insertId");
             return $insertId;
         } catch (PDOException $e) {
