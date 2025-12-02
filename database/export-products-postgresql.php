@@ -15,19 +15,9 @@ $mysqli->set_charset("utf8mb4");
 
 // Helper function to clean and escape strings for PostgreSQL
 function cleanString($mysqli, $value) {
-    if ($value === null) return null;
+    if ($value === null || $value === '') return null;
     
-    // Force to UTF-8 and remove any invalid sequences
-    $value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
-    
-    // Remove control characters
-    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/', '', $value);
-    
-    // Replace common problematic chars
-    $value = preg_replace('/[''`´]/u', "'", $value); // Various apostrophes
-    $value = preg_replace('/[""]/u', '"', $value); // Various quotes
-    $value = preg_replace('/[—–-]/u', '-', $value); // Various dashes
-    
+    // Simply escape for SQL - PostgreSQL will handle UTF-8
     return $mysqli->real_escape_string($value);
 }
 

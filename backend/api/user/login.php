@@ -19,12 +19,17 @@ try {
 
     $db = Database::getInstance();
     
+    // Try to find user (case-insensitive email, check status)
     $user = $db->fetchOne(
-        "SELECT * FROM users WHERE email = :email AND status = 'active'",
+        "SELECT * FROM users WHERE LOWER(email) = LOWER(:email) AND LOWER(status) = 'active'",
         ['email' => $email]
     );
 
-    if (!$user || !password_verify($password, $user['password'])) {
+    if (!$user) {
+        throw new Exception('Invalid email or password.');
+    }
+    
+    if (!password_verify($password, $user['password'])) {
         throw new Exception('Invalid email or password.');
     }
 
@@ -54,9 +59,14 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log("Login error: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => $e->getMessage(),
+        'debug' => [
+            'file' => basename($e->getFile()),
+            'line' => $e->getLine()
+        ]
     ]);
 }
