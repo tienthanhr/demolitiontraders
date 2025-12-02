@@ -1,7 +1,7 @@
 #!/bin/bash
-# Install PHP MySQL extensions
+# Install PHP PostgreSQL extensions for Render
 apt-get update
-apt-get install -y php-mysql php-pdo php-pdo-mysql
+apt-get install -y php-pgsql php-pdo
 
 # Restart Apache to load new extensions
 apachectl restart
