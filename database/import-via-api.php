@@ -49,7 +49,8 @@ try {
     $startTime = microtime(true);
     
     // Disable foreign key checks for faster import (PostgreSQL way)
-    if ($db->isPostgreSQL()) {
+    $isPostgreSQL = (getenv('DATABASE_URL') !== false);
+    if ($isPostgreSQL) {
         $conn->exec("SET session_replication_role = 'replica';");
     } else {
         $conn->exec("SET FOREIGN_KEY_CHECKS = 0;");
@@ -59,7 +60,7 @@ try {
     $conn->exec($sql);
     
     // Re-enable foreign key checks
-    if ($db->isPostgreSQL()) {
+    if ($isPostgreSQL) {
         $conn->exec("SET session_replication_role = 'origin';");
     } else {
         $conn->exec("SET FOREIGN_KEY_CHECKS = 1;");
@@ -68,7 +69,8 @@ try {
     $duration = round(microtime(true) - $startTime, 2);
     
     // Verify import
-    $stmt = $conn->query("SELECT COUNT(*) as count FROM products WHERE is_active = " . ($db->isPostgreSQL() ? 'TRUE' : '1'));
+    $isPostgreSQL = (getenv('DATABASE_URL') !== false);
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM products WHERE is_active = " . ($isPostgreSQL ? 'TRUE' : '1'));
     $productCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     
     $stmt = $conn->query("SELECT COUNT(*) as count FROM product_images");
