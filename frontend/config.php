@@ -28,6 +28,12 @@ function asset($path) {
     return FRONTEND_PATH . ltrim($path, '/');
 }
 
+// Helper function to get user page URL
+function userUrl($page) {
+    // With .htaccess rewrite, user pages are at root level
+    return BASE_PATH . ltrim($page, '/');
+}
+
 // Helper function to get full URL
 function url($path = '') {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 

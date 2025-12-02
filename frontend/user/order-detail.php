@@ -46,7 +46,7 @@ $items = $db->fetchAll(
 $billing_address = json_decode($order['billing_address'], true);
 $shipping_address = json_decode($order['shipping_address'], true);
 ?>
-<?php require_once __DIR__ . '/config.php'; ?>
+<?php require_once __DIR__ . '/../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -316,7 +316,7 @@ $shipping_address = json_decode($order['shipping_address'], true);
     </style>
 </head>
 <body>
-    <?php include 'components/header.php'; ?>
+    <?php include '../components/header.php'; ?>
     
     <div class="order-detail-container">
         <a href="profile.php" class="back-link">
@@ -461,6 +461,6 @@ $shipping_address = json_decode($order['shipping_address'], true);
         </div>
     </div>
     
-    <?php include 'components/footer.php'; ?>
+    <?php include '../components/footer.php'; ?>
 </body>
 </html>

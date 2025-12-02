@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <?php include 'components/header.php'; ?>
+    <?php include '../components/header.php'; ?>
     
     <div class="page-header">
         <div class="container">
@@ -28,8 +29,8 @@
         </div>
     </section>
     
-    <?php include 'components/footer.php'; ?>
-    <?php include 'components/toast-notification.php'; ?>
+    <?php include '../components/footer.php'; ?>
+    <?php include '../components/toast-notification.php'; ?>
     
     <script src="assets/js/main.js"></script>
     <script>

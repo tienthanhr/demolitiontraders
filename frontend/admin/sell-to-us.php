@@ -1,4 +1,17 @@
 <?php
+require_once '../config.php';
+session_start();
+
+// Check if user is admin
+$isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
+
+if (!isset($_SESSION['user_id']) || !$isAdmin) {
+    header('Location: ' . BASE_PATH . 'admin-login');
+    exit;
+}
+
+require_once '../../backend/config/database.php';
+
 $pageTitle = 'Sell to Us Management';
 $additionalCSS = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
 <style>
@@ -367,7 +380,7 @@ $additionalCSS = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/full
         }
 </style>';
 
-include __DIR__ . '/components/admin-header.php';
+include __DIR__ . '/../components/admin-header.php';
 ?>
 
 <!-- Page Header -->
@@ -1030,4 +1043,4 @@ include __DIR__ . '/components/admin-header.php';
         }
     </script>
 
-<?php include __DIR__ . '/components/admin-footer.php'; ?>
+<?php include __DIR__ . '/../components/admin-footer.php'; ?>

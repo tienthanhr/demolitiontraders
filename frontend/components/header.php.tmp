@@ -1,10 +1,6 @@
 <!-- Header Component -->
 <!-- Load API Helper First -->
-<script src="assets/js/api-helper.js?v=1"></script>
-<script>
-// Set base URL for user pages
-const USER_BASE = '<?php echo FRONTEND_PATH; ?>user/';
-</script>
+<script src="../assets/js/api-helper.js?v=1"></script>
 
 <!-- Top Navigation Bar -->
 <div class="header-top">
@@ -34,7 +30,7 @@ const USER_BASE = '<?php echo FRONTEND_PATH; ?>user/';
         <div class="header-content">
             <div class="logo">
                 <a href="<?php echo userUrl('index.php'); ?>">
-                    <img src="assets/images/logo.png" alt="Demolition Traders" style="max-height: 100px;">
+                    <img src="../assets/images/logo.png" alt="Demolition Traders" style="max-height: 100px;">
                 </a>
             </div>
             
@@ -101,92 +97,92 @@ const USER_BASE = '<?php echo FRONTEND_PATH; ?>user/';
     <div class="container">
         <ul class="nav-menu">
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=plywood'); ?>">Plywood</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=plywood">Plywood</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=untreated-plywood'); ?>">Untreated Plywood</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=mdf'); ?>">MDF</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=treated-plywood'); ?>">Treated Plywood</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=acp-seratone'); ?>">ACP / Seratone</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=untreated-plywood">Untreated Plywood</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=mdf">MDF</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=treated-plywood">Treated Plywood</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=acp-seratone">ACP / Seratone</a></li>
                 </ul>
             </li>
                      <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=doors'); ?>">Doors</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=doors">Doors</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=new-aluminium-single-doors'); ?>">New Aluminium Single Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=new-aluminium-french-doors'); ?>">New Aluminium French Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=new-exterior-doors'); ?>">New Exterior Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=new-interior-doors'); ?>">New Interior Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=recycled-doors'); ?>">Recycled Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=bi-fold-doors'); ?>">Bi-fold Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=new-aluminium-single-doors">New Aluminium Single Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=new-aluminium-french-doors">New Aluminium French Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=new-exterior-doors">New Exterior Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=new-interior-doors">New Interior Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=recycled-doors">Recycled Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=bi-fold-doors">Bi-fold Doors</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=windows'); ?>">Windows</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=windows">Windows</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=aluminium-windows'); ?>">Aluminium Windows</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=wooden-windows'); ?>">Wooden Windows</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=bi-fold-sliding-windows'); ?>">Bi-folds</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=aluminium-windows">Aluminium Windows</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=wooden-windows">Wooden Windows</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=bi-fold-sliding-windows">Bi-folds</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=sliding-doors'); ?>">Sliding Doors</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=sliding-doors">Sliding Doors</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=new-aluminium-sliding-doors'); ?>">New Aluminium Sliding Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=recycled-sliding-doors'); ?>">Recycled Sliding Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=new-aluminium-sliding-doors">New Aluminium Sliding Doors</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=recycled-sliding-doors">Recycled Sliding Doors</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=timber'); ?>">Timber</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=timber">Timber</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=mouldings'); ?>">Mouldings</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=native-timber'); ?>">Native Timber</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=pine'); ?>">Pine</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=mouldings">Mouldings</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=native-timber">Native Timber</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=pine">Pine</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=cladding'); ?>">Cladding</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=cladding">Cladding</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=weatherboard'); ?>">Weatherboard</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=cement-board'); ?>">Cement Board</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=weatherboard">Weatherboard</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=cement-board">Cement Board</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=landscaping'); ?>">Landscaping</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=landscaping">Landscaping</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=railway-sleepers'); ?>">Railway Sleepers</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=pavers'); ?>">Pavers</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=wire-netting'); ?>">Wire/Netting</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=railway-sleepers">Railway Sleepers</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=pavers">Pavers</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=wire-netting">Wire/Netting</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=roofing'); ?>">Roofing</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=roofing">Roofing</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=iron'); ?>">Iron</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=flashing-drainage'); ?>">Flashing & Drainage</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=clearlite'); ?>">Clearlite</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=iron">Iron</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=flashing-drainage">Flashing & Drainage</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=clearlite">Clearlite</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=kitchens'); ?>">Kitchens</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=kitchens">Kitchens</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=kitchen-cabinets'); ?>">Kitchen Cabinets</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=complete-kitchens'); ?>">Complete Kitchens</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=kitchen-cabinets">Kitchen Cabinets</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=complete-kitchens">Complete Kitchens</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=bathroom'); ?>">Bathroom & Laundry</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=bathroom">Bathroom & Laundry</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=baths'); ?>">Baths</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=hand-basins'); ?>">Hand Basins</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=vanities'); ?>">Vanities</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=baths">Baths</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=hand-basins">Hand Basins</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=vanities">Vanities</a></li>
                 </ul>
             </li>
             <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=general'); ?>">General</a>
+                <a href="<?php echo userUrl('shop.php'); ?>?category=general">General</a>
                 <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=character-items'); ?>">Character Items</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=hardware'); ?>">Hardware</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=insulation'); ?>">Insulation</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=character-items">Character Items</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=hardware">Hardware</a></li>
+                    <li><a href="<?php echo userUrl('shop.php'); ?>?category=insulation">Insulation</a></li>
                 </ul>
             </li>
         </ul>

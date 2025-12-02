@@ -1,11 +1,12 @@
 <?php
+require_once '../config.php';
 session_start();
 
 // Check if user is admin
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
 
 if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    header('Location: ../admin-login.php');
+    header('Location: ' . BASE_PATH . 'admin-login');
     exit;
 }
 ?>
@@ -15,9 +16,10 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Demolition Traders</title>
-    <link rel="stylesheet" href="admin-style.css">
+    <base href="<?php echo FRONTEND_PATH; ?>">
+    <link rel="stylesheet" href="admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="../assets/js/api-helper.js"></script>
+    <script src="assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">

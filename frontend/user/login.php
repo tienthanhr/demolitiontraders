@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/config.php'; ?>
+<?php require_once __DIR__ . '/../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +27,7 @@
     </style>
 </head>
 <body>
-    <?php include 'components/header.php'; ?>
+    <?php include '../components/header.php'; ?>
     <div class="auth-container">
         <div class="auth-tabs">
             <div class="auth-tab active" id="loginTab">Login</div>
@@ -73,8 +73,8 @@
             </div>
         </form>
     </div>
-    <?php include 'components/footer.php'; ?>
-    <?php include 'components/toast-notification.php'; ?>
+    <?php include '../components/footer.php'; ?>
+    <?php include '../components/toast-notification.php'; ?>
     <script>
         // Toggle password visibility
         function togglePassword(inputId, icon) {

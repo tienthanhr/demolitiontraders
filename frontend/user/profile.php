@@ -33,7 +33,7 @@ $orders = $db->fetchAll(
     ['user_id' => $_SESSION['user_id']]
 );
 ?>
-<?php require_once __DIR__ . '/config.php'; ?>
+<?php require_once __DIR__ . '/../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,7 +88,7 @@ $orders = $db->fetchAll(
     </style>
 </head>
 <body>
-    <?php include 'components/header.php'; ?>
+    <?php include '../components/header.php'; ?>
     
     <div class="account-container">
         <div class="account-header">
@@ -252,8 +252,8 @@ $orders = $db->fetchAll(
         </div>
     </div>
     
-    <?php include 'components/footer.php'; ?>
-    <?php include 'components/toast-notification.php'; ?>
+    <?php include '../components/footer.php'; ?>
+    <?php include '../components/toast-notification.php'; ?>
     
     <script>
         // Tab switching

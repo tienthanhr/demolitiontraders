@@ -1,65 +1,46 @@
 RewriteEngine On
-RewriteBase /
+RewriteBase /demolitiontraders/
 
 # Prevent directory listing
 Options -Indexes
 
-# Force HTTPS (enable in production) - with proxy support
-RewriteCond %{HTTP:X-Forwarded-Proto} !https
-RewriteCond %{HTTPS} off
-RewriteCond %{HTTP_HOST} !^localhost [NC]
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Admin routes - /admin → frontend/admin/
+RewriteRule ^admin/?$ frontend/admin/index.php [L]
+RewriteRule ^admin/sell-to-us$ frontend/admin/sell-to-us.php [L]
+RewriteRule ^admin/wanted-listings$ frontend/admin/wanted-listings.php [L]
+RewriteRule ^admin/contact-messages$ frontend/admin/contact-messages.php [L]
+RewriteRule ^admin/(.*)$ frontend/admin/$1 [L]
 
-# Fix mixed content by upgrading insecure requests
-<IfModule mod_headers.c>
-    Header always set Content-Security-Policy "upgrade-insecure-requests"
-</IfModule>
+# Admin login - /admin-login → frontend/admin-login.php
+RewriteRule ^admin-login/?$ frontend/admin-login.php [L]
 
-# API Routes - backend/api/* (allow direct access, NO REDIRECT)
+# Backend API - allow direct access
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule ^backend/api/.*\.php$ - [L]
+RewriteRule ^backend/.*\.php$ - [L]
 
-# Static files (images, css, js) - serve directly
+# User pages - root level routes
+RewriteRule ^$ frontend/user/index.php [L]
+RewriteRule ^index\.php$ frontend/user/index.php [L]
+RewriteRule ^shop\.php$ frontend/user/shop.php [QSA,L]
+RewriteRule ^product-detail\.php$ frontend/user/product-detail.php [QSA,L]
+RewriteRule ^cart\.php$ frontend/user/cart.php [L]
+RewriteRule ^checkout\.php$ frontend/user/checkout.php [L]
+RewriteRule ^wishlist\.php$ frontend/user/wishlist.php [L]
+RewriteRule ^login\.php$ frontend/user/login.php [L]
+RewriteRule ^profile\.php$ frontend/user/profile.php [L]
+RewriteRule ^about\.php$ frontend/user/about.php [L]
+RewriteRule ^contact\.php$ frontend/user/contact.php [L]
+RewriteRule ^faqs\.php$ frontend/user/faqs.php [L]
+RewriteRule ^staff\.php$ frontend/user/staff.php [L]
+RewriteRule ^cabins\.php$ frontend/user/cabins.php [L]
+RewriteRule ^sell-to-us\.php$ frontend/user/sell-to-us.php [L]
+RewriteRule ^wanted-listing\.php$ frontend/user/wanted-listing.php [L]
+RewriteRule ^reset-password\.php$ frontend/user/reset-password.php [L]
+RewriteRule ^order-detail\.php$ frontend/user/order-detail.php [QSA,L]
+
+# Assets - allow direct access
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule ^(.*\.(jpg|jpeg|png|gif|css|js|svg|webp|ico|woff|woff2|ttf|pdf))$ - [L]
+RewriteRule ^frontend/(assets|components)/.*$ - [L]
 
-# Remove /frontend/ from URLs - 301 redirect
-RewriteRule ^frontend/(.+)$ /$1 [R=301,L]
-
-# Map root to frontend/index.php
-RewriteRule ^$ frontend/index.php [L]
-
-# Map clean URLs to frontend/*.php (only if file exists)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{DOCUMENT_ROOT}/frontend/$1.php -f
-RewriteRule ^([a-zA-Z0-9_-]+)/?$ frontend/$1.php [L,QSA]
-
-# If nothing matched, serve 404 (don't fallback to frontend/)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ - [R=404,L]
-
-# Security Headers
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-</IfModule>
-
-# Compression
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
-</IfModule>
-
-# Cache Control
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType image/jpg "access plus 1 year"
-    ExpiresByType image/jpeg "access plus 1 year"
-    ExpiresByType image/gif "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-</IfModule>
+# Prevent direct access to frontend/user/ and frontend/admin/ in URL
+RewriteRule ^frontend/(user|admin)/ - [F,L]

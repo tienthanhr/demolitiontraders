@@ -9,15 +9,15 @@
             
             <div class="footer-nav">
                 <h4>Browse</h4>
-                <a href="index.php">Home</a>
-                <a href="shop.php">Shop Now</a>
-                <a href="wanted-listing.php">Wanted Listing</a>
-                <a href="cabins.php">Cabins</a>
-                <a href="faqs.php">FAQs</a>
-                <a href="about.php">About Us</a>
-                <a href="staff.php">Staff</a>
-                <a href="contact.php">Contact Us</a>
-                <a href="terms.php">Terms of Use</a>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a>
+                <a href="<?php echo userUrl('shop.php'); ?>">Shop Now</a>
+                <a href="<?php echo userUrl('wanted-listing.php'); ?>">Wanted Listing</a>
+                <a href="<?php echo userUrl('cabins.php'); ?>">Cabins</a>
+                <a href="<?php echo userUrl('faqs.php'); ?>">FAQs</a>
+                <a href="<?php echo userUrl('about.php'); ?>">About Us</a>
+                <a href="<?php echo userUrl('staff.php'); ?>">Staff</a>
+                <a href="<?php echo userUrl('contact.php'); ?>">Contact Us</a>
+                <a href="<?php echo userUrl('terms.php'); ?>">Terms of Use</a>
             </div>
             
             <div class="footer-contact">
@@ -68,7 +68,7 @@
             </a>
         </div>
         <p>© <?php echo date('Y'); ?> Demolition Traders | 
-        <a href="cabins.php">Cabins</a> | 
+        <a href="<?php echo userUrl('cabins.php'); ?>">Cabins</a> | 
         Powered by Demolition Traders team</p>
     </div>
 </div>

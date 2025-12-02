@@ -4,11 +4,14 @@
  * Include this at the top of all admin pages
  */
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Check if user is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: admin-login.php');
+    require_once __DIR__ . '/../config.php';
+    header('Location: ' . BASE_PATH . 'admin-login');
     exit;
 }
 

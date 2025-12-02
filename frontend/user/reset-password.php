@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/config.php'; ?>
+<?php require_once __DIR__ . '/../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +25,7 @@
     </style>
 </head>
 <body>
-    <?php include 'components/header.php'; ?>
+    <?php include '../components/header.php'; ?>
     <div class="auth-container">
         <h2 style="text-align: center; margin-bottom: 24px;">Reset Password</h2>
         <div id="invalidToken" class="auth-error" style="display:none;">
@@ -43,8 +43,8 @@
             <a href="login.php">Back to Login</a>
         </div>
     </div>
-    <?php include 'components/footer.php'; ?>
-    <?php include 'components/toast-notification.php'; ?>
+    <?php include '../components/footer.php'; ?>
+    <?php include '../components/toast-notification.php'; ?>
     <script>
         // Get token from URL
         const urlParams = new URLSearchParams(window.location.search);

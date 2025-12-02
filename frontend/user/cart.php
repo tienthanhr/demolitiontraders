@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/config.php'; ?>
+<?php require_once __DIR__ . '/../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -316,7 +316,7 @@
     </style>
 </head>
 <body>
-    <?php include 'components/header.php'; ?>
+    <?php include '../components/header.php'; ?>
     
     <div class="page-header">
         <div class="container">
@@ -384,8 +384,8 @@
         </div>
     </div>
     
-    <?php include 'components/footer.php'; ?>
-    <?php include 'components/toast-notification.php'; ?>
+    <?php include '../components/footer.php'; ?>
+    <?php include '../components/toast-notification.php'; ?>
     
     <script src="assets/js/main.js"></script>
     <script>

@@ -1,4 +1,5 @@
 <?php
+require_once '../config.php';
 require_once '../components/date-helper.php';
 session_start();
 
@@ -6,7 +7,7 @@ session_start();
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
 
 if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    header('Location: ../admin-login.php');
+    header('Location: ' . BASE_PATH . 'admin-login');
     exit;
 }
 
@@ -37,9 +38,11 @@ $admins = $db->fetchAll(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Management - Demolition Traders</title>
+    <base href="<?php echo FRONTEND_PATH; ?>">
+    <link rel="stylesheet" href="admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="assets/js/api-helper.js"></script>
     <style>
-        <?php include 'admin-style.css'; ?>
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s; }
         .stat-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }

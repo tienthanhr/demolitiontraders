@@ -1,6 +1,6 @@
 <?php
 $pageTitle = 'Contact Messages';
-include __DIR__ . '/components/admin-header.php';
+include __DIR__ . '/../components/admin-header.php';
 ?>
 
 <style>
@@ -656,4 +656,4 @@ include __DIR__ . '/components/admin-header.php';
     }
 </script>
 
-<?php include __DIR__ . '/components/admin-footer.php'; ?>
+<?php include __DIR__ . '/../components/admin-footer.php'; ?>

@@ -1,9 +1,10 @@
 <?php
+require_once 'config.php';
 session_start();
 
 // If already logged in as admin, redirect to dashboard
 if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'admin') {
-    header('Location: admin/index.php');
+    header('Location: ' . BASE_PATH . 'admin');
     exit;
 }
 
@@ -30,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
                 
-                header('Location: admin/index.php');
+                header('Location: ' . BASE_PATH . 'admin');
                 exit;
             } else {
                 $error = 'Invalid admin credentials';
@@ -273,7 +274,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="back-to-site">
-            <a href="index.php">
+            <a href="<?php echo BASE_PATH; ?>">
                 <i class="fas fa-arrow-left"></i> Back to Website
             </a>
         </div>

@@ -1,11 +1,12 @@
 <?php
+require_once '../config.php';
 session_start();
 
 // Check if user is admin
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
 
 if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    header('Location: ../admin-login.php');
+    header('Location: ' . BASE_PATH . 'admin-login');
     exit;
 }
 ?>
@@ -15,9 +16,11 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orders Management - Demolition Traders</title>
+    <base href="<?php echo FRONTEND_PATH; ?>">
+    <link rel="stylesheet" href="admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="assets/js/api-helper.js"></script>
     <style>
-        <?php include 'admin-style.css'; ?>
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .stat-card i { font-size: 32px; color: #2f3192; margin-bottom: 10px; }
@@ -410,6 +413,27 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
 </div>
 
 <script>
+// Utility functions
+function formatDate(dateStr) {
+    if (!dateStr) return 'N/A';
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+}
+
+function formatDateTime(dateStr) {
+    if (!dateStr) return 'N/A';
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
 // Global variables for sorting
 let currentSortColumn = 'date';
 let currentSortDirection = 'desc';
