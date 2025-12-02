@@ -19,13 +19,13 @@ try {
     
     // Enrich with username and match count
     foreach ($listings as &$listing) {
-        // Get username if user_id exists
+        // Get user name if user_id exists
         if ($listing['user_id']) {
-            $userQuery = "SELECT username FROM users WHERE id = ?";
+            $userQuery = "SELECT first_name, last_name FROM users WHERE id = ?";
             $userStmt = $db->prepare($userQuery);
             $userStmt->execute([$listing['user_id']]);
             $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-            $listing['username'] = $user ? $user['username'] : null;
+            $listing['username'] = $user ? trim($user['first_name'] . ' ' . $user['last_name']) : null;
         } else {
             $listing['username'] = null;
         }
