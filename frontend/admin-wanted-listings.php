@@ -251,7 +251,7 @@ include __DIR__ . '/components/admin-header.php';
 </style>
 
 <div class="page-header">
-    <h1><i class="fas fa-star"></i> Wanted Listings</h1>
+    <h1>Wanted Listings</h1>
 </div>
 
 <div class="stats-cards">

@@ -254,7 +254,7 @@ include __DIR__ . '/components/admin-header.php';
 </style>
 
 <div class="page-header">
-    <h1><i class="fas fa-envelope"></i> Contact Messages</h1>
+    <h1>Contact Messages</h1>
 </div>
 
 <div class="stats-cards">
