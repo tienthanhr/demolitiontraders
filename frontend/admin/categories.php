@@ -19,6 +19,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <style>
         <?php include 'admin-style.css'; ?>
     </style>
+    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">

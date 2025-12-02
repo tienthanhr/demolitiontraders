@@ -6,17 +6,27 @@
 
 require_once __DIR__ . '/../backend/config/database.php';
 
+// CORS headers - allow requests from localhost and Render
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // Check if running from command line or via web
 $isCLI = php_sapi_name() === 'cli';
 
 // Security: Only allow import if secret key matches
 if (!$isCLI) {
-    $secretKey = $_GET['key'] ?? '';
-    $validKey = 'import_products_2025'; // Simple key for one-time import
+    $secretKey = $_GET['secret'] ?? $_GET['key'] ?? '';
+    $validKeys = ['import_products_2025', 'demo2024secure']; // Allow both keys
     
-    if ($secretKey !== $validKey) {
+    if (!in_array($secretKey, $validKeys)) {
         http_response_code(403);
         die(json_encode([
             'error' => 'Invalid key',

@@ -19,6 +19,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <style>
         <?php include 'admin-style.css'; ?>
     </style>
+    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -87,12 +88,46 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             <button class="btn btn-success" onclick="exportProducts()" style="padding: 15px;">
                 <i class="fas fa-download"></i><br>Export Products
             </button>
+            <button class="btn btn-info" onclick="openImportModal()" style="padding: 15px;">
+                <i class="fas fa-upload"></i><br>Import Products
+            </button>
             <button class="btn btn-warning" onclick="printReport()" style="padding: 15px;">
                 <i class="fas fa-print"></i><br>Print Report
             </button>
             <button class="btn btn-danger" type="button" onclick="logoutConfirm(); return false;" style="padding: 15px;">
                 <i class="fas fa-sign-out-alt"></i><br>Logout
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Products Modal -->
+<div id="importModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Import Products from MySQL</h3>
+            <span class="close" onclick="closeImportModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p style="color: #666; margin-bottom: 20px;">
+                This will import all products from your MySQL database to the Render PostgreSQL database.
+            </p>
+            
+            <div class="form-group">
+                <label>Import Status:</label>
+                <div id="importStatus" style="padding: 15px; background: #f5f5f5; border-radius: 5px; min-height: 100px; font-family: monospace; font-size: 13px; overflow-y: auto; max-height: 300px;">
+                    Ready to import...
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-success" onclick="startImport()" id="importBtn">
+                    <i class="fas fa-upload"></i> Start Import
+                </button>
+                <button class="btn btn-secondary" onclick="closeImportModal()">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -199,6 +234,65 @@ function exportProducts() {
     // Open export URL in new window to download CSV
     showInfo('Preparing products export...');
     window.location.href = getApiUrl('/api/admin/export-products.php');
+}
+
+function openImportModal() {
+    document.getElementById('importModal').style.display = 'flex';
+    document.getElementById('importStatus').innerHTML = 'Ready to import...';
+    document.getElementById('importBtn').disabled = false;
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').style.display = 'none';
+}
+
+async function startImport() {
+    const statusDiv = document.getElementById('importStatus');
+    const importBtn = document.getElementById('importBtn');
+    
+    importBtn.disabled = true;
+    statusDiv.innerHTML = '<span style="color: blue;">⏳ Starting import...</span><br>';
+    
+    try {
+        // Call the import API with secret key
+        const response = await fetch('https://demolitiontraders.onrender.com/backend/database/import-via-api.php?secret=demo2024secure', {
+            method: 'POST'
+        });
+        
+        const text = await response.text();
+        
+        // Parse response
+        let lines = text.split('\n');
+        let html = '';
+        
+        for (let line of lines) {
+            if (line.trim()) {
+                if (line.includes('✓') || line.includes('SUCCESS')) {
+                    html += '<span style="color: green;">' + line + '</span><br>';
+                } else if (line.includes('✗') || line.includes('ERROR') || line.includes('Failed')) {
+                    html += '<span style="color: red;">' + line + '</span><br>';
+                } else if (line.includes('⏳') || line.includes('Starting')) {
+                    html += '<span style="color: blue;">' + line + '</span><br>';
+                } else {
+                    html += line + '<br>';
+                }
+            }
+        }
+        
+        statusDiv.innerHTML = html;
+        
+        if (response.ok) {
+            showSuccess('Import completed! Check status above for details.');
+        } else {
+            showError('Import completed with some errors. Check status above.');
+        }
+        
+    } catch (error) {
+        statusDiv.innerHTML += '<br><span style="color: red;">✗ Error: ' + error.message + '</span>';
+        showError('Import failed: ' + error.message);
+    } finally {
+        importBtn.disabled = false;
+    }
 }
 
 function printReport() {

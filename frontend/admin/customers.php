@@ -156,6 +156,7 @@ $customers = $db->fetchAll(
         .info-group input, .info-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
         .info-group select { cursor: pointer; }
     </style>
+    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">

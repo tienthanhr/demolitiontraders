@@ -53,13 +53,13 @@ try {
     }
     
     // Update submission
-    $result = $db->execute("
+    $stmt = $db->query("
         UPDATE sell_to_us_submissions 
         SET " . implode(', ', $fields) . "
         WHERE id = :id
     ", $params);
     
-    if ($result) {
+    if ($stmt->rowCount() > 0) {
         // Get updated submission
         $submission = $db->fetchOne(
             "SELECT * FROM sell_to_us_submissions WHERE id = :id",

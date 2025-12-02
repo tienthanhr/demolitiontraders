@@ -64,6 +64,7 @@ $admins = $db->fetchAll(
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .section-header h2 { margin: 0; }
     </style>
+    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">

@@ -19,6 +19,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <style>
         <?php include 'admin-style.css'; ?>
     </style>
+    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -56,7 +57,8 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             tableDiv.innerHTML = '<div style="text-align:center;color:#c00;padding:40px;">Error loading low stock products.</div>';
         }
     }
-    loadLowStock();
+        loadLowStock();
     </script>
+    <script src="../assets/js/api-helper.js"></script>
 </body>
 </html>

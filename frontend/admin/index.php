@@ -17,6 +17,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <title>Admin Dashboard - Demolition Traders</title>
     <link rel="stylesheet" href="admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">

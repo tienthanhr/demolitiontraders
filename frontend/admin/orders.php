@@ -189,6 +189,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             background: #e0e0e0;
         }
     </style>
+    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
