@@ -13,6 +13,9 @@ COPY . /var/www/html/
 # Bật mod_rewrite cho .htaccess
 RUN a2enmod rewrite
 
+# Enable .htaccess override
+RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+
 # Phân quyền cho Apache
 RUN chown -R www-data:www-data /var/www/html
 

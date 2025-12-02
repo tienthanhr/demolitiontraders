@@ -1,5 +1,7 @@
 RewriteEngine On
-RewriteBase /demolitiontraders/
+# Production uses root path /
+# For local XAMPP, change to: RewriteBase /demolitiontraders/
+RewriteBase /
 
 # Prevent directory listing
 Options -Indexes
