@@ -41,6 +41,8 @@ try {
 
     $hash = password_hash($password, PASSWORD_DEFAULT);
     
+    error_log("Attempting to register user: $email");
+    
     $userId = $db->insert('users', [
         'first_name' => $first_name,
         'last_name' => $last_name,
@@ -50,6 +52,8 @@ try {
         'role' => 'customer',
         'status' => 'active'
     ]);
+    
+    error_log("User registered successfully: ID = $userId, Email = $email");
     
     // Link pending guest order to new user account
     $order_id = $data['order_id'] ?? null;
@@ -73,7 +77,10 @@ try {
     }
     
     // Auto login after registration
+    ini_set('session.save_path', '/tmp');
     session_start();
+    header('Access-Control-Allow-Credentials: true');
+    
     $_SESSION['user_id'] = $userId;
     $_SESSION['user_email'] = $email;
     $_SESSION['user_role'] = 'customer';
@@ -92,6 +99,7 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log("Registration error: " . $e->getMessage());
     http_response_code(400);
     echo json_encode([
         'success' => false,
