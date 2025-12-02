@@ -80,9 +80,15 @@ class Database {
     
     /**
      * Execute query with parameters
+     * Automatically converts integer 1/0 to boolean TRUE/FALSE for PostgreSQL
      */
     public function query($sql, $params = []) {
         try {
+            // Fix PostgreSQL boolean comparison: replace = 1 with = TRUE, = 0 with = FALSE
+            if ($this->isPostgreSQL()) {
+                $sql = $this->fixBooleanSQL($sql);
+            }
+            
             $stmt = $this->connection->prepare($sql);
             $stmt->execute($params);
             return $stmt;
@@ -92,6 +98,34 @@ class Database {
             error_log("Query error: " . $e->getMessage());
             throw $e;
         }
+    }
+    
+    /**
+     * Check if using PostgreSQL
+     */
+    private function isPostgreSQL() {
+        return $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql';
+    }
+    
+    /**
+     * Fix boolean comparisons for PostgreSQL
+     * Converts = 1 to = TRUE, = 0 to = FALSE for known boolean columns
+     */
+    private function fixBooleanSQL($sql) {
+        $booleanColumns = [
+            'is_active', 'is_featured', 'is_primary', 'is_default',
+            'show_collection_options', 'is_verified_purchase', 'is_approved',
+            'synced_to_pos', 'matched_by_admin'
+        ];
+        
+        foreach ($booleanColumns as $col) {
+            // Replace = 1 with = TRUE
+            $sql = preg_replace("/\b$col\s*=\s*1\b/i", "$col = TRUE", $sql);
+            // Replace = 0 with = FALSE  
+            $sql = preg_replace("/\b$col\s*=\s*0\b/i", "$col = FALSE", $sql);
+        }
+        
+        return $sql;
     }
     
     /**
