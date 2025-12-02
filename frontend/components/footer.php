@@ -49,7 +49,7 @@
                 <p style="margin-top: 10px;">
                 249 Kahikatea Drive, Greenlea Lane<br>
                 Frankton, Hamilton<br>
-                <a href="https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,14z/data=!4m5!3m4!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104" target="_blank">Get Directions »</a>
+                <a href="https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,6771m/data=!3m1!1e3!4m6!3m5!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104!16s%2Fg%2F1hm6cqmtt?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D" target="_blank">Get Directions »</a>
                 </p>
             </div>
         </div>
