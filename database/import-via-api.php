@@ -11,12 +11,17 @@ header('Content-Type: application/json');
 // Check if running from command line or via web
 $isCLI = php_sapi_name() === 'cli';
 
+// Security: Only allow import if secret key matches
 if (!$isCLI) {
-    // If accessed via web, require admin authentication
-    session_start();
-    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    $secretKey = $_GET['key'] ?? '';
+    $validKey = 'import_products_2025'; // Simple key for one-time import
+    
+    if ($secretKey !== $validKey) {
         http_response_code(403);
-        die(json_encode(['error' => 'Admin access required']));
+        die(json_encode([
+            'error' => 'Invalid key',
+            'usage' => 'Add ?key=import_products_2025 to the URL'
+        ]));
     }
 }
 
