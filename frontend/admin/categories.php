@@ -445,11 +445,11 @@ async function deleteCategory(id, name) {
             lastBulkAction = {
                 action: 'delete',
                 categories: [{
-                    id: id,
+                    id: parseInt(id),
                     name: originalCategory.name,
                     slug: originalCategory.slug,
                     description: originalCategory.description,
-                    display_order: originalCategory.display_order,
+                    display_order: originalCategory.display_order || 0,
                     is_active: originalCategory.is_active
                 }]
             };
@@ -579,9 +579,11 @@ async function bulkDeleteCategories() {
             const category = categoriesData.find(c => c.id == id);
             if (category) {
                 deletedCategories.push({
+                    id: parseInt(category.id),
                     name: category.name,
                     slug: category.slug,
                     description: category.description || '',
+                    display_order: category.display_order || 0,
                     is_active: category.is_active
                 });
             }
