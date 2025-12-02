@@ -39,13 +39,13 @@ try {
     $db = Database::getInstance();
     $conn = $db->getConnection();
     
-    // Read SQL file
-    $sqlFile = __DIR__ . '/products-data.sql';
+    // Read full database SQL file
+    $sqlFile = __DIR__ . '/../demolitiontraders.sql';
     if (!file_exists($sqlFile)) {
         throw new Exception("SQL file not found: $sqlFile");
     }
     
-    if ($isCLI) echo "Reading SQL file...\n";
+    if ($isCLI) echo "Reading full database SQL file...\n";
     $sql = file_get_contents($sqlFile);
     
     if (!$sql) {
