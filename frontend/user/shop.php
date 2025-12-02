@@ -432,6 +432,7 @@
                         }
                         
                         const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
+                        const recycledBadge = product.condition_type === 'recycled' ? '<span class="badge badge-recycled">RECYCLED</span>' : '';
                         const outOfStockBadge = product.stock_quantity === 0 ? '<span class="badge badge-out-of-stock">Out of Stock</span>' : '';
                         
                         // Check if product is in cart
@@ -449,7 +450,7 @@
                             '<a href="product-detail.php?id=' + product.id + '">' +
                                 '<div class="product-image">' +
                                     '<img src="' + imageUrl + '" alt="' + product.name + '" onerror="this.src=\'assets/images/logo.png\'">' +
-                                    newBadge + outOfStockBadge +
+                                    newBadge + recycledBadge + outOfStockBadge +
                                 '</div>' +
                                 '<div class="product-info">' +
                                     '<h3 class="product-name">' + product.name + '</h3>' +

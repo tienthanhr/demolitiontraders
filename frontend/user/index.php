@@ -359,8 +359,8 @@
             <h2>BROWSE THOUSANDS OF NEW & RECYCLED RENOVATION MATERIALS</h2>
             <p>New Zealand's largest supplier of new and recycled renovation materials.</p>
             <div class="hero-buttons">
-                <a href="shop.php">SHOP NOW</a>
-                <a href="contact.php" class="alt">VISIT OUR YARD</a>
+                <a href="<?php echo userUrl('shop.php'); ?>">SHOP NOW</a>
+                <a href="<?php echo userUrl('contact.php'); ?>" class="alt">VISIT OUR YARD</a>
             </div>
         </div>
     </section>
@@ -404,14 +404,14 @@
                     <h3 class="blue">Struggling to find something?</h3>
                     <h2>List your wanted item</h2>
                     <p>Let us know what items you can't find on our website.</p>
-                    <p class="button-wrap"><a href="wanted-listing.php" class="btn">List your item</a></p>
+                    <p class="button-wrap"><a href="<?php echo userUrl('wanted-listing.php'); ?>" class="btn">List your item</a></p>
                     <img src="assets/images/home_panel1.jpg" alt="">
                 </div>
                 <div class="cta-panel">
                     <h3 class="blue">Unused items on your hands?</h3>
                     <h2>Sell your unwanted items</h2>
                     <p>We are interested in good quality aluminium and wooden joinery, kitchens, and more.</p>
-                    <p class="button-wrap"><a href="sell-to-us.php" class="btn">Sell us your items</a></p>
+                    <p class="button-wrap"><a href="<?php echo userUrl('sell-to-us.php'); ?>" class="btn">Sell us your items</a></p>
                     <img src="assets/images/home_panel2.jpg" alt="">
                 </div>
             </div>
@@ -423,22 +423,22 @@
     <div class="container">
         <h3 class="center"><span>Popular Ranges</span></h3>
         <div class="ranges-grid">
-            <a href="shop.php?category=doors" class="range-card" style="background-image: url('assets/images/ranges/doors.jpg')">
+            <a href="<?php echo userUrl('shop.php?category=doors'); ?>" class="range-card" style="background-image: url('assets/images/ranges/doors.jpg')">
                 <span class="range-title">Doors</span>
             </a>
-            <a href="shop.php?category=native-timber" class="range-card" style="background-image: url('assets/images/ranges/timber.jpg')">
+            <a href="<?php echo userUrl('shop.php?category=native-timber'); ?>" class="range-card" style="background-image: url('assets/images/ranges/timber.jpg')">
                 <span class="range-title">Native Timber</span>
             </a>
-            <a href="shop.php?category=windows" class="range-card" style="background-image: url('assets/images/ranges/windows.jpg')">
+            <a href="<?php echo userUrl('shop.php?category=windows'); ?>" class="range-card" style="background-image: url('assets/images/ranges/windows.jpg')">
                 <span class="range-title">Windows</span>
             </a>
-            <a href="shop.php?category=plywood" class="range-card" style="background-image: url('assets/images/ranges/plywood.jpg')">
+            <a href="<?php echo userUrl('shop.php?category=plywood'); ?>" class="range-card" style="background-image: url('assets/images/ranges/plywood.jpg')">
                 <span class="range-title">Plywood</span>
             </a>
-            <a href="shop.php?category=pavers" class="range-card" style="background-image: url('assets/images/ranges/pavers.jpg')">
+            <a href="<?php echo userUrl('shop.php?category=pavers'); ?>" class="range-card" style="background-image: url('assets/images/ranges/pavers.jpg')">
                 <span class="range-title">Pavers</span>
             </a>
-            <a href="shop.php?category=kitchens" class="range-card" style="background-image: url('assets/images/ranges/kitchens.jpg')">
+            <a href="<?php echo userUrl('shop.php?category=kitchens'); ?>" class="range-card" style="background-image: url('assets/images/ranges/kitchens.jpg')">
                 <span class="range-title">Kitchens</span>
             </a>
         </div>
@@ -450,6 +450,9 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/min/tiny-slider.js"></script>
     <script>
+        // Base path for URLs
+        const BASE_PATH = '<?php echo BASE_PATH; ?>';
+        
         // Scroll animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -482,7 +485,7 @@
                 container.innerHTML = products.map(product => `
                     <div class="product-card">
                         <div class="product-image">
-                            <a href="product-detail.php?id=${product.id}">
+                            <a href="${BASE_PATH}product-detail.php?id=${product.id}">
                                 <img src="${product.image || DEFAULT_IMAGE}" 
                                      alt="${product.name}"
                                      onerror="this.onerror=null;this.src='assets/images/logo.png'">
@@ -491,7 +494,7 @@
                                 <button class="wishlist-btn" onclick="addToWishlist(${product.id})">
                                     <i class="far fa-heart"></i>
                                 </button>
-                                <a href="product-detail.php?id=${product.id}" class="view-btn">
+                                <a href="${BASE_PATH}product-detail.php?id=${product.id}" class="view-btn">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </div>
@@ -499,7 +502,7 @@
                             ${product.condition_type === 'recycled' ? '<span class="badge badge-recycled">Recycled</span>' : ''}
                         </div>
                         <div class="product-info">
-                            <a href="product-detail.php?id=${product.id}">
+                            <a href="${BASE_PATH}product-detail.php?id=${product.id}">
                                 <h4>${product.name.length > 60 ? product.name.substring(0, 60) + '...' : product.name}</h4>
                             </a>
                             <div class="product-price">
@@ -550,6 +553,21 @@
                     body: JSON.stringify({ product_id: productId })
                 });
                 alert(data.success ? 'Added to wishlist!' : 'Failed to add to wishlist');
+                if (data.success) {
+                    updateWishlistCount();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Update wishlist count
+        async function updateWishlistCount() {
+            try {
+                const data = await apiFetch(getApiUrl('/api/wishlist/get.php'));
+                const count = data.wishlist ? data.wishlist.length : 0;
+                const el = document.getElementById('wishlist-count');
+                if (el) el.textContent = count;
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -558,10 +576,10 @@
         // Update cart count
         async function updateCartCount() {
             try {
-                const data = await apiFetch(getApiUrl('/api/index.php?request=cart/get'));
+                const data = await apiFetch(getApiUrl('/api/cart/get.php'));
                 const cartCount = document.getElementById('cart-count');
-                if (cartCount && data.items) {
-                    cartCount.textContent = data.items.reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
+                if (cartCount && data.summary) {
+                    cartCount.textContent = data.summary.item_count || 0;
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -572,6 +590,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadFeaturedProducts();
             updateCartCount();
+            updateWishlistCount();
             
             // Sound toggle
             const soundToggle = document.getElementById('soundToggle');

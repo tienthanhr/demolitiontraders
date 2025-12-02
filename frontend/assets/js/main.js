@@ -87,7 +87,7 @@ async function addToWishlist(productId) {
 async function updateCartCount() {
     try {
         const fetchFunc = window.apiFetch || fetch;
-        const data = await fetchFunc(`${API_URL}/cart/get`);
+        const data = await fetchFunc(`${API_URL}/cart/get.php`);
         
         const cartCount = document.getElementById('cart-count');
         if (cartCount && data.summary) {

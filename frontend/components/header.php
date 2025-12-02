@@ -3,7 +3,7 @@
 <script src="assets/js/api-helper.js?v=1"></script>
 <script>
 // Set base URL for user pages
-const USER_BASE = '<?php echo FRONTEND_PATH; ?>user/';
+const USER_BASE = '<?php echo BASE_PATH; ?>';
 </script>
 
 <!-- Top Navigation Bar -->
@@ -226,10 +226,10 @@ const USER_BASE = '<?php echo FRONTEND_PATH; ?>user/';
                 const headerRight = document.getElementById('header-top-right');
                 if (headerRight) {
                     headerRight.innerHTML = `
-                        <a href="profile.php"><i class="fa-solid fa-user"></i> ${data.user.first_name}</a>
+                        <a href="${USER_BASE}profile.php"><i class="fa-solid fa-user"></i> ${data.user.first_name}</a>
                         <a href="#" onclick="logout(); return false;"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
-                        <a href="wishlist.php" class="wishlist-link"><i class="fa-regular fa-heart"></i> <span id="wishlist-count">0</span></a>
-                        <a href="cart.php" class="cart-link"><i class="fa-solid fa-cart-shopping"></i> <span id="cart-count">0</span></a>
+                        <a href="${USER_BASE}wishlist.php" class="wishlist-link"><i class="fa-regular fa-heart"></i> <span id="wishlist-count">0</span></a>
+                        <a href="${USER_BASE}cart.php" class="cart-link"><i class="fa-solid fa-cart-shopping"></i> <span id="cart-count">0</span></a>
                     `;
                 }
                 // Update counts after DOM update

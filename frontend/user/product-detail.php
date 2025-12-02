@@ -14,7 +14,6 @@
     
     <div class="page-header">
         <div class="container">
-            <h1 id="product-name">Product Details</h1>
             <nav class="breadcrumb">
                 <a href="index.php">Home</a> / <a href="shop.php">Shop</a> / <span id="product-breadcrumb">Product</span>
             </nav>
@@ -34,6 +33,9 @@
     
     <script src="assets/js/main.js"></script>
     <script>
+        // Base path for URLs
+        const BASE_PATH = '<?php echo BASE_PATH; ?>';
+        
         // Get product ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
@@ -97,7 +99,6 @@
         
        // Display product details
 function displayProduct(product, cartQty = 0) {
-    document.getElementById('product-name').textContent = product.name;
     document.getElementById('product-breadcrumb').textContent = product.name;
     document.title = product.name + ' - Demolition Traders';
 
@@ -303,7 +304,7 @@ function displayProduct(product, cartQty = 0) {
         function buyNow(productId, goDirectlyToCart = false) {
             // If already at max stock, just go to cart
             if (goDirectlyToCart) {
-                window.location.href = 'cart.php';
+                window.location.href = BASE_PATH + 'cart.php';
                 return;
             }
             
@@ -328,7 +329,7 @@ function displayProduct(product, cartQty = 0) {
                     localStorage.setItem('cartUpdated', Date.now());
                     document.dispatchEvent(new Event('cartUpdated'));
                     // Redirect to cart page
-                    window.location.href = 'cart.php';
+                    window.location.href = BASE_PATH + 'cart.php';
                 } else {
                     showNotification(data.message || 'Failed to add product to cart', true);
                     buyButton.style.pointerEvents = '';
@@ -425,10 +426,10 @@ function displayProduct(product, cartQty = 0) {
                                     <h3 style="color:#2f3192;font-size:28px;margin:0 0 15px 0;font-weight:600;">Already in Your Cart!</h3>
                                     <p style="color:#666;font-size:16px;margin:0 0 30px 0;line-height:1.5;">You have this product in your cart. Would you like to checkout or continue shopping?</p>
                                     <div style="display:flex;gap:15px;justify-content:center;">
-                                        <a href="cart.php" style="flex:1;padding:14px 24px;background:#28a745;color:white;border:none;border-radius:8px;text-decoration:none;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                        <a href="<?php echo userUrl('cart.php'); ?>" style="flex:1;padding:14px 24px;background:#28a745;color:white;border:none;border-radius:8px;text-decoration:none;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;">
                                             <i class="fas fa-shopping-cart"></i> PROCEED TO CHECKOUT
                                         </a>
-                                        <a href="shop.php" style="flex:1;padding:14px 24px;background:#6c757d;color:white;border:none;border-radius:8px;text-decoration:none;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                        <a href="<?php echo userUrl('shop.php'); ?>" style="flex:1;padding:14px 24px;background:#6c757d;color:white;border:none;border-radius:8px;text-decoration:none;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;">
                                             <i class="fas fa-store"></i> CONTINUE SHOPPING
                                         </a>
                                     </div>
@@ -445,7 +446,7 @@ function displayProduct(product, cartQty = 0) {
                         return; // Exit early, don't show success notification
                     }
                     
-                    if (data.success !== false && (data.items || data.summary)) {
+                    if (data.success !== false && (data.items || data.summary || data.cart_count !== undefined)) {
                         // Product was successfully added
                         showNotification(`${quantity} item(s) added to cart!`);
                         
@@ -592,19 +593,25 @@ function displayProduct(product, cartQty = 0) {
             }
         }
         
+        // Show notification (green for success, red for error) - v2
         function showNotification(message, isError = false) {
+            console.log('showNotification called:', message, 'isError:', isError);
             const notification = document.createElement('div');
+            const bgColor = isError ? '#dc3545' : '#4CAF50';
+            console.log('Background color:', bgColor);
+            notification.className = 'success-notification-v2';
             notification.style.cssText = `
                 position: fixed;
                 top: 80px;
                 right: 20px;
-                background: ${isError ? '#dc3545' : '#2f3192'};
+                background-color: ${bgColor} !important;
                 color: white;
                 padding: 15px 20px;
                 border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.2);
                 z-index: 10001;
                 font-size: 14px;
+                font-weight: 500;
                 animation: slideInRight 0.3s ease;
             `;
             notification.textContent = message;
