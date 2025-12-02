@@ -1,44 +1,51 @@
 RewriteEngine On
-# Production uses root path /
-# For local XAMPP, change to: RewriteBase /demolitiontraders/
-RewriteBase /
+
+# Auto-detect environment based on HTTP_HOST
+# Sets BASE variable: /demolitiontraders/ for localhost, / for production
+RewriteCond %{HTTP_HOST} ^localhost$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^127\.0\.0\.1$ [NC]
+RewriteRule .* - [E=BASE:/demolitiontraders]
+
+RewriteCond %{HTTP_HOST} !^localhost$ [NC]
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
+RewriteRule .* - [E=BASE:]
 
 # Prevent directory listing
 Options -Indexes
 
 # Admin routes - /admin → frontend/admin/
-RewriteRule ^admin/?$ frontend/admin/index.php [L]
-RewriteRule ^admin/sell-to-us$ frontend/admin/sell-to-us.php [L]
-RewriteRule ^admin/wanted-listings$ frontend/admin/wanted-listings.php [L]
-RewriteRule ^admin/contact-messages$ frontend/admin/contact-messages.php [L]
-RewriteRule ^admin/(.*)$ frontend/admin/$1 [L]
+RewriteRule ^admin/?$ %{ENV:BASE}/frontend/admin/index.php [L]
+RewriteRule ^admin/sell-to-us$ %{ENV:BASE}/frontend/admin/sell-to-us.php [L]
+RewriteRule ^admin/wanted-listings$ %{ENV:BASE}/frontend/admin/wanted-listings.php [L]
+RewriteRule ^admin/contact-messages$ %{ENV:BASE}/frontend/admin/contact-messages.php [L]
+RewriteRule ^admin/(.*)$ %{ENV:BASE}/frontend/admin/$1 [L]
 
 # Admin login - /admin-login → frontend/admin-login.php
-RewriteRule ^admin-login/?$ frontend/admin-login.php [L]
+RewriteRule ^admin-login/?$ %{ENV:BASE}/frontend/admin-login.php [L]
 
 # Backend API - allow direct access
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^backend/.*\.php$ - [L]
 
 # User pages - root level routes
-RewriteRule ^$ frontend/user/index.php [L]
-RewriteRule ^index\.php$ frontend/user/index.php [L]
-RewriteRule ^shop\.php$ frontend/user/shop.php [QSA,L]
-RewriteRule ^product-detail\.php$ frontend/user/product-detail.php [QSA,L]
-RewriteRule ^cart\.php$ frontend/user/cart.php [L]
-RewriteRule ^checkout\.php$ frontend/user/checkout.php [L]
-RewriteRule ^wishlist\.php$ frontend/user/wishlist.php [L]
-RewriteRule ^login\.php$ frontend/user/login.php [L]
-RewriteRule ^profile\.php$ frontend/user/profile.php [L]
-RewriteRule ^about\.php$ frontend/user/about.php [L]
-RewriteRule ^contact\.php$ frontend/user/contact.php [L]
-RewriteRule ^faqs\.php$ frontend/user/faqs.php [L]
-RewriteRule ^staff\.php$ frontend/user/staff.php [L]
-RewriteRule ^cabins\.php$ frontend/user/cabins.php [L]
-RewriteRule ^sell-to-us\.php$ frontend/user/sell-to-us.php [L]
-RewriteRule ^wanted-listing\.php$ frontend/user/wanted-listing.php [L]
-RewriteRule ^reset-password\.php$ frontend/user/reset-password.php [L]
-RewriteRule ^order-detail\.php$ frontend/user/order-detail.php [QSA,L]
+RewriteRule ^$ %{ENV:BASE}/frontend/user/index.php [L]
+RewriteRule ^index\.php$ %{ENV:BASE}/frontend/user/index.php [L]
+RewriteRule ^shop\.php$ %{ENV:BASE}/frontend/user/shop.php [QSA,L]
+RewriteRule ^product-detail\.php$ %{ENV:BASE}/frontend/user/product-detail.php [QSA,L]
+RewriteRule ^cart\.php$ %{ENV:BASE}/frontend/user/cart.php [L]
+RewriteRule ^checkout\.php$ %{ENV:BASE}/frontend/user/checkout.php [L]
+RewriteRule ^wishlist\.php$ %{ENV:BASE}/frontend/user/wishlist.php [L]
+RewriteRule ^login\.php$ %{ENV:BASE}/frontend/user/login.php [L]
+RewriteRule ^profile\.php$ %{ENV:BASE}/frontend/user/profile.php [L]
+RewriteRule ^about\.php$ %{ENV:BASE}/frontend/user/about.php [L]
+RewriteRule ^contact\.php$ %{ENV:BASE}/frontend/user/contact.php [L]
+RewriteRule ^faqs\.php$ %{ENV:BASE}/frontend/user/faqs.php [L]
+RewriteRule ^staff\.php$ %{ENV:BASE}/frontend/user/staff.php [L]
+RewriteRule ^cabins\.php$ %{ENV:BASE}/frontend/user/cabins.php [L]
+RewriteRule ^sell-to-us\.php$ %{ENV:BASE}/frontend/user/sell-to-us.php [L]
+RewriteRule ^wanted-listing\.php$ %{ENV:BASE}/frontend/user/wanted-listing.php [L]
+RewriteRule ^reset-password\.php$ %{ENV:BASE}/frontend/user/reset-password.php [L]
+RewriteRule ^order-detail\.php$ %{ENV:BASE}/frontend/user/order-detail.php [QSA,L]
 
 # Assets - allow direct access
 RewriteCond %{REQUEST_FILENAME} -f
