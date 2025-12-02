@@ -3,25 +3,47 @@
 header('Content-Type: application/json');
 
 try {
-    $host = getenv('DB_HOST') ?: 'localhost';
-    $dbname = getenv('DB_NAME') ?: 'demolitiontraders';
-    $username = getenv('DB_USER') ?: 'root';
-    $password = getenv('DB_PASS') ?: '';
-    $port = getenv('DB_PORT') ?: '3306';
+    // Check for DATABASE_URL first (PostgreSQL on Render)
+    $databaseUrl = getenv('DATABASE_URL');
+    
+    if ($databaseUrl) {
+        // Parse PostgreSQL URL
+        $parts = parse_url($databaseUrl);
+        $host = $parts['host'];
+        $port = $parts['port'] ?? 5432;
+        $dbname = ltrim($parts['path'], '/');
+        $username = $parts['user'];
+        $password = $parts['pass'];
+        $driver = 'pgsql';
+    } else {
+        // Fallback to MySQL
+        $host = getenv('DB_HOST') ?: 'localhost';
+        $dbname = getenv('DB_NAME') ?: 'demolitiontraders';
+        $username = getenv('DB_USER') ?: 'root';
+        $password = getenv('DB_PASS') ?: '';
+        $port = getenv('DB_PORT') ?: '3306';
+        $driver = 'mysql';
+    }
     
     echo json_encode([
         'attempting_connection' => [
+            'driver' => $driver,
             'host' => $host,
             'port' => $port,
             'dbname' => $dbname,
             'username' => $username,
-            'password_set' => !empty($password)
+            'password_set' => !empty($password),
+            'DATABASE_URL_set' => !empty($databaseUrl)
         ]
     ], JSON_PRETTY_PRINT);
     
     echo "\n\n";
     
-    $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
+    if ($driver === 'pgsql') {
+        $dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
+    } else {
+        $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
+    }
     
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -34,6 +56,7 @@ try {
     echo json_encode([
         'status' => 'success',
         'message' => 'Database connection successful!',
+        'driver' => $driver,
         'server_info' => $pdo->getAttribute(PDO::ATTR_SERVER_VERSION)
     ], JSON_PRETTY_PRINT);
     
