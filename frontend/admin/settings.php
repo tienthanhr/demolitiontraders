@@ -190,7 +190,9 @@ async function loadSettingsStats() {
         const categoriesData = await categoriesRes.json();
         document.getElementById('stats-categories').textContent = (categoriesData.data || categoriesData).length;
 
-        document.getElementById('stats-orders').textContent = '0';
+        const ordersRes = await fetch(getApiUrl('/api/index.php?request=orders'));
+        const ordersData = await ordersRes.json();
+        document.getElementById('stats-orders').textContent = ordersData.length || 0;
     } catch (error) {
         console.error('Error loading stats:', error);
     }

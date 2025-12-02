@@ -91,7 +91,7 @@ $admins = $db->fetchAll(
             <h3><?php echo $stats['total_admins']; ?></h3>
             <p>Total Admins</p>
         </div>
-        <div class="stat-card" onclick="window.location.href='customers.php'">
+        <div class="stat-card" onclick="window.location.href='admin/customers.php'">
             <i class="fas fa-users"></i>
             <h3><?php echo $stats['total_customers']; ?></h3>
             <p>Total Customers</p>
@@ -269,7 +269,17 @@ function filterUsers(role) {
 async function showAllUsers() {
     try {
         const res = await fetch(getApiUrl('/api/admin/all-users.php'));
-        const result = await res.json();
+        const text = await res.text();
+        console.log('All users response:', text);
+        
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            alert('Error: Server returned invalid response. Check console for details.');
+            return;
+        }
         
         if (result.success) {
             const modal = document.createElement('div');
@@ -337,9 +347,9 @@ async function showAllUsers() {
 
 function viewUserPage(role, userId) {
     if (role === 'admin') {
-        window.location.href = 'admins.php';
+        window.location.href = 'admin/admins.php';
     } else {
-        window.location.href = 'customers.php';
+        window.location.href = 'admin/customers.php';
     }
 }
 

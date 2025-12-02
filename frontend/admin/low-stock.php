@@ -50,7 +50,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                     <td>${p.product_name || p.name || 'N/A'}</td>
                     <td>${p.sku || ''}</td>
                     <td class="stock-warning">${p.stock ?? '-'}</td>
-                    <td><a href="products.php?sku=${encodeURIComponent(p.sku)}" style="color:#2f3192;text-decoration:underline;">View</a></td>
+                    <td><a href="admin/products.php?sku=${encodeURIComponent(p.sku)}" style="color:#2f3192;text-decoration:underline;">View</a></td>
                 </tr>
             `).join('')}</tbody></table>`;
         } catch (e) {

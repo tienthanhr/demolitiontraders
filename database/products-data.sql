@@ -1,4 +1,4 @@
-﻿-- Products Export for PostgreSQL
+-- Products Export for PostgreSQL
 -- Generated: 2025-12-03 02:50:42
 
 -- Inserting 909 products

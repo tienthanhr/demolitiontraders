@@ -10,7 +10,9 @@ require_once '../../config/database.php';
 
 try {
     // Check if user is admin
-    if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+    $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
+    
+    if (!isset($_SESSION['user_id']) || !$isAdmin) {
         throw new Exception('Unauthorized access');
     }
     

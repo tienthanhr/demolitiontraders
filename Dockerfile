@@ -10,11 +10,12 @@ RUN apt-get update && apt-get install -y \
 # Copy toàn bộ project vào thư mục web server
 COPY . /var/www/html/
 
+# Copy Apache configuration
+COPY apache-config.conf /etc/apache2/conf-available/demolition-traders.conf
+RUN a2enconf demolition-traders
+
 # Bật mod_rewrite cho .htaccess
 RUN a2enmod rewrite
-
-# Enable .htaccess override
-RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 # Phân quyền cho Apache
 RUN chown -R www-data:www-data /var/www/html
