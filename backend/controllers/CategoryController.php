@@ -93,8 +93,9 @@ class CategoryController {
             throw new Exception('A category with this slug already exists');
         }
         
-        // Check if custom ID is provided and if it already exists
+        // Handle ID assignment
         if (!empty($data['id'])) {
+            // Custom ID provided - check if it exists
             $existingId = $this->db->fetchOne(
                 "SELECT id FROM categories WHERE id = :id",
                 ['id' => $data['id']]
@@ -103,10 +104,16 @@ class CategoryController {
             if ($existingId) {
                 throw new Exception('A category with this ID already exists');
             }
+            $newId = (int)$data['id'];
+        } else {
+            // No ID provided - use max ID + 1
+            $maxId = $this->db->fetchOne("SELECT MAX(id) as max_id FROM categories");
+            $newId = ($maxId && $maxId['max_id']) ? (int)$maxId['max_id'] + 1 : 1;
         }
         
         // Prepare insert data
         $insertData = [
+            'id' => $newId,
             'name' => $data['name'],
             'slug' => $slug,
             'description' => $data['description'] ?? null,
@@ -114,11 +121,6 @@ class CategoryController {
             'display_order' => $data['display_order'] ?? 0,
             'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1
         ];
-        
-        // Add custom ID if provided
-        if (!empty($data['id'])) {
-            $insertData['id'] = (int)$data['id'];
-        }
         
         // Insert category
         $categoryId = $this->db->insert('categories', $insertData);
