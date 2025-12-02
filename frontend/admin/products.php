@@ -711,12 +711,12 @@ async function undoLastAction() {
             for (const product of lastBulkAction.products) {
                 if (product.fullData) {
                     try {
-                        // Create product with original data
+                        // Create product with original data including SKU
                         const formData = new FormData();
                         const data = product.fullData;
                         
                         formData.append('name', data.name);
-                        formData.append('sku', data.sku);
+                        formData.append('sku', data.sku); // Preserve original SKU
                         formData.append('description', data.description || '');
                         formData.append('price', data.price);
                         formData.append('stock_quantity', data.stock_quantity);
@@ -724,6 +724,7 @@ async function undoLastAction() {
                         formData.append('condition_type', data.condition_type);
                         formData.append('is_active', data.is_active);
                         if (data.is_featured) formData.append('is_featured', data.is_featured);
+                        if (data.slug) formData.append('slug', data.slug); // Preserve original slug
                         
                         const response = await fetch('/demolitiontraders/backend/api/index.php?request=products', {
                             method: 'POST',

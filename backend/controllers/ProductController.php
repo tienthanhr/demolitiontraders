@@ -266,9 +266,23 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
                 $productData['slug'] = $this->generateSlug($input['name']);
             }
             
-            // Use temp SKU if not provided
+            // Handle SKU: use provided SKU or generate new one
             if (empty($productData['sku'])) {
-                $productData['sku'] = 'TEMP-' . uniqid();
+                // Get the highest SKU number to generate next one
+                $maxSkuResult = $this->db->fetchOne(
+                    "SELECT sku FROM products WHERE sku LIKE 'DT-%' ORDER BY CAST(SUBSTRING_INDEX(sku, '-', -1) AS UNSIGNED) DESC LIMIT 1"
+                );
+                
+                $nextSkuNumber = 1;
+                if ($maxSkuResult && !empty($maxSkuResult['sku'])) {
+                    // Extract number from SKU format: DT-categoryId-number
+                    $parts = explode('-', $maxSkuResult['sku']);
+                    if (count($parts) >= 3) {
+                        $nextSkuNumber = (int)end($parts) + 1;
+                    }
+                }
+                
+                $productData['sku'] = 'DT-' . $productData['category_id'] . '-' . $nextSkuNumber;
             }
             
             $this->logDebug('[STORE PREPARED DATA]', $productData);
@@ -280,27 +294,7 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
                 throw new Exception('Failed to create product - database did not return insert ID');
             }
             
-            $this->logDebug('[STORE CREATED]', ['product_id' => $productId]);
-            
-            // Update SKU with proper format: DT-categoryId-productId
-            $finalSku = 'DT-' . $productData['category_id'] . '-' . $productId;
-            
-            // Check if SKU exists
-            $skuExists = $this->db->fetchOne(
-                'SELECT id FROM products WHERE sku = :sku AND id != :id', 
-                ['sku' => $finalSku, 'id' => $productId]
-            );
-            
-            if ($skuExists) {
-                $finalSku .= '-' . time();
-            }
-            
-            $this->db->query('UPDATE products SET sku = :sku WHERE id = :id', [
-                'sku' => $finalSku, 
-                'id' => $productId
-            ]);
-            
-            $this->logDebug('[STORE SKU UPDATED]', ['sku' => $finalSku]);
+            $this->logDebug('[STORE CREATED]', ['product_id' => $productId, 'sku' => $productData['sku']]);
             
             // Handle image uploads
             if (!empty($_FILES['product_images']['name'][0])) {
