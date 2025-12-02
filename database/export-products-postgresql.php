@@ -17,10 +17,16 @@ $mysqli->set_charset("utf8mb4");
 function cleanString($mysqli, $value) {
     if ($value === null) return null;
     
-    // Remove invalid UTF-8 and problematic characters
-    $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
-    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value); // Remove control chars
-    $value = str_replace(['ΓÇÖ', 'ΓÇô', 'ΓÇ£', 'ΓÇ¥', 'Γäó', 'Γäô'], ["'", '-', '"', '"', "'", "'"], $value);
+    // Force to UTF-8 and remove any invalid sequences
+    $value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+    
+    // Remove control characters
+    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/', '', $value);
+    
+    // Replace common problematic chars
+    $value = preg_replace('/[''`´]/u', "'", $value); // Various apostrophes
+    $value = preg_replace('/[""]/u', '"', $value); // Various quotes
+    $value = preg_replace('/[—–-]/u', '-', $value); // Various dashes
     
     return $mysqli->real_escape_string($value);
 }
