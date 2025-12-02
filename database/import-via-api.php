@@ -48,23 +48,8 @@ try {
     
     $startTime = microtime(true);
     
-    // Disable foreign key checks for faster import (PostgreSQL way)
-    $isPostgreSQL = (getenv('DATABASE_URL') !== false);
-    if ($isPostgreSQL) {
-        $conn->exec("SET session_replication_role = 'replica';");
-    } else {
-        $conn->exec("SET FOREIGN_KEY_CHECKS = 0;");
-    }
-    
-    // Execute SQL
+    // Execute SQL (foreign key checks will be handled by ON CONFLICT clauses)
     $conn->exec($sql);
-    
-    // Re-enable foreign key checks
-    if ($isPostgreSQL) {
-        $conn->exec("SET session_replication_role = 'origin';");
-    } else {
-        $conn->exec("SET FOREIGN_KEY_CHECKS = 1;");
-    }
     
     $duration = round(microtime(true) - $startTime, 2);
     
