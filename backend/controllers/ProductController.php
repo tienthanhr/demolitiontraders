@@ -28,7 +28,9 @@ class ProductController {
             $where[] = 'p.is_active = 1';
         }
 
-        // Width/Height filter from description
+        // Width/Height filter - disabled for PostgreSQL compatibility
+        // TODO: Store dimensions in separate columns for proper filtering
+        /*
         if (!empty($params['min_width']) || !empty($params['max_width']) || !empty($params['min_height']) || !empty($params['max_height'])) {
             if (!empty($params['min_width'])) {
                 $where[] = "CAST(TRIM(SUBSTRING_INDEX(p.description, 'x', 1)) AS UNSIGNED) >= :min_width";
@@ -47,6 +49,7 @@ class ProductController {
                 $queryParams['max_height'] = $params['max_height'];
             }
         }
+        */
         
         // Category filter
         if (!empty($params['category'])) {
