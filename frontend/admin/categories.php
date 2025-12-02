@@ -135,6 +135,12 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
         <form id="category-form" onsubmit="saveCategory(event)">
             <input type="hidden" id="category-id">
             
+            <div class="form-group" id="custom-id-group">
+                <label class="form-label">Category ID</label>
+                <input type="number" class="form-control" id="category-custom-id" placeholder="Leave empty for auto-increment">
+                <small style="color: #6c757d;">Specify a custom ID or leave empty to auto-generate</small>
+            </div>
+
             <div class="form-group">
                 <label class="form-label">Category Name *</label>
                 <input type="text" class="form-control" id="category-name" required>
@@ -342,6 +348,8 @@ function openCategoryModal() {
     document.getElementById('category-modal-title').textContent = 'Add New Category';
     document.getElementById('category-form').reset();
     document.getElementById('category-id').value = '';
+    document.getElementById('category-custom-id').value = '';
+    document.getElementById('custom-id-group').style.display = 'block'; // Show ID field for new category
     document.getElementById('category-modal').classList.add('active');
 }
 
@@ -358,6 +366,8 @@ async function editCategory(id) {
 
         document.getElementById('category-modal-title').textContent = 'Edit Category';
         document.getElementById('category-id').value = category.id;
+        document.getElementById('category-custom-id').value = category.id;
+        document.getElementById('custom-id-group').style.display = 'none'; // Hide ID field when editing
         document.getElementById('category-name').value = category.name;
         document.getElementById('category-slug').value = category.slug;
         document.getElementById('category-description').value = category.description || '';
@@ -374,12 +384,18 @@ async function saveCategory(event) {
     event.preventDefault();
 
     const id = document.getElementById('category-id').value;
+    const customId = document.getElementById('category-custom-id').value;
     const data = {
         name: document.getElementById('category-name').value,
         slug: document.getElementById('category-slug').value || null,
         description: document.getElementById('category-description').value,
         is_active: document.getElementById('category-status').value
     };
+
+    // Include custom ID only for new categories
+    if (!id && customId) {
+        data.id = parseInt(customId);
+    }
 
     try {
         const url = id 

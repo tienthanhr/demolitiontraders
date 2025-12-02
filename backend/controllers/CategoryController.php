@@ -93,15 +93,35 @@ class CategoryController {
             throw new Exception('A category with this slug already exists');
         }
         
-        // Insert category
-        $categoryId = $this->db->insert('categories', [
+        // Check if custom ID is provided and if it already exists
+        if (!empty($data['id'])) {
+            $existingId = $this->db->fetchOne(
+                "SELECT id FROM categories WHERE id = :id",
+                ['id' => $data['id']]
+            );
+            
+            if ($existingId) {
+                throw new Exception('A category with this ID already exists');
+            }
+        }
+        
+        // Prepare insert data
+        $insertData = [
             'name' => $data['name'],
             'slug' => $slug,
             'description' => $data['description'] ?? null,
             'parent_id' => $data['parent_id'] ?? null,
             'display_order' => $data['display_order'] ?? 0,
             'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1
-        ]);
+        ];
+        
+        // Add custom ID if provided
+        if (!empty($data['id'])) {
+            $insertData['id'] = (int)$data['id'];
+        }
+        
+        // Insert category
+        $categoryId = $this->db->insert('categories', $insertData);
         
         return [
             'success' => true,
