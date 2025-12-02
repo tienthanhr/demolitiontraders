@@ -2,11 +2,15 @@
 /**
  * Get Current User API
  */
+// Configure session for Render
+ini_set('session.save_path', '/tmp');
 session_start();
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Credentials: true');
 
 require_once '../../config/database.php';
 
@@ -16,7 +20,9 @@ try {
         http_response_code(401);
         echo json_encode([
             'success' => false,
-            'message' => 'Not authenticated'
+            'message' => 'Not authenticated',
+            'session_id' => session_id(),
+            'debug' => $_SESSION
         ]);
         exit;
     }
