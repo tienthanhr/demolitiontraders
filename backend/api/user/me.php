@@ -53,9 +53,12 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log("me.php error: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Server error'
+        'message' => 'Server error',
+        'error' => $e->getMessage() // Temporary debug
     ]);
 }

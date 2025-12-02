@@ -5,11 +5,16 @@
  */
 
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.save_path', '/tmp');
     session_start();
 }
 
 // Check if user is admin
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+$isAdmin = ($_SESSION['role'] ?? '') === 'admin' || 
+           ($_SESSION['user_role'] ?? '') === 'admin' || 
+           ($_SESSION['is_admin'] ?? false) === true;
+
+if (!isset($_SESSION['user_id']) || !$isAdmin) {
     require_once __DIR__ . '/../config.php';
     header('Location: ' . BASE_PATH . 'admin-login');
     exit;
