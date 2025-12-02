@@ -6,7 +6,7 @@ header('Access-Control-Allow-Origin: *');
 require_once __DIR__ . '/../config/database.php';
 
 try {
-    $database = new Database();
+    $database = Database::getInstance();
     $db = $database->getConnection();
     
     // Test 1: Check connection

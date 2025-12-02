@@ -110,6 +110,7 @@ class Database {
     /**
      * Fix boolean comparisons for PostgreSQL
      * Converts = 1 to = TRUE, = 0 to = FALSE for known boolean columns
+     * Also fixes MySQL-specific syntax like UNSIGNED, SUBSTRING_INDEX
      */
     private function fixBooleanSQL($sql) {
         $booleanColumns = [
@@ -124,6 +125,26 @@ class Database {
             // Replace = 0 with = FALSE  
             $sql = preg_replace("/\b$col\s*=\s*0\b/i", "$col = FALSE", $sql);
         }
+        
+        // Fix MySQL UNSIGNED -> PostgreSQL INTEGER
+        $sql = preg_replace("/\bAS\s+UNSIGNED\b/i", "AS INTEGER", $sql);
+        
+        // Fix MySQL SUBSTRING_INDEX -> PostgreSQL SPLIT_PART
+        // SUBSTRING_INDEX(str, delim, count) -> SPLIT_PART(str, delim, abs(count))
+        $sql = preg_replace_callback(
+            "/SUBSTRING_INDEX\s*\(\s*([^,]+),\s*'([^']+)'\s*,\s*(-?\d+)\s*\)/i",
+            function($matches) {
+                $str = trim($matches[1]);
+                $delim = $matches[2];
+                $count = intval($matches[3]);
+                if ($count < 0) {
+                    // Negative index means from right - not directly supported, use array index
+                    return "SPLIT_PART($str, '$delim', ARRAY_LENGTH(STRING_TO_ARRAY($str, '$delim'), 1) + $count + 1)";
+                }
+                return "SPLIT_PART($str, '$delim', $count)";
+            },
+            $sql
+        );
         
         return $sql;
     }
