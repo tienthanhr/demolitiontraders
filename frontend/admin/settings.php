@@ -255,7 +255,7 @@ async function startImport() {
     
     try {
         // Call the import API with secret key
-        const response = await fetch('https://demolitiontraders.onrender.com/backend/database/import-via-api.php?secret=demo2024secure', {
+        const response = await fetch('https://demolitiontraders.onrender.com/database/import-via-api.php?secret=demo2024secure', {
             method: 'POST'
         });
         
