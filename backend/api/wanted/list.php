@@ -11,13 +11,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 try {
     $db = Database::getInstance()->getConnection();
     
-    $query = "SELECT w.*, 
-              u.username, u.email as user_email,
+    $query = "SELECT w.id, w.user_id, w.name, w.email, w.phone, w.category, 
+              w.description, w.quantity, w.notify_enabled, w.status, w.notes,
+              w.created_at, w.updated_at,
+              u.username,
               COUNT(DISTINCT wm.id) as match_count
               FROM wanted_listings w
               LEFT JOIN users u ON w.user_id = u.id
               LEFT JOIN wanted_listing_matches wm ON w.id = wm.wanted_listing_id
-              GROUP BY w.id
+              GROUP BY w.id, w.user_id, w.name, w.email, w.phone, w.category,
+                       w.description, w.quantity, w.notify_enabled, w.status, w.notes,
+                       w.created_at, w.updated_at, u.username
               ORDER BY w.created_at DESC";
     
     $stmt = $db->prepare($query);

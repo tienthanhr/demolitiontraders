@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Wanted Listings API</title>
+</head>
+<body>
+    <h1>Testing Wanted Listings API</h1>
+    <div id="result"></div>
+    
+    <script>
+        fetch('http://localhost/demolitiontraders/backend/api/wanted/list.php', {
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .catch(error => {
+            document.getElementById('result').innerHTML = '<pre style="color:red">Error: ' + error.message + '</pre>';
+        });
+    </script>
+</body>
+</html>
