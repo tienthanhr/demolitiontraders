@@ -47,15 +47,21 @@ try {
     
     error_log("Attempting to register user: $email");
     
-    $userId = $db->insert('users', [
-        'first_name' => $first_name,
-        'last_name' => $last_name,
-        'email' => $email,
-        'password' => $hash,
-        'phone' => $phone ?: null,
-        'role' => 'customer',
-        'status' => 'active'
-    ]);
+    try {
+        $userId = $db->insert('users', [
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'password' => $hash,
+            'phone' => $phone ?: null,
+            'role' => 'customer',
+            'status' => 'active'
+        ]);
+    } catch (Exception $insertError) {
+        error_log("Insert failed: " . $insertError->getMessage());
+        error_log("Stack trace: " . $insertError->getTraceAsString());
+        throw new Exception('Failed to create user account. Please try again.');
+    }
     
     error_log("User registered successfully: ID = $userId, Email = $email");
     

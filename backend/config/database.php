@@ -197,11 +197,21 @@ class Database {
             $result = $this->query($sql, $params);
             $row = $result->fetch(PDO::FETCH_ASSOC);
             $insertId = $row['id'] ?? null;
+            
+            // If RETURNING didn't work, try lastInsertId with sequence name
+            if (!$insertId) {
+                try {
+                    $insertId = $this->connection->lastInsertId("{$table}_id_seq");
+                } catch (Exception $e) {
+                    $this->log("[INSERT][WARNING] Could not get lastInsertId: " . $e->getMessage());
+                }
+            }
+            
             $this->log("[INSERT][SUCCESS] Table: $table, ID: $insertId");
             return $insertId;
         } catch (PDOException $e) {
-            $this->log("[INSERT][ERROR] " . $e->getMessage() . "\nSQL: $sql");
-            return false;
+            $this->log("[INSERT][ERROR] " . $e->getMessage() . "\nSQL: $sql\nParams: " . json_encode($params));
+            throw $e; // Re-throw exception instead of returning false
         }
     }
     
