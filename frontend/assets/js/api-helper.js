@@ -100,6 +100,7 @@
             } catch (error) {
                 lastError = error;
                 console.error(`[API] Error (attempt ${i + 1}/${retries + 1}):`, error);
+                console.error(`[API] Error details - Status:`, error.status, 'Message:', error.message, 'Data:', error.data);
                 
                 // Don't retry on client errors (4xx)
                 if (error.status && error.status >= 400 && error.status < 500) {
