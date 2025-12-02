@@ -264,7 +264,7 @@ function filterUsers(role) {
 
 async function showAllUsers() {
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/all-users.php');
+        const res = await fetch(getApiUrl('/api/admin/all-users.php'));
         const result = await res.json();
         
         if (result.success) {
@@ -350,7 +350,7 @@ async function promoteToAdmin(email) {
     if (!confirm(`⚠️ Are you sure you want to promote "${email}" to ADMIN?\n\nThey will have FULL access to admin panel!`)) return;
     
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/promote-to-admin.php', {
+        const res = await fetch(getApiUrl('/api/admin/promote-to-admin.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email })
@@ -432,7 +432,7 @@ async function submitResetPassword() {
     errorDiv.style.display = 'none';
     
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/reset-user-password.php', {
+        const res = await fetch(getApiUrl('/api/admin/reset-user-password.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -461,7 +461,7 @@ async function demoteAdmin(adminId, adminName) {
     if (!confirm(`⚠️ Are you sure you want to DEMOTE "${adminName}" to Customer?\n\nThey will lose all admin privileges!`)) return;
     
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/update-user-role.php', {
+        const res = await fetch(getApiUrl('/api/admin/update-user-role.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

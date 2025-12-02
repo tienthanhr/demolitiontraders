@@ -140,7 +140,7 @@
             const data = Object.fromEntries(formData);
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/wanted-listing/submit.php', {
+                const response = await fetch(getApiUrl('/api/wanted-listing/submit.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -195,7 +195,7 @@
         // Load opening hours from Google Places API
         async function loadOpeningHours() {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/opening-hours.php');
+                const response = await fetch(getApiUrl('/api/opening-hours.php'));
                 const data = await response.json();
                 const element = document.getElementById('opening-hours-wanted');
                 

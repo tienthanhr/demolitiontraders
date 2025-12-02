@@ -883,7 +883,7 @@
         // Load cart summary
         async function loadCartSummary() {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/get.php');
+                const response = await fetch(getApiUrl('/api/cart/get.php'));
                 
                 if (!response.ok) {
                     throw new Error('Failed to load cart');
@@ -1113,7 +1113,7 @@
             try {
                 console.log('Sending order data:', orderData);
                 
-                const response = await fetch('/demolitiontraders/backend/api/index.php?request=orders', {
+                const response = await fetch(getApiUrl('/api/index.php?request=orders'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
@@ -1369,7 +1369,7 @@
             showLoading('Creating your account...');
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/user/register.php', {
+                const response = await fetch(getApiUrl('/api/user/register.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1428,7 +1428,7 @@
             emailCheckTimeout = setTimeout(async () => {
                 try {
                     console.log('Checking email:', email);
-                    const response = await fetch('/demolitiontraders/backend/api/user/check-email.php', {
+                    const response = await fetch(getApiUrl('/api/user/check-email.php'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: email })
@@ -1458,7 +1458,7 @@
         // Check if user is logged in and auto-fill form
         async function checkUserAndAutoFill() {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/user/me.php');
+                const response = await fetch(getApiUrl('/api/user/me.php'));
                 
                 if (!response.ok) {
                     if (response.status === 401) {
@@ -1484,7 +1484,7 @@
                     document.querySelector('[name="billing_phone"]').value = result.user.phone || '';
                     
                     // Load and show saved addresses
-                    const addressResponse = await fetch('/demolitiontraders/backend/api/user/addresses.php');
+                    const addressResponse = await fetch(getApiUrl('/api/user/addresses.php'));
                     if (addressResponse.ok) {
                         const addressResult = await addressResponse.json();
                         
@@ -2003,7 +2003,7 @@
     // Load opening hours from Google Places API
     async function loadOpeningHours() {
         try {
-            const response = await fetch('/demolitiontraders/backend/api/opening-hours.php');
+            const response = await fetch(getApiUrl('/api/opening-hours.php'));
             const data = await response.json();
             const element = document.getElementById('opening-hours-checkout');
             

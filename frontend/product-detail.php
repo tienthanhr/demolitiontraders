@@ -61,8 +61,8 @@
    async function loadProductWithCart(id) {
     try {
         const [productRes, cartRes] = await Promise.all([
-            fetch('/demolitiontraders/backend/api/index.php?request=products/' + id),
-            fetch('/demolitiontraders/backend/api/index.php?request=cart/get')
+            fetch(getApiUrl('/api/index.php?request=products/') + id),
+            fetch(getApiUrl('/api/index.php?request=cart/get'))
         ]);
         
         const productData = await productRes.json();
@@ -265,7 +265,7 @@ function displayProduct(product, cartQty = 0) {
         
         // Check wishlist status
         function checkWishlistStatus(productId) {
-            fetch('/demolitiontraders/backend/api/wishlist/get.php')
+            fetch(getApiUrl('/api/wishlist/get.php'))
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.wishlist.includes(productId.toString())) {
@@ -314,7 +314,7 @@ function displayProduct(product, cartQty = 0) {
             buyButton.style.pointerEvents = 'none';
             buyButton.style.opacity = '0.6';
             
-            fetch('/demolitiontraders/backend/api/cart/add.php', {
+            fetch(getApiUrl('/api/cart/add.php'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ product_id: productId, quantity: quantity }),
@@ -390,7 +390,7 @@ function displayProduct(product, cartQty = 0) {
             addButton.style.pointerEvents = 'none';
             addButton.style.opacity = '0.6';
             
-            const url = '/demolitiontraders/backend/api/cart/add.php';
+            const url = getApiUrl('/api/cart/add.php');
             const payload = { product_id: productId, quantity: quantity };
             
             console.log('Request URL:', url);
@@ -515,7 +515,7 @@ function displayProduct(product, cartQty = 0) {
             
             if (isInWishlist) {
                 // Remove from wishlist
-                fetch('/demolitiontraders/backend/api/wishlist/remove.php', {
+                fetch(getApiUrl('/api/wishlist/remove.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId })
@@ -542,7 +542,7 @@ function displayProduct(product, cartQty = 0) {
                 });
             } else {
                 // Add to wishlist
-                fetch('/demolitiontraders/backend/api/wishlist/add.php', {
+                fetch(getApiUrl('/api/wishlist/add.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId })
@@ -568,7 +568,7 @@ function displayProduct(product, cartQty = 0) {
                             // Update wishlist count on header
                             async function updateWishlistCount() {
                                 try {
-                                    const response = await fetch('/demolitiontraders/backend/api/wishlist/get.php');
+                                    const response = await fetch(getApiUrl('/api/wishlist/get.php'));
                                     const data = await response.json();
                                     const count = data.wishlist ? data.wishlist.length : 0;
                                     const el = document.getElementById('wishlist-count');

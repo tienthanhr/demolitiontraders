@@ -138,7 +138,7 @@
             const formData = new FormData(loginForm);
             const data = Object.fromEntries(formData);
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/login.php', {
+                const res = await fetch(getApiUrl('/api/user/login.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -171,7 +171,7 @@
                 return;
             }
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/register.php', {
+                const res = await fetch(getApiUrl('/api/user/register.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -211,7 +211,7 @@
             const formData = new FormData(forgotPasswordForm);
             const data = Object.fromEntries(formData);
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/forgot-password.php', {
+                const res = await fetch(getApiUrl('/api/user/forgot-password.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -242,7 +242,7 @@
                 try {
                     const cart = JSON.parse(localCart);
                     if (cart && Object.keys(cart).length > 0) {
-                        await fetch('/demolitiontraders/backend/api/cart/sync.php', {
+                        await fetch(getApiUrl('/api/cart/sync.php'), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ cart })

@@ -51,8 +51,8 @@
         async function loadWishlist() {
             try {
                 const [wishlistRes, cartRes] = await Promise.all([
-                    fetch('/demolitiontraders/backend/api/wishlist/list.php'),
-                    fetch('/demolitiontraders/backend/api/cart/get.php')
+                    fetch(getApiUrl('/api/wishlist/list.php')),
+                    fetch(getApiUrl('/api/cart/get.php'))
                 ]);
                 
                 if (!wishlistRes.ok || !cartRes.ok) {
@@ -149,7 +149,7 @@
         async function removeFromWishlist(productId) {
             if (!confirm('Remove this item from your wishlist?')) return;
             try {
-                const response = await fetch('/demolitiontraders/backend/api/wishlist/remove.php', {
+                const response = await fetch(getApiUrl('/api/wishlist/remove.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId })
@@ -169,7 +169,7 @@
         // Update wishlist count on header
         async function updateWishlistCount() {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/wishlist/list.php');
+                const response = await fetch(getApiUrl('/api/wishlist/list.php'));
                 const data = await response.json();
                 const count = data.wishlist ? data.wishlist.length : 0;
                 const el = document.getElementById('wishlist-count');
@@ -183,7 +183,7 @@
         async function clearWishlist() {
             if (!confirm('Are you sure you want to clear your entire wishlist?')) return;
             try {
-                const response = await fetch('/demolitiontraders/backend/api/wishlist/empty.php', {
+                const response = await fetch(getApiUrl('/api/wishlist/empty.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -204,7 +204,7 @@
         // Add to cart
         async function addToCart(productId) {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/add.php', {
+                const response = await fetch(getApiUrl('/api/cart/add.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId, quantity: 1 })

@@ -112,7 +112,7 @@
         // Load featured products
         async function loadFeaturedProducts() {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/products/featured.php');
+                const response = await fetch(getApiUrl('/api/products/featured.php'));
                 const data = await response.json();
                 
                 if (data.success && data.products) {
@@ -148,7 +148,7 @@
         // Update cart count
         async function updateCartCount() {
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/get.php');
+                const response = await fetch(getApiUrl('/api/cart/get.php'));
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('cart-count').textContent = data.summary.item_count;

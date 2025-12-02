@@ -594,7 +594,7 @@ async function applyBulkAction() {
             log(`\n>>> Processing customer ${i+1}/${customerIds.length}: ID=${customerId}`);
             
             if (action === 'delete') {
-                const url = `/demolitiontraders/backend/api/admin/delete-user.php`;
+                const url = `${getApiUrl('/api/admin/delete-user.php')}`;
                 const payload = { user_id: customerId };
                 log('DELETE URL', url);
                 log('DELETE Payload', payload);
@@ -625,7 +625,7 @@ async function applyBulkAction() {
             } else {
                 // Activate or suspend
                 const status = action === 'activate' ? 'active' : 'suspended';
-                const url = `/demolitiontraders/backend/api/admin/update-user-status.php`;
+                const url = `${getApiUrl('/api/admin/update-user-status.php')}`;
                 const payload = { user_id: customerId, status: status };
                 
                 log('POST URL', url);
@@ -778,7 +778,7 @@ async function undoLastAction() {
             if (action === 'delete') {
                 // Restore deleted customer via API
                 if (customer.fullData) {
-                    const url = `/demolitiontraders/backend/api/admin/restore-user.php`;
+                    const url = `${getApiUrl('/api/admin/restore-user.php')}`;
                     const payload = {
                         original_id: parseInt(customer.id),
                         email: customer.fullData.email,
@@ -810,7 +810,7 @@ async function undoLastAction() {
                 }
             } else {
                 // Restore original status
-                const url = `/demolitiontraders/backend/api/admin/update-user-status.php`;
+                const url = `${getApiUrl('/api/admin/update-user-status.php')}`;
                 const payload = { user_id: parseInt(customer.id), status: customer.status };
                 
                 const response = await fetch(url, {
@@ -876,7 +876,7 @@ async function bulkDeleteCustomers() {
         let failCount = 0;
         
         for (const customerId of customerIds) {
-            const res = await fetch('/demolitiontraders/backend/api/admin/delete-user.php', {
+            const res = await fetch(getApiUrl('/api/admin/delete-user.php'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: customerId })
@@ -1023,7 +1023,7 @@ async function saveRole() {
     if (!confirm(`Change customer role to "${newRole.toUpperCase()}"?`)) return;
     
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/update-user-role.php', {
+        const res = await fetch(getApiUrl('/api/admin/update-user-role.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -1064,7 +1064,7 @@ async function suspendCustomer(customerId) {
     if (!confirm('⚠️ Are you sure you want to SUSPEND this customer?\n\nThey will not be able to login until you activate their account again.')) return;
     
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/update-user-status.php', {
+        const res = await fetch(getApiUrl('/api/admin/update-user-status.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: customerId, status: 'suspended' })
@@ -1088,7 +1088,7 @@ async function activateCustomer(customerId) {
     if (!confirm('Are you sure you want to ACTIVATE this customer account?')) return;
     
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/update-user-status.php', {
+        const res = await fetch(getApiUrl('/api/admin/update-user-status.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: customerId, status: 'active' })
@@ -1125,7 +1125,7 @@ async function deleteCustomer(customerId) {
         const phone = customerRow?.querySelector('td:nth-child(5)')?.textContent || '';
         const status = customerRow?.querySelector('.badge')?.textContent?.toLowerCase() || 'active';
 
-        const res = await fetch('/demolitiontraders/backend/api/admin/delete-user.php', {
+        const res = await fetch(getApiUrl('/api/admin/delete-user.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: customerId })
@@ -1227,7 +1227,7 @@ async function submitResetPassword() {
     errorDiv.style.display = 'none';
     
     try {
-        const res = await fetch('/demolitiontraders/backend/api/admin/reset-user-password.php', {
+        const res = await fetch(getApiUrl('/api/admin/reset-user-password.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

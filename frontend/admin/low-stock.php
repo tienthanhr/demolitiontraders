@@ -37,7 +37,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     async function loadLowStock() {
         const tableDiv = document.getElementById('low-stock-table');
         try {
-            const res = await fetch('/demolitiontraders/backend/api/index.php?request=products&low_stock=1');
+            const res = await fetch(getApiUrl('/api/index.php?request=products&low_stock=1'));
             const data = await res.json();
             let products = Array.isArray(data) ? data : (data.data || []);
             if (!products.length) {

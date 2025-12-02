@@ -279,7 +279,7 @@ $orders = $db->fetchAll(
             const data = Object.fromEntries(formData);
             
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/update-profile.php', {
+                const res = await fetch(getApiUrl('/api/user/update-profile.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -311,7 +311,7 @@ $orders = $db->fetchAll(
             }
             
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/change-password.php', {
+                const res = await fetch(getApiUrl('/api/user/change-password.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -425,11 +425,11 @@ $orders = $db->fetchAll(
                         }
                         
                         try {
-                            console.log('Making request to:', '/demolitiontraders/backend/api/user/manage-address.php');
+                            console.log('Making request to:', '' + getApiUrl('/api/user/manage-address.php') + '');
                             console.log('Method:', isEdit ? 'PUT' : 'POST');
                             console.log('Data:', JSON.stringify(data));
                             
-                            const res = await fetch('/demolitiontraders/backend/api/user/manage-address.php', {
+                            const res = await fetch(getApiUrl('/api/user/manage-address.php'), {
                                 method: isEdit ? 'PUT' : 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(data)
@@ -465,7 +465,7 @@ $orders = $db->fetchAll(
         
         async function editAddress(id) {
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/addresses.php');
+                const res = await fetch(getApiUrl('/api/user/addresses.php'));
                 const result = await res.json();
                 
                 if (result.success) {
@@ -511,7 +511,7 @@ $orders = $db->fetchAll(
                 confirmModal.remove();
                 
                 try {
-                    const res = await fetch('/demolitiontraders/backend/api/user/manage-address.php', {
+                    const res = await fetch(getApiUrl('/api/user/manage-address.php'), {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: id })
@@ -537,7 +537,7 @@ $orders = $db->fetchAll(
         
         async function setDefaultAddress(id) {
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/manage-address.php', {
+                const res = await fetch(getApiUrl('/api/user/manage-address.php'), {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: id, is_default: 1 })

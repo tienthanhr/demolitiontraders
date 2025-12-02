@@ -103,7 +103,7 @@
             }
             
             try {
-                const res = await fetch('/demolitiontraders/backend/api/user/reset-password.php', {
+                const res = await fetch(getApiUrl('/api/user/reset-password.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token, password })

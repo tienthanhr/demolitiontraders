@@ -422,7 +422,7 @@ async function loadOrders() {
 
     try {
         const status = document.getElementById('filter-status').value;
-        let url = '/demolitiontraders/backend/api/index.php?request=orders';
+        let url = getApiUrl('/api/index.php?request=orders');
         if (status) url += `&status=${status}`;
 
         console.log('Fetching orders from:', url);
@@ -603,13 +603,13 @@ async function bulkDeleteOrders() {
         // First, fetch all order data before deleting
         for (const orderId of orderIds) {
             try {
-                const orderRes = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${orderId}`);
+                const orderRes = await fetch(`${getApiUrl('/api/index.php?request=orders/${orderId}')}`);
                 if (orderRes.ok) {
                     const orderData = await orderRes.json();
                     const order = orderData.data || orderData;
                     
                     // Fetch order items
-                    const itemsRes = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${orderId}/items`);
+                    const itemsRes = await fetch(`${getApiUrl('/api/index.php?request=orders/${orderId}/items')}`);
                     const itemsData = await itemsRes.json();
                     order.items = itemsData.data || itemsData;
                     
@@ -623,7 +623,7 @@ async function bulkDeleteOrders() {
         // Now delete the orders
         for (const orderId of orderIds) {
             try {
-                const res = await fetch(`/demolitiontraders/backend/api/index.php?request=orders&id=${orderId}`, {
+                const res = await fetch(`${getApiUrl('/api/index.php?request=orders&id=${orderId}')}`, {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -841,7 +841,7 @@ async function viewOrder(id) {
     content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading order details...</p></div>';
 
     try {
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`);
+        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`);
         const order = await response.json();
 
         // Parse billing and shipping addresses
@@ -984,7 +984,7 @@ async function updateOrderStatus(id) {
     
     // Get current order status
     try {
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`);
+        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`);
         const order = await response.json();
         document.getElementById('new-status').value = order.status;
     } catch (error) {
@@ -1030,7 +1030,7 @@ async function saveOrderStatus() {
         
         console.log('Request body:', requestBody);
         
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${currentOrderId}`, {
+        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${currentOrderId}')}`, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
@@ -1082,7 +1082,7 @@ async function saveOrderStatus() {
 // Print order
 async function printOrder(id, status) {
     try {
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`);
+        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`);
         const order = await response.json();
         
         // Parse addresses
@@ -1692,7 +1692,7 @@ async function deleteOrder(id) {
     if (!confirmed) return;
     
     try {
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}`, {
+        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`, {
             method: 'DELETE'
         });
 
@@ -1728,7 +1728,7 @@ async function sendReceipt(id) {
         sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending receipt email...`;
         document.body.appendChild(sendingMsg);
         
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}/send-receipt`, {
+        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}/send-receipt')}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -1766,7 +1766,7 @@ async function sendTaxInvoice(id) {
         sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending tax invoice email...`;
         document.body.appendChild(sendingMsg);
 
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=orders/${id}/send-tax-invoice`, {
+        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}/send-tax-invoice')}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -1846,7 +1846,7 @@ async function setRevenuePeriod(period) {
 
 async function updateRevenue(period, customDate = null) {
     try {
-        let url = '/demolitiontraders/backend/api/index.php?request=orders';
+        let url = getApiUrl('/api/index.php?request=orders');
         
         const response = await fetch(url);
         const data = await response.json();

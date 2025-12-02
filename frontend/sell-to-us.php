@@ -486,7 +486,7 @@
             });
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/sell-to-us/submit.php', {
+                const response = await fetch(getApiUrl('/api/sell-to-us/submit.php'), {
                     method: 'POST',
                     body: formData
                 });

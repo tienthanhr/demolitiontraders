@@ -188,7 +188,7 @@ async function loadCategories() {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading categories...</p></td></tr>';
 
     try {
-        const response = await fetch('/demolitiontraders/backend/api/index.php?request=categories');
+        const response = await fetch(getApiUrl('/api/index.php?request=categories'));
         const data = await response.json();
         categoriesData = data.data || data;
 
@@ -198,7 +198,7 @@ async function loadCategories() {
         }
 
         // Get product counts for each category
-        const countsResponse = await fetch('/demolitiontraders/backend/api/index.php?request=products&per_page=1000');
+        const countsResponse = await fetch(getApiUrl('/api/index.php?request=products&per_page=1000'));
         const productsData = await countsResponse.json();
         const products = productsData.data || [];
         
@@ -361,7 +361,7 @@ function closeCategoryModal() {
 // Edit category
 async function editCategory(id) {
     try {
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=categories/${id}`);
+        const response = await fetch(`${getApiUrl('/api/index.php?request=categories/${id}')}`);
         const category = await response.json();
 
         document.getElementById('category-modal-title').textContent = 'Edit Category';
@@ -399,8 +399,8 @@ async function saveCategory(event) {
 
     try {
         const url = id 
-            ? `/demolitiontraders/backend/api/index.php?request=categories/${id}`
-            : `/demolitiontraders/backend/api/index.php?request=categories`;
+            ? `${getApiUrl('/api/index.php?request=categories/${id}')}`
+            : `${getApiUrl('/api/index.php?request=categories')}`;
         
         const response = await fetch(url, {
             method: id ? 'PUT' : 'POST',
@@ -432,11 +432,11 @@ async function deleteCategory(id, name) {
 
     try {
         // Get category data before deletion for undo
-        const categoryResponse = await fetch(`/demolitiontraders/backend/api/index.php?request=categories/${id}`);
+        const categoryResponse = await fetch(`${getApiUrl('/api/index.php?request=categories/${id}')}`);
         const categoryData = await categoryResponse.json();
         const originalCategory = categoryData.data || categoryData;
 
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=categories/${id}`, {
+        const response = await fetch(`${getApiUrl('/api/index.php?request=categories/${id}')}`, {
             method: 'DELETE'
         });
 
@@ -541,7 +541,7 @@ async function undoLastAction() {
         let successCount = 0;
         for (const catData of categories) {
             try {
-                const res = await fetch('/demolitiontraders/backend/api/index.php?request=categories', {
+                const res = await fetch(getApiUrl('/api/index.php?request=categories'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(catData)
@@ -594,7 +594,7 @@ async function bulkDeleteCategories() {
         
         for (const categoryId of categoryIds) {
             try {
-                const res = await fetch(`/demolitiontraders/backend/api/index.php?request=categories/${categoryId}`, {
+                const res = await fetch(`${getApiUrl('/api/index.php?request=categories/${categoryId}')}`, {
                     method: 'DELETE'
                 });
                 

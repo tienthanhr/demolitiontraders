@@ -404,7 +404,7 @@
             loadCartInProgress = true;
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/get.php', {
+                const response = await fetch(getApiUrl('/api/cart/get.php'), {
                     credentials: 'same-origin'
                 });
                 
@@ -533,7 +533,7 @@
             if (!confirmed) return;
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/remove.php', {
+                const response = await fetch(getApiUrl('/api/cart/remove.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId })
@@ -569,7 +569,7 @@
             }
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/update.php', {
+                const response = await fetch(getApiUrl('/api/cart/update.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId, quantity: newQty })
@@ -604,7 +604,7 @@
             if (!confirmed) return;
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/empty.php', {
+                const response = await fetch(getApiUrl('/api/cart/empty.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -639,7 +639,7 @@
                 console.log('Loading recommendations, cart has', productIds.length, 'products');
                 
                 // Fetch a large number of products to always have recommendations
-                const response = await fetch('/demolitiontraders/backend/api/index.php?request=products&per_page=300');
+                const response = await fetch(getApiUrl('/api/index.php?request=products&per_page=300'));
                 const data = await response.json();
                 
                 let products = data.data || data.products || [];
@@ -711,7 +711,7 @@
             const card = event.target.closest('.recommendation-card');
             
             try {
-                const response = await fetch('/demolitiontraders/backend/api/cart/add.php', {
+                const response = await fetch(getApiUrl('/api/cart/add.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId, quantity: 1 })

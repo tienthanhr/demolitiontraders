@@ -364,7 +364,7 @@ async function loadProducts(page = 1) {
         const condition = document.getElementById('filter-condition').value;
         const status = document.getElementById('filter-status').value;
 
-        let url = `/demolitiontraders/backend/api/index.php?request=products&page=${page}&per_page=20`;
+        let url = `${getApiUrl('/api/index.php?request=products&page=${page}&per_page=20')}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;
         if (category) url += `&category=${category}`;
         if (condition) url += `&condition=${condition}`;
@@ -589,7 +589,7 @@ async function applyBulkAction() {
             if (action === 'delete') {
                 // Fetch full product data before deletion
                 try {
-                    const response = await fetch(`/demolitiontraders/backend/api/index.php?request=products/${productId}`);
+                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${productId}')}`);
                     const productData = await response.json();
                     if (productData) {
                         originalStates.push({ 
@@ -617,14 +617,14 @@ async function applyBulkAction() {
         for (const productId of productIds) {
             try {
                 if (action === 'delete') {
-                    const response = await fetch(`/demolitiontraders/backend/api/index.php?request=products/${productId}`, {
+                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${productId}')}`, {
                         method: 'DELETE'
                     });
                     if (response.ok) successCount++;
                     else failCount++;
                 } else {
                     const isActive = action === 'activate' ? 1 : 0;
-                    const response = await fetch(`/demolitiontraders/backend/api/index.php?request=products/${productId}`, {
+                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${productId}')}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ is_active: isActive })
@@ -726,7 +726,7 @@ async function undoLastAction() {
                         if (data.is_featured) formData.append('is_featured', data.is_featured);
                         if (data.slug) formData.append('slug', data.slug); // Preserve original slug
                         
-                        const response = await fetch('/demolitiontraders/backend/api/index.php?request=products', {
+                        const response = await fetch(getApiUrl('/api/index.php?request=products'), {
                             method: 'POST',
                             body: formData
                         });
@@ -743,7 +743,7 @@ async function undoLastAction() {
             // Restore original active status
             for (const product of lastBulkAction.products) {
                 try {
-                    const response = await fetch(`/demolitiontraders/backend/api/index.php?request=products/${product.id}`, {
+                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${product.id}')}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ is_active: product.is_active })
@@ -865,7 +865,7 @@ function openProductModal() {
         const catId = catSelect.value;
         if (catId) {
             try {
-                const res = await fetch('/demolitiontraders/backend/api/index.php?request=products/nextid');
+                const res = await fetch(getApiUrl('/api/index.php?request=products/nextid'));
                 const data = await res.json();
                 const nextId = data.next_id || 1;
                 document.getElementById('product-sku').value = `DT-${catId}-${nextId}`;
@@ -883,7 +883,7 @@ function openProductModal() {
 
 async function editProduct(id) {
     try {
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=products/${id}`);
+        const response = await fetch(`${getApiUrl('/api/index.php?request=products/${id}')}`);
         const data = await response.json();
         
         // ✅ Handle both response formats
@@ -963,8 +963,8 @@ async function saveProduct(event) {
 
     try {
         const url = id 
-            ? `/demolitiontraders/backend/api/index.php?request=products/${id}`
-            : `/demolitiontraders/backend/api/index.php?request=products`;
+            ? `${getApiUrl('/api/index.php?request=products/${id}')}`
+            : `${getApiUrl('/api/index.php?request=products')}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -993,11 +993,11 @@ async function deleteProduct(id, name) {
 
     try {
         // Get product data before deletion for undo
-        const productResponse = await fetch(`/demolitiontraders/backend/api/index.php?request=products/${id}`);
+        const productResponse = await fetch(`${getApiUrl('/api/index.php?request=products/${id}')}`);
         const productData = await productResponse.json();
         const originalProduct = productData.data || productData;
 
-        const response = await fetch(`/demolitiontraders/backend/api/index.php?request=products/${id}`, {
+        const response = await fetch(`${getApiUrl('/api/index.php?request=products/${id}')}`, {
             method: 'DELETE'
         });
 
@@ -1025,7 +1025,7 @@ async function deleteProduct(id, name) {
 
 async function loadCategories() {
     try {
-        const response = await fetch('/demolitiontraders/backend/api/index.php?request=categories');
+        const response = await fetch(getApiUrl('/api/index.php?request=categories'));
         const data = await response.json();
         const categories = data.data || data;
 

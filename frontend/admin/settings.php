@@ -114,7 +114,7 @@ async function logoutConfirm() {
 // Load opening hours from Google Places API
 async function loadOpeningHours() {
     try {
-        const response = await fetch('/demolitiontraders/backend/api/opening-hours.php');
+        const response = await fetch(getApiUrl('/api/opening-hours.php'));
         const data = await response.json();
         
         const container = document.getElementById('opening-hours-display');
@@ -147,11 +147,11 @@ async function loadOpeningHours() {
 // Load stats
 async function loadSettingsStats() {
     try {
-        const productsRes = await fetch('/demolitiontraders/backend/api/index.php?request=products&per_page=1');
+        const productsRes = await fetch(getApiUrl('/api/index.php?request=products&per_page=1'));
         const productsData = await productsRes.json();
         document.getElementById('stats-products').textContent = productsData.pagination?.total || 0;
 
-        const categoriesRes = await fetch('/demolitiontraders/backend/api/index.php?request=categories');
+        const categoriesRes = await fetch(getApiUrl('/api/index.php?request=categories'));
         const categoriesData = await categoriesRes.json();
         document.getElementById('stats-categories').textContent = (categoriesData.data || categoriesData).length;
 
@@ -177,7 +177,7 @@ async function clearCache() {
     if (!confirmed) return;
     
     try {
-        const response = await fetch('/demolitiontraders/backend/api/admin/clear-cache.php', {
+        const response = await fetch(getApiUrl('/api/admin/clear-cache.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -198,7 +198,7 @@ async function clearCache() {
 function exportProducts() {
     // Open export URL in new window to download CSV
     showInfo('Preparing products export...');
-    window.location.href = '/demolitiontraders/backend/api/admin/export-products.php';
+    window.location.href = getApiUrl('/api/admin/export-products.php');
 }
 
 function printReport() {

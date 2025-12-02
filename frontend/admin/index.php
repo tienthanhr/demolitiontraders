@@ -102,14 +102,14 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
         async function loadStats() {
             try {
                 // Products count
-                const productsRes = await fetch('/demolitiontraders/backend/api/index.php?request=products&per_page=1');
+                const productsRes = await fetch(getApiUrl('/api/index.php?request=products&per_page=1'));
                 const productsData = await productsRes.json();
                 document.getElementById('total-products').textContent = productsData.pagination?.total || (Array.isArray(productsData.data) ? productsData.data.length : 0);
 
                 // Orders count
                 let ordersCount = 0;
                 try {
-                    const ordersRes = await fetch('/demolitiontraders/backend/api/index.php?request=orders&per_page=1');
+                    const ordersRes = await fetch(getApiUrl('/api/index.php?request=orders&per_page=1'));
                     const ordersData = await ordersRes.json();
                     if (ordersData.pagination && typeof ordersData.pagination.total === 'number') {
                         ordersCount = ordersData.pagination.total;
@@ -126,7 +126,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                 // Customers count
                 let customersCount = 0;
                 try {
-                    const customersRes = await fetch('/demolitiontraders/backend/api/index.php?request=customers&per_page=1');
+                    const customersRes = await fetch(getApiUrl('/api/index.php?request=customers&per_page=1'));
                     const customersData = await customersRes.json();
                     if (customersData.pagination && typeof customersData.pagination.total === 'number') {
                         customersCount = customersData.pagination.total;
@@ -143,7 +143,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                 // Low stock (optional, fallback 0)
                 let lowStock = 0;
                 try {
-                    const lowStockRes = await fetch('/demolitiontraders/backend/api/index.php?request=products&low_stock=1');
+                    const lowStockRes = await fetch(getApiUrl('/api/index.php?request=products&low_stock=1'));
                     const lowStockData = await lowStockRes.json();
                     if (Array.isArray(lowStockData.data)) {
                         lowStock = lowStockData.data.length;
@@ -177,7 +177,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                 const dd = String(today.getDate()).padStart(2, '0');
                 const todayStr = `${yyyy}-${mm}-${dd}`;
                 // Gọi API lấy orders hôm nay (giả sử backend hỗ trợ filter by date, nếu không sẽ filter ở FE)
-                const res = await fetch('/demolitiontraders/backend/api/index.php?request=orders');
+                const res = await fetch(getApiUrl('/api/index.php?request=orders'));
                 const data = await res.json();
                 let orders = Array.isArray(data) ? data : (data.data || []);
                 // Lọc đơn hàng có ngày tạo là hôm nay
