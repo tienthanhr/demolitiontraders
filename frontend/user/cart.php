@@ -356,10 +356,10 @@
                 <span>Total:</span>
                 <span id="total">$0.00</span>
             </div>
-            <a href="checkout.php" class="btn btn-primary" style="width: 100%; display: block; text-align: center; margin-top: 20px;" id="checkout-button">
+            <a href="<?php echo userUrl('checkout.php'); ?>" class="btn btn-primary" style="width: 100%; display: block; text-align: center; margin-top: 20px;" id="checkout-button">
                 Proceed to Checkout
             </a>
-            <a href="shop.php" class="btn btn-secondary" style="width: 100%; display: block; text-align: center; margin-top: 10px;">
+            <a href="<?php echo userUrl('shop.php'); ?>" class="btn btn-secondary" style="width: 100%; display: block; text-align: center; margin-top: 10px;">
                 Continue Shopping
             </a>
         </div>
@@ -455,7 +455,7 @@
                             <i class="fas fa-shopping-cart"></i>
                             <h2>Your cart is empty</h2>
                             <p>Browse our products and start shopping!</p>
-                            <a href="shop.php" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Browse Products</a>
+                            <a href="${BASE_PATH}shop.php" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Browse Products</a>
                         </div>
                     `;
                     if (checkoutBtn) checkoutBtn.style.display = 'none';
