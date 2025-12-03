@@ -165,9 +165,13 @@ class OrderController {
         $discountAmount = floatval($data['discount_amount'] ?? 0);
         $total = $totalInclGST + $shippingAmount - $discountAmount;
         
+        error_log("OrderController::create - About to start transaction");
+        
         // Start transaction
         try {
+            error_log("OrderController::create - Calling beginTransaction");
             $this->db->beginTransaction();
+            error_log("OrderController::create - Transaction started successfully");
             
             // Create order
             $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
@@ -270,7 +274,10 @@ class OrderController {
             return $this->show($orderId);
             
         } catch (Exception $e) {
+            error_log("Exception caught: " . $e->getMessage());
+            error_log("About to rollback transaction");
             $this->db->rollback();
+            error_log("Rollback completed");
             throw $e;
         }
     }
