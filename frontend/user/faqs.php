@@ -90,7 +90,14 @@
                         <i class="fa-solid fa-plus"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>Due to the nature of recycled and demolition materials, all sales are final. We recommend carefully inspecting items before purchase. For new products, please ask staff about our return policy at time of purchase.</p>
+                        <p>We offer a <strong>30-day return policy with full refund</strong> for items in original condition. Please keep your receipt and contact us within 30 days of purchase to arrange a return. Conditions apply:</p>
+                        <ul>
+                            <li>Items must be unused and in original condition</li>
+                            <li>Original receipt or proof of purchase required</li>
+                            <li>Some items may be subject to restocking fees</li>
+                            <li>Special orders and custom items are non-refundable</li>
+                        </ul>
+                        <p>For recycled and demolition materials, please inspect carefully before purchase as these may have different return conditions.</p>
                     </div>
                 </div>
                 
@@ -111,16 +118,6 @@
                     </div>
                     <div class="faq-answer">
                         <p>Absolutely! We encourage customers to visit our yard during opening hours to browse our extensive range of materials. Our friendly staff are always available to help you find what you need.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Do you offer trade discounts?</h3>
-                        <i class="fa-solid fa-plus"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Yes, we offer trade discounts for registered builders and contractors. Please bring your trade documentation to set up an account with us.</p>
                     </div>
                 </div>
                 
