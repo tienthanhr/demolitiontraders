@@ -811,7 +811,8 @@ textarea.form-control {
 .action-btns {
     display: flex;
     gap: 8px;
-    justify-content: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
 .action-btns .btn {
@@ -1629,6 +1630,7 @@ textarea.form-control {
         display: flex;
         gap: 5px;
         flex-wrap: wrap;
+        justify-content: flex-start !important;
     }
     
     .table-container table td .btn {
