@@ -572,7 +572,7 @@
                         <h3>Continue as Guest</h3>
                         <p>You can checkout without an account. We'll ask if you'd like to create one after your order.</p>
                     </div>
-                    <a href="login.php?redirect=checkout.php" class="btn-login">
+                    <a href="<?php echo userUrl('login.php?redirect=checkout.php'); ?>" class="btn-login">
                         <i class="fas fa-sign-in-alt"></i> Login
                     </a>
                 </div>
@@ -602,7 +602,7 @@
                                     <div class="email-exists-badge" id="email-exists-badge">
                                         <i class="fas fa-info-circle"></i>
                                         This email already has an account. 
-                                        <a href="login.php?redirect=checkout.php">Login here</a> to link your order.
+                                        <a href="<?php echo userUrl('login.php?redirect=checkout.php'); ?>">Login here</a> to link your order.
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -1330,7 +1330,7 @@
                     </div>
                     
                     <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
-                        Already have an account? <a href="login.php" style="color: #2f3192; text-decoration: none; font-weight: 600;">Login here</a>
+                        Already have an account? <a href="<?php echo userUrl('login.php'); ?>" style="color: #2f3192; text-decoration: none; font-weight: 600;">Login here</a>
                     </div>
                 </div>
             `;

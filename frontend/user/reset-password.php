@@ -40,7 +40,7 @@
             <button type="submit">Reset Password</button>
         </form>
         <div class="back-link">
-            <a href="login.php">Back to Login</a>
+            <a href="<?php echo userUrl('login.php'); ?>">Back to Login</a>
         </div>
     </div>
     <?php include '../components/footer.php'; ?>
