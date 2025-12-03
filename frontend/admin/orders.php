@@ -1112,7 +1112,8 @@ async function saveOrderStatus() {
 // Print order
 async function printOrder(id, status) {
     try {
-        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`);
+        const apiPath = `/api/index.php?request=orders/${id}`;
+        const response = await fetch(getApiUrl(apiPath));
         const order = await response.json();
         
         // Parse addresses
