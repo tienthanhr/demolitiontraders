@@ -1,7 +1,11 @@
 <?php
 require_once '../config.php';
 require_once '../components/date-helper.php';
-session_start();
+
+ini_set('session.save_path', '/tmp');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Check if user is admin
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;

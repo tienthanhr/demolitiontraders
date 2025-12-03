@@ -182,6 +182,21 @@ try {
             }
             break;
             
+        case 'customers':
+            require_once __DIR__ . '/../controllers/UserController.php';
+            $controller = new UserController();
+            
+            if ($method === 'GET' && !$id) {
+                sendResponse($controller->index());
+            } elseif ($method === 'GET' && $id) {
+                sendResponse($controller->show($id));
+            } elseif ($method === 'PUT' && $id) {
+                sendResponse($controller->update($id, $input));
+            } elseif ($method === 'DELETE' && $id) {
+                sendResponse($controller->delete($id));
+            }
+            break;
+            
         case 'orders':
             require_once __DIR__ . '/../controllers/OrderController.php';
             $controller = new OrderController();

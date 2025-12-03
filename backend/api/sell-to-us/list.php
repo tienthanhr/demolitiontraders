@@ -7,10 +7,17 @@
 header('Content-Type: application/json');
 require_once '../../config/database.php';
 
-session_start();
+ini_set('session.save_path', '/tmp');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Check if user is admin
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+$isAdmin = ($_SESSION['role'] ?? '') === 'admin' || 
+           ($_SESSION['user_role'] ?? '') === 'admin' || 
+           ($_SESSION['is_admin'] ?? false) === true;
+
+if (!isset($_SESSION['user_id']) || !$isAdmin) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized access']);
     exit;
