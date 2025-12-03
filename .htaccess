@@ -29,6 +29,9 @@ RewriteRule ^admin/(.*)$ %{ENV:BASE}/frontend/admin/$1 [L]
 # Admin login - /admin-login → frontend/admin-login.php
 RewriteRule ^admin-login/?$ %{ENV:BASE}/frontend/admin-login.php [L]
 
+# Logout - allow direct access to root logout.php
+RewriteRule ^logout\.php$ - [L]
+
 # Backend API - allow direct access
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^backend/.*\.php$ - [L]

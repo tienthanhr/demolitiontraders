@@ -3,6 +3,7 @@
  * Logout Page
  * Logs out user and redirects to appropriate page
  */
+require_once __DIR__ . '/frontend/config.php';
 session_start();
 
 // Store user role before clearing session
@@ -23,9 +24,9 @@ session_destroy();
 // Redirect based on previous role
 if ($wasAdmin) {
     // Redirect admin to admin login page
-    header('Location: /demolitiontraders/frontend/admin-login.php');
+    header('Location: ' . BASE_PATH . 'admin-login');
 } else {
     // Redirect customer to main login page
-    header('Location: /demolitiontraders/frontend/login.php');
+    header('Location: ' . BASE_PATH . 'login.php');
 }
 exit;
