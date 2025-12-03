@@ -1767,18 +1767,33 @@ async function sendReceipt(id) {
         sendingMsg.remove();
 
         if (response.ok) {
-            const result = await response.json();
-            
-            // Show success message
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-            successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Receipt email sent successfully!`;
-            document.body.appendChild(successMsg);
-            setTimeout(() => successMsg.remove(), 3000);
+            try {
+                const result = await response.json();
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success';
+                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Receipt email sent successfully!`;
+                document.body.appendChild(successMsg);
+                setTimeout(() => successMsg.remove(), 3000);
+            } catch (jsonError) {
+                // Success but no JSON response
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success';
+                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Receipt email sent successfully!`;
+                document.body.appendChild(successMsg);
+                setTimeout(() => successMsg.remove(), 3000);
+            }
         } else {
-            const error = await response.json();
-            alert('Error sending receipt: ' + (error.error || 'Unknown error'));
+            try {
+                const error = await response.json();
+                alert('Error sending receipt: ' + (error.error || 'Unknown error'));
+            } catch (jsonError) {
+                const text = await response.text();
+                alert('Error sending receipt: ' + (text || 'Unknown error'));
+            }
         }
     } catch (error) {
         alert('Error: ' + error.message);
@@ -1805,16 +1820,31 @@ async function sendTaxInvoice(id) {
         sendingMsg.remove();
 
         if (response.ok) {
-            const result = await response.json();
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-            successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Tax invoice email sent successfully!`;
-            document.body.appendChild(successMsg);
-            setTimeout(() => successMsg.remove(), 3000);
+            try {
+                const result = await response.json();
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success';
+                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Tax invoice email sent successfully!`;
+                document.body.appendChild(successMsg);
+                setTimeout(() => successMsg.remove(), 3000);
+            } catch (jsonError) {
+                // Success but no JSON response
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success';
+                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Tax invoice email sent successfully!`;
+                document.body.appendChild(successMsg);
+                setTimeout(() => successMsg.remove(), 3000);
+            }
         } else {
-            const error = await response.json();
-            alert('Error sending tax invoice: ' + (error.error || 'Unknown error'));
+            try {
+                const error = await response.json();
+                alert('Error sending tax invoice: ' + (error.error || 'Unknown error'));
+            } catch (jsonError) {
+                const text = await response.text();
+                alert('Error sending tax invoice: ' + (text || 'Unknown error'));
+            }
         }
     } catch (error) {
         alert('Error: ' + error.message);

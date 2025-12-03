@@ -237,40 +237,50 @@ try {
                     sendResponse($controller->create($input), 201);
                 } elseif ($method === 'POST' && $id && $action === 'send-receipt') {
                     // Send receipt email
-                    require_once __DIR__ . '/../services/EmailService.php';
-                    $emailService = new EmailService();
-                    $order = $controller->show($id);
-                    
-                    // Get customer email
-                    $billing = json_decode($order['billing_address'], true);
-                    $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
-                    
-                    if (!$customerEmail) {
-                        sendError('No customer email found', 400);
-                    }
-                    
-                    $result = $emailService->sendReceipt($order, $customerEmail);
-                    if ($result['success']) {
-                        sendResponse($result);
-                    } else {
-                        sendError($result['error'], 500);
+                    try {
+                        require_once __DIR__ . '/../services/EmailService.php';
+                        $emailService = new EmailService();
+                        $order = $controller->show($id);
+                        
+                        // Get customer email
+                        $billing = json_decode($order['billing_address'], true);
+                        $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
+                        
+                        if (!$customerEmail) {
+                            sendError('No customer email found', 400);
+                        }
+                        
+                        $result = $emailService->sendReceipt($order, $customerEmail);
+                        if ($result['success']) {
+                            sendResponse($result);
+                        } else {
+                            sendError($result['error'], 500);
+                        }
+                    } catch (Exception $e) {
+                        error_log("Send receipt error: " . $e->getMessage());
+                        sendError('Failed to send receipt: ' . $e->getMessage(), 500);
                     }
                 } elseif ($method === 'POST' && $id && $action === 'send-tax-invoice') {
                     // Send tax invoice email
-                    require_once __DIR__ . '/../services/EmailService.php';
-                    $emailService = new EmailService();
-                    $order = $controller->show($id);
-                    // Get customer email
-                    $billing = json_decode($order['billing_address'], true);
-                    $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
-                    if (!$customerEmail) {
-                        sendError('No customer email found', 400);
-                    }
-                    $result = $emailService->sendTaxInvoice($order, $customerEmail);
-                    if ($result['success']) {
-                        sendResponse($result);
-                    } else {
-                        sendError($result['error'], 500);
+                    try {
+                        require_once __DIR__ . '/../services/EmailService.php';
+                        $emailService = new EmailService();
+                        $order = $controller->show($id);
+                        // Get customer email
+                        $billing = json_decode($order['billing_address'], true);
+                        $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
+                        if (!$customerEmail) {
+                            sendError('No customer email found', 400);
+                        }
+                        $result = $emailService->sendTaxInvoice($order, $customerEmail);
+                        if ($result['success']) {
+                            sendResponse($result);
+                        } else {
+                            sendError($result['error'], 500);
+                        }
+                    } catch (Exception $e) {
+                        error_log("Send tax invoice error: " . $e->getMessage());
+                        sendError('Failed to send tax invoice: ' . $e->getMessage(), 500);
                     }
                 } elseif ($method === 'PUT' && $id) {
                     sendResponse($controller->update($id, $input));
