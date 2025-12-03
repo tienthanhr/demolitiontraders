@@ -32,8 +32,9 @@
     <?php include '../components/footer.php'; ?>
     <?php include '../components/toast-notification.php'; ?>
     
-    <script src="assets/js/main.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
-    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
+    <script src="assets/js/main.js"></script>
+    <script>
+    const BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Get product ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');

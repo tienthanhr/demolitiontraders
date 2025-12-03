@@ -8,7 +8,8 @@
     <base href="<?php echo FRONTEND_PATH; ?>">
     
     <!-- Load API Helper -->
-    <script src="assets/js/api-helper.js?v=1">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
+    <script src="assets/js/api-helper.js?v=1"></script>
+    <script>const BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
     
     <link rel="stylesheet" href="assets/css/new-style.css?v=4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -131,8 +132,8 @@
 <?php include '../components/toast-notification.php'; ?>
     
     <!-- Chỉ giữ 1 dòng CDN noUiSlider, đặt trước main.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
-    <script src="assets/js/main.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+    <script src="assets/js/main.js"></script>
     <style>
         /* Responsive filter sliders */
         .filter-group #width-slider,
@@ -183,7 +184,7 @@
         -moz-appearance: textfield;
     }
     </style>
-    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
+    <script>
         let currentPage = 1;
         let cartItems = [];
         
@@ -296,7 +297,7 @@
         if (searchVal) {
             url.search = 'search=' + encodeURIComponent(searchVal);
         } else {
-            window.location.href = BASE_PATH + '.php';
+            window.location.href = BASE_PATH + 'shop.php';
             return;
         }
     } else {
@@ -310,6 +311,7 @@
         
         // Load provducts
         async function loadProducts() {
+            console.log('[SHOP] loadProducts called, currentPage:', currentPage);
             try {
                 const params = new URLSearchParams(window.location.search);
                 params.set('page', currentPage);
@@ -356,7 +358,8 @@
                 
                 console.log('Fetching products with params:', params.toString());
 
-                const apiUrl = getApiUrl('/api/index.php?request=products&' + params.toString());
+                const apiPath = '/api/index.php?request=products&' + params.toString();
+                const apiUrl = getApiUrl(apiPath);
                 console.log('API URL:', apiUrl);
                 const data = await apiFetch(apiUrl);
                 
@@ -446,14 +449,17 @@
                             }
                         }
                         
+                        // Escape HTML to prevent XSS
+                        const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                        
                         return '<div class="product-card">' +
-                            '<a href="<?php echo userUrl('product-detail.php?id=' + product.id + ''); ?>">' +
+                            '<a href="' + BASE_PATH + 'product-detail.php?id=' + product.id + '">' +
                                 '<div class="product-image">' +
-                                    '<img src="' + imageUrl + '" alt="' + product.name + '" onerror="this.src=\'assets/images/logo.png\'">' +
+                                    '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +
                                     newBadge + recycledBadge + outOfStockBadge +
                                 '</div>' +
                                 '<div class="product-info">' +
-                                    '<h3 class="product-name">' + product.name + '</h3>' +
+                                    '<h3 class="product-name">' + escapedName + '</h3>' +
                                     '<p class="product-price">$' + parseFloat(product.price).toFixed(2) + '</p>' +
                                 '</div>' +
                             '</a>' +

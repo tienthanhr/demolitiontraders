@@ -45,7 +45,8 @@
     </div>
     <?php include '../components/footer.php'; ?>
     <?php include '../components/toast-notification.php'; ?>
-    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
+    <script>
+    const BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Get token from URL
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');

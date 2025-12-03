@@ -878,8 +878,8 @@
     <?php include '../components/footer.php'; ?>
 <?php include '../components/toast-notification.php'; ?>
     
-    <script src="assets/js/main.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
-    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
+    <script src="assets/js/main.js"></script>
+    <script>
         // Load cart summary
         async function loadCartSummary() {
             try {
@@ -1676,7 +1676,7 @@
         </div>
     </div>
 
-    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
+    <script>
         // Handle delivery method radio button click
         document.getElementById('option-delivery').addEventListener('click', function(e) {
             if (e.target.type === 'radio' || e.target.closest('label')) {
@@ -1999,7 +1999,7 @@
         }
     </style>
     
-    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
+    <script>
     // Load opening hours from Google Places API
     async function loadOpeningHours() {
         try {

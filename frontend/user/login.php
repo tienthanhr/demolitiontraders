@@ -75,7 +75,8 @@
     </div>
     <?php include '../components/footer.php'; ?>
     <?php include '../components/toast-notification.php'; ?>
-    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
+    <script>
+    const BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Toggle password visibility
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
