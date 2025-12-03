@@ -166,12 +166,14 @@ class OrderController {
         $total = $totalInclGST + $shippingAmount - $discountAmount;
         
         error_log("OrderController::create - About to start transaction");
+        error_log("OrderController::create - DB connection status: " . ($this->db->getConnection() ? 'Connected' : 'Not connected'));
         
         // Start transaction
         try {
             error_log("OrderController::create - Calling beginTransaction");
-            $this->db->beginTransaction();
-            error_log("OrderController::create - Transaction started successfully");
+            $result = $this->db->beginTransaction();
+            error_log("OrderController::create - beginTransaction returned: " . var_export($result, true));
+            error_log("OrderController::create - Transaction inTransaction status: " . var_export($this->db->getConnection()->inTransaction(), true));
             
             // Create order
             $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
@@ -274,10 +276,22 @@ class OrderController {
             return $this->show($orderId);
             
         } catch (Exception $e) {
-            error_log("Exception caught: " . $e->getMessage());
-            error_log("About to rollback transaction");
-            $this->db->rollback();
-            error_log("Rollback completed");
+            error_log("OrderController::create - Exception caught: " . $e->getMessage());
+            error_log("OrderController::create - Exception file: " . $e->getFile() . " line: " . $e->getLine());
+            error_log("OrderController::create - inTransaction before rollback: " . var_export($this->db->getConnection()->inTransaction(), true));
+            
+            try {
+                if ($this->db->getConnection()->inTransaction()) {
+                    error_log("OrderController::create - Rolling back transaction");
+                    $this->db->rollback();
+                    error_log("OrderController::create - Rollback completed");
+                } else {
+                    error_log("OrderController::create - No active transaction to rollback");
+                }
+            } catch (Exception $rollbackEx) {
+                error_log("OrderController::create - Rollback failed: " . $rollbackEx->getMessage());
+            }
+            
             throw $e;
         }
     }
