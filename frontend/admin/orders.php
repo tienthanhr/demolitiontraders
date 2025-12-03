@@ -1059,7 +1059,8 @@ async function saveOrderStatus() {
         
         console.log('Request body:', requestBody);
         
-        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${currentOrderId}')}`, {
+        const apiPath = `/api/index.php?request=orders/${currentOrderId}`;
+        const response = await fetch(getApiUrl(apiPath), {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
