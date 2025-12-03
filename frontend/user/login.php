@@ -148,7 +148,14 @@
                 if (result.success) {
                     // Sync cart and wishlist after login
                     await syncCartOnLogin();
-                    window.location.href = BASE_PATH + '.php';
+                    // Check for redirect parameter
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect');
+                    if (redirect) {
+                        window.location.href = BASE_PATH + redirect;
+                    } else {
+                        window.location.href = BASE_PATH + 'index.php';
+                    }
                 } else {
                     document.getElementById('loginError').textContent = result.message || 'Login failed';
                     document.getElementById('loginError').style.display = 'block';
@@ -184,7 +191,13 @@
                     registerForm.reset();
                     // Auto redirect after successful registration (already logged in)
                     setTimeout(() => {
-                        window.location.href = BASE_PATH + '.php';
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirect = urlParams.get('redirect');
+                        if (redirect) {
+                            window.location.href = BASE_PATH + redirect;
+                        } else {
+                            window.location.href = BASE_PATH + 'index.php';
+                        }
                     }, 1500);
                 } else {
                     document.getElementById('registerError').textContent = result.message || 'Registration failed';
