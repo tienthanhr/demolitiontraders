@@ -909,7 +909,7 @@
                 
                 if (!data.items || data.items.length === 0) {
                     alert('Your cart is empty!');
-                    window.location.href = BASE_PATH + '.php';
+                    window.location.href = BASE_PATH + 'shop.php';
                     return;
                 }
                 
@@ -930,7 +930,7 @@
             } catch (error) {
                 console.error('Error loading cart:', error);
                 alert('Error loading cart. Please try again.');
-                window.location.href = BASE_PATH + '.php';
+                window.location.href = BASE_PATH + 'shop.php';
             }
         }
         
@@ -1240,7 +1240,7 @@
                         </div>
                         ` : `
                         <div class="modal-actions" style="display: flex; gap: 10px;">
-                            <button class="btn-primary" onclick="window.location.href = BASE_PATH + '.php'" style="flex: 1; padding: 15px; font-size: 16px;">
+                            <button class="btn-primary" onclick="window.location.href = BASE_PATH + 'order-detail.php?id=' + ${orderResult.id}" style="flex: 1; padding: 15px; font-size: 16px;">
                                 <i class="fas fa-receipt"></i> View Order
                             </button>
                             <button class="btn-secondary" onclick="closeSuccessModal()" style="flex: 1; padding: 15px; font-size: 16px;">
@@ -1263,13 +1263,13 @@
         function closeSuccessModal() {
             const modal = document.getElementById('success-modal');
             if (modal) modal.remove();
-            window.location.href = BASE_PATH + '.php';
+            window.location.href = BASE_PATH + 'shop.php';
         }
         
         async function createAccountFromModal() {
             const billingAddress = window.pendingAccountData;
             if (!billingAddress) {
-                window.location.href = BASE_PATH + '.php';
+                window.location.href = BASE_PATH + 'shop.php';
                 return;
             }
             
@@ -1354,7 +1354,7 @@
         function dismissRegistration() {
             const modal = document.getElementById('register-modal');
             if (modal) modal.remove();
-            window.location.href = BASE_PATH + '.php';
+            window.location.href = BASE_PATH + 'shop.php';
         }
         
         async function submitRegistration() {
@@ -1399,7 +1399,7 @@
                         `You are now logged in.\n` +
                         `You can view your order in your profile.`
                     );
-                    window.location.href = BASE_PATH + '.php';
+                    window.location.href = BASE_PATH + 'profile.php';
                 } else {
                     alert('Account creation failed: ' + result.message);
                 }

@@ -1,12 +1,19 @@
 <?php
-require_once 'components/date-helper.php';
-session_start();
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../components/date-helper.php';
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.save_path', '/tmp');
+    session_start();
+}
+
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . BASE_PATH . 'login.php?redirect=profile.php');
     exit;
 }
 
-require_once '../backend/config/database.php';
+require_once __DIR__ . '/../../backend/config/database.php';
 $db = Database::getInstance();
 
 // Get user info
@@ -176,7 +183,7 @@ $orders = $db->fetchAll(
                                 <td><?php echo $order['item_count']; ?> items</td>
                                 <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
                                 <td><span class="status-badge status-<?php echo $order['status']; ?>"><?php echo ucfirst($order['status']); ?></span></td>
-                                <td><a href="<?php echo userUrl('order-detail.php?id=<?php echo $order['id']; ?>'); ?>" class="btn btn-secondary">View</a></td>
+                                <td><a href="<?php echo userUrl('order-detail.php?id=' . $order['id']); ?>" class="btn btn-secondary">View</a></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

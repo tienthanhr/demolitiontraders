@@ -1,10 +1,16 @@
 <?php
-require_once 'components/date-helper.php';
-session_start();
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../components/date-helper.php';
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.save_path', '/tmp');
+    session_start();
+}
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . BASE_PATH . 'login.php?redirect=order-detail.php');
     exit;
 }
 
@@ -15,7 +21,7 @@ if (!$order_id || !is_numeric($order_id)) {
     exit;
 }
 
-require_once '../backend/config/database.php';
+require_once __DIR__ . '/../../backend/config/database.php';
 $db = Database::getInstance();
 
 // Get order details - ensure it belongs to current user
