@@ -79,6 +79,10 @@ try {
         'message' => "Successfully imported $productCount products and $imageCount images in {$duration}s"
     ];
     
+    // Fix PostgreSQL sequences after import
+    if ($isCLI) echo "\nFixing PostgreSQL sequences...\n";
+    fixSequences($db, $isCLI);
+    
     if ($isCLI) {
         echo "\n✓ Import successful!\n";
         echo "  Products: $productCount\n";
@@ -99,5 +103,41 @@ try {
     } else {
         http_response_code(500);
         echo json_encode($error);
+    }
+}
+
+/**
+ * Fix PostgreSQL sequences after data import
+ */
+function fixSequences($db, $verbose = false) {
+    $sequences = [
+        'orders' => 'orders_id_seq',
+        'order_items' => 'order_items_id_seq',
+        'users' => 'users_id_seq',
+        'products' => 'products_id_seq',
+        'product_images' => 'product_images_id_seq',
+        'categories' => 'categories_id_seq',
+        'cart_items' => 'cart_items_id_seq',
+        'wishlist_items' => 'wishlist_items_id_seq',
+        'addresses' => 'addresses_id_seq',
+    ];
+
+    foreach ($sequences as $table => $sequence) {
+        try {
+            // Get max ID from table
+            $result = $db->fetchOne("SELECT COALESCE(MAX(id), 0) as max_id FROM {$table}");
+            $maxId = $result['max_id'];
+            
+            // Reset sequence to max_id + 1
+            $db->query("SELECT setval('{$sequence}', {$maxId} + 1, false)");
+            
+            if ($verbose) {
+                echo "  ✓ {$table}: reset to {$maxId}\n";
+            }
+        } catch (Exception $e) {
+            if ($verbose) {
+                echo "  ✗ {$table}: " . $e->getMessage() . "\n";
+            }
+        }
     }
 }
