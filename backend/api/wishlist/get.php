@@ -62,9 +62,14 @@ try {
     
 } catch (Exception $e) {
     error_log('Wishlist get error: ' . $e->getMessage());
+    error_log('Wishlist get trace: ' . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
         'message' => 'Error loading wishlist',
+        'error_detail' => $e->getMessage(),
+        'error_file' => $e->getFile(),
+        'error_line' => $e->getLine(),
+        'wishlist' => [],
         'wishlist_count' => 0
     ]);
 }

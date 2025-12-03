@@ -80,9 +80,13 @@ try {
     
 } catch (Exception $e) {
     error_log('Cart get error: ' . $e->getMessage());
+    error_log('Cart get trace: ' . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
         'message' => 'Error loading cart',
+        'error_detail' => $e->getMessage(),
+        'error_file' => $e->getFile(),
+        'error_line' => $e->getLine(),
         'items' => [],
         'summary' => [
             'subtotal' => '0.00',
