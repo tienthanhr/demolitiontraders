@@ -29,7 +29,11 @@
 function confirmLogout(event) {
     event.preventDefault();
     if (confirm('Are you sure you want to logout?')) {
-        window.location.href = '../../logout.php';
+        // Clear session via logout.php then redirect to admin-login
+        fetch('<?php echo BASE_PATH; ?>logout.php?admin=1')
+            .then(() => {
+                window.location.href = '<?php echo BASE_PATH; ?>admin-login';
+            });
     }
 }
 </script>

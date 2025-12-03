@@ -50,8 +50,21 @@
         
         <div class="menu-divider"></div>
         
-        <a href="<?php echo BASE_PATH; ?>logout.php" class="menu-item">
+        <a href="#" onclick="adminLogout(event)" class="menu-item">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </nav>
 </aside>
+
+<script>
+function adminLogout(event) {
+    event.preventDefault();
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear session via logout.php then redirect to admin-login
+        fetch('<?php echo BASE_PATH; ?>logout.php?admin=1')
+            .then(() => {
+                window.location.href = '<?php echo BASE_PATH; ?>admin-login';
+            });
+    }
+}
+</script>

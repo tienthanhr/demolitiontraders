@@ -143,7 +143,9 @@ async function logoutConfirm() {
     console.log('confirm result:', result);
     if (result === true) {
         console.log('Redirecting to logout...');
-        window.location.href = '../../logout.php';
+        // Clear session via logout.php then redirect to admin-login
+        await fetch('<?php echo BASE_PATH; ?>logout.php?admin=1');
+        window.location.href = '<?php echo BASE_PATH; ?>admin-login';
     } else {
         console.log('Logout cancelled');
     }
