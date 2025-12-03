@@ -150,51 +150,77 @@ try {
             break;
             
         case 'categories':
-            require_once __DIR__ . '/../controllers/CategoryController.php';
-            $controller = new CategoryController();
-            
-            if ($method === 'GET' && !$id) {
-                sendResponse($controller->index());
-            } elseif ($method === 'GET' && $id) {
-                sendResponse($controller->show($id));
-            } elseif ($method === 'POST' && !$id) {
-                sendResponse($controller->create($input), 201);
-            } elseif ($method === 'PUT' && $id) {
-                sendResponse($controller->update($id, $input));
-            } elseif ($method === 'DELETE' && $id) {
-                sendResponse($controller->delete($id));
+            try {
+                require_once __DIR__ . '/../controllers/CategoryController.php';
+                $controller = new CategoryController();
+                
+                if ($method === 'GET' && !$id) {
+                    sendResponse($controller->index());
+                } elseif ($method === 'GET' && $id) {
+                    sendResponse($controller->show($id));
+                } elseif ($method === 'POST' && !$id) {
+                    sendResponse($controller->create($input), 201);
+                } elseif ($method === 'PUT' && $id) {
+                    sendResponse($controller->update($id, $input));
+                } elseif ($method === 'DELETE' && $id) {
+                    sendResponse($controller->delete($id));
+                } else {
+                    sendError('Method not allowed', 405);
+                }
+            } catch (Exception $e) {
+                error_log("Categories API Error: " . $e->getMessage());
+                sendError($e->getMessage(), 500);
             }
             break;
             
         case 'cart':
-            require_once __DIR__ . '/../controllers/CartController.php';
-            $controller = new CartController();
-            
-            if ($method === 'GET' && $id === 'get') {
-                sendResponse($controller->get());
-            } elseif ($method === 'POST' && $id === 'add') {
-                sendResponse($controller->add($input));
-            } elseif ($method === 'PUT' && $id === 'update') {
-                sendResponse($controller->update($input));
-            } elseif ($method === 'DELETE' && $id === 'remove' && $action) {
-                sendResponse($controller->remove($action));
-            } elseif ($method === 'DELETE' && $id === 'clear') {
-                sendResponse($controller->clear());
+            try {
+                require_once __DIR__ . '/../controllers/CartController.php';
+                $controller = new CartController();
+                
+                if ($method === 'GET' && $id === 'get') {
+                    sendResponse($controller->get());
+                } elseif ($method === 'POST' && $id === 'add') {
+                    sendResponse($controller->add($input));
+                } elseif ($method === 'PUT' && $id === 'update') {
+                    sendResponse($controller->update($input));
+                } elseif ($method === 'DELETE' && $id === 'remove' && $action) {
+                    sendResponse($controller->remove($action));
+                } elseif ($method === 'DELETE' && $id === 'clear') {
+                    sendResponse($controller->clear());
+                } else {
+                    sendError('Method not allowed', 405);
+                }
+            } catch (Exception $e) {
+                error_log("Cart API Error: " . $e->getMessage());
+                sendError($e->getMessage(), 500);
             }
             break;
             
         case 'customers':
-            require_once __DIR__ . '/../controllers/UserController.php';
-            $controller = new UserController();
-            
-            if ($method === 'GET' && !$id) {
-                sendResponse($controller->index());
-            } elseif ($method === 'GET' && $id) {
-                sendResponse($controller->show($id));
-            } elseif ($method === 'PUT' && $id) {
-                sendResponse($controller->update($id, $input));
-            } elseif ($method === 'DELETE' && $id) {
-                sendResponse($controller->delete($id));
+            try {
+                require_once __DIR__ . '/../controllers/UserController.php';
+                $controller = new UserController();
+                
+                if ($method === 'GET' && !$id) {
+                    sendResponse($controller->index());
+                } elseif ($method === 'GET' && $id) {
+                    sendResponse($controller->show($id));
+                } elseif ($method === 'PUT' && $id) {
+                    sendResponse($controller->update($id, $input));
+                } elseif ($method === 'DELETE' && $id) {
+                    sendResponse($controller->delete($id));
+                } else {
+                    sendError('Method not allowed', 405);
+                }
+            } catch (Exception $e) {
+                error_log("Customers API Error: " . $e->getMessage());
+                $message = $e->getMessage();
+                if (strpos($message, 'Authentication required') !== false) {
+                    sendError($message, 401);
+                } else {
+                    sendError($message, 500);
+                }
             }
             break;
             
@@ -263,56 +289,81 @@ try {
                     sendError($message, 500);
                 }
             }
-            }
             break;
             
         case 'auth':
-            require_once __DIR__ . '/../controllers/AuthController.php';
-            $controller = new AuthController();
-            
-            if ($method === 'POST' && $id === 'login') {
-                sendResponse($controller->login($input));
-            } elseif ($method === 'POST' && $id === 'register') {
-                sendResponse($controller->register($input), 201);
-            } elseif ($method === 'POST' && $id === 'logout') {
-                sendResponse($controller->logout());
-            } elseif ($method === 'GET' && $id === 'me') {
-                sendResponse($controller->me());
+            try {
+                require_once __DIR__ . '/../controllers/AuthController.php';
+                $controller = new AuthController();
+                
+                if ($method === 'POST' && $id === 'login') {
+                    sendResponse($controller->login($input));
+                } elseif ($method === 'POST' && $id === 'register') {
+                    sendResponse($controller->register($input), 201);
+                } elseif ($method === 'POST' && $id === 'logout') {
+                    sendResponse($controller->logout());
+                } elseif ($method === 'GET' && $id === 'me') {
+                    sendResponse($controller->me());
+                } else {
+                    sendError('Method not allowed', 405);
+                }
+            } catch (Exception $e) {
+                error_log("Auth API Error: " . $e->getMessage());
+                sendError($e->getMessage(), 500);
             }
             break;
             
         case 'idealpos':
-            require_once __DIR__ . '/../controllers/IdealPOSController.php';
-            $controller = new IdealPOSController();
-            
-            if ($method === 'GET' && $id === 'sync-products') {
-                sendResponse($controller->syncProducts());
-            } elseif ($method === 'GET' && $id === 'sync-inventory') {
-                sendResponse($controller->syncInventory());
-            } elseif ($method === 'POST' && $id === 'push-order' && $action) {
-                sendResponse($controller->pushOrder($action));
-            } elseif ($method === 'GET' && $id === 'status') {
-                sendResponse($controller->status());
+            try {
+                require_once __DIR__ . '/../controllers/IdealPOSController.php';
+                $controller = new IdealPOSController();
+                
+                if ($method === 'GET' && $id === 'sync-products') {
+                    sendResponse($controller->syncProducts());
+                } elseif ($method === 'GET' && $id === 'sync-inventory') {
+                    sendResponse($controller->syncInventory());
+                } elseif ($method === 'POST' && $id === 'push-order' && $action) {
+                    sendResponse($controller->pushOrder($action));
+                } elseif ($method === 'GET' && $id === 'status') {
+                    sendResponse($controller->status());
+                } else {
+                    sendError('Method not allowed', 405);
+                }
+            } catch (Exception $e) {
+                error_log("IdealPOS API Error: " . $e->getMessage());
+                sendError($e->getMessage(), 500);
             }
             break;
             
         case 'wishlist':
-            require_once __DIR__ . '/../controllers/WishlistController.php';
-            $controller = new WishlistController();
-            
-            if ($method === 'GET') {
-                sendResponse($controller->index());
-            } elseif ($method === 'POST' && $action === 'add') {
-                sendResponse($controller->add($input));
-            } elseif ($method === 'DELETE' && $id) {
-                sendResponse($controller->remove($id));
+            try {
+                require_once __DIR__ . '/../controllers/WishlistController.php';
+                $controller = new WishlistController();
+                
+                if ($method === 'GET') {
+                    sendResponse($controller->index());
+                } elseif ($method === 'POST' && $action === 'add') {
+                    sendResponse($controller->add($input));
+                } elseif ($method === 'DELETE' && $id) {
+                    sendResponse($controller->remove($id));
+                } else {
+                    sendError('Method not allowed', 405);
+                }
+            } catch (Exception $e) {
+                error_log("Wishlist API Error: " . $e->getMessage());
+                sendError($e->getMessage(), 500);
             }
             break;
             
         case 'search':
-            require_once __DIR__ . '/../controllers/SearchController.php';
-            $controller = new SearchController();
-            sendResponse($controller->search($_GET));
+            try {
+                require_once __DIR__ . '/../controllers/SearchController.php';
+                $controller = new SearchController();
+                sendResponse($controller->search($_GET));
+            } catch (Exception $e) {
+                error_log("Search API Error: " . $e->getMessage());
+                sendError($e->getMessage(), 500);
+            }
             break;
             
         default:

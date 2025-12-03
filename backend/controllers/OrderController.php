@@ -291,7 +291,11 @@ class OrderController {
             throw new Exception('Unauthorized: Admin access required');
         }
         
-        $order = $this->db->fetchOne("SELECT * FROM orders WHERE id = :id", ['id' => $id]);
+        $query = "SELECT * FROM orders WHERE id = :id";
+        error_log("OrderController::update - Query: $query with id: $id");
+        $order = $this->db->fetchOne($query, ['id' => $id]);
+        error_log("OrderController::update - Order found: " . var_export($order !== false, true));
+        
         if (!$order) {
             throw new Exception('Order not found');
         }
