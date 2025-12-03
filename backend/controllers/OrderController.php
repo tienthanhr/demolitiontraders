@@ -107,7 +107,7 @@ class OrderController {
         $userId = $_SESSION['user_id'] ?? null;
         $sessionId = session_id(); // Get actual PHP session ID
         
-        error_log("OrderController::create - userId: " . var_export($userId, true) . ", sessionId: " . var_export($sessionId, true));
+        error_log("OrderController::create - START - userId: " . var_export($userId, true) . ", sessionId: " . var_export($sessionId, true));
         
         // Validate required fields
         $required = ['billing_address', 'shipping_address', 'payment_method'];
@@ -166,7 +166,8 @@ class OrderController {
         $total = $totalInclGST + $shippingAmount - $discountAmount;
         
         // Start transaction
-        $this->db->beginTransaction();
+        try {
+            $this->db->beginTransaction();
         
         try {
             // Create order
