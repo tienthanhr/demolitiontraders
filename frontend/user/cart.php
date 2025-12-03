@@ -389,6 +389,9 @@
     
     <script src="assets/js/main.js"></script>
     <script>
+        // Base path for navigation
+        const BASE_PATH = '<?php echo BASE_PATH; ?>';
+        
         // Prevent infinite loops - track if recommendations already loaded
         let recommendationsLoaded = false;
         let currentCartProductIds = '';
@@ -480,8 +483,8 @@
                         
                         return `
                         <div class="cart-item">
-                            <img src="${imagePath}" alt="${item.name}" onclick="window.location.href='product-detail.php?id=${item.product_id}'" style="cursor:pointer" onerror="this.src='assets/images/logo.png'">
-                            <div class="item-details" onclick="window.location.href='product-detail.php?id=${item.product_id}'" style="cursor:pointer">
+                            <img src="${imagePath}" alt="${item.name}" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer" onerror="this.src='assets/images/logo.png'">
+                            <div class="item-details" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer">
                                 <h3>${item.name}</h3>
                                 ${item.category_name ? `<p class="item-category">${item.category_name}</p>` : ''}
                             </div>
@@ -699,7 +702,7 @@
                 }
                 
                 return `
-                    <div class="recommendation-card" onclick="window.location.href='product-detail.php?id=${item.id}'">
+                    <div class="recommendation-card" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.id}'">
                         <img src="${imagePath}" alt="${item.name}" onerror="this.src='assets/images/logo.png'">
                         <h4>${item.name}</h4>
                         <div class="price">$${parseFloat(item.price).toFixed(2)}</div>
