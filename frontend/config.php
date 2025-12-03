@@ -19,7 +19,7 @@ if ($isLocalhost) {
 } else {
     // Production (Render, etc.)
     define('BASE_PATH', '/');
-    define('FRONTEND_PATH', '/frontend/');
+    define('FRONTEND_PATH', '/');  // Changed from /frontend/ to / for <base> tag
     define('API_BASE', '/backend/api/');
 }
 
