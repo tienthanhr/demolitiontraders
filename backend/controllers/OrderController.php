@@ -168,8 +168,7 @@ class OrderController {
         // Start transaction
         try {
             $this->db->beginTransaction();
-        
-        try {
+            
             // Create order
             $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
             
