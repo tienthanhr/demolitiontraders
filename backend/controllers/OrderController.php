@@ -67,7 +67,7 @@ class OrderController {
             );
         }
         
-        return $orders;
+        return escape_output($orders);
     }
     
     /**
@@ -97,7 +97,7 @@ class OrderController {
             ['order_id' => $id]
         );
         
-        return $order;
+        return escape_output($order);
     }
     
     /**

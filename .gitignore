@@ -37,3 +37,7 @@ composer.phar
 # NPM
 package-lock.json
 yarn.lock
+
+# SQL Dumps
+*.sql
+!database/*.sql

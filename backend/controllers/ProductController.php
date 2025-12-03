@@ -489,8 +489,27 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
                 $this->logDebug('[NOT UPLOADED FILE]', ['tmp' => $tmpName]);
                 continue;
             }
+
+            // --- Security Enhancement: File Size and MIME Type Validation ---
+
+            // 1. Validate file size
+            $maxSize = Config::get('MAX_UPLOAD_SIZE', 5242880); // Default 5MB
+            if ($files['size'][$idx] > $maxSize) {
+                $this->logDebug('[FILE TOO LARGE]', ['size' => $files['size'][$idx], 'max' => $maxSize]);
+                continue;
+            }
+
+            // 2. Validate MIME type
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->file($tmpName);
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+            if (!in_array($mimeType, $allowedMimeTypes)) {
+                $this->logDebug('[INVALID MIME TYPE]', ['mime' => $mimeType, 'file' => $files['name'][$idx]]);
+                continue;
+            }
             
-            // Validate extension
+            // Validate extension (as a secondary check)
             $originalName = $files['name'][$idx];
             $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
             $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
