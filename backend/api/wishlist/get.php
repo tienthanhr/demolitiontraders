@@ -15,11 +15,11 @@ try {
         
         $wishlist = $db->fetchAll(
             "SELECT w.product_id, p.name, p.price, c.name as category,
-                    (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
+                    (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = TRUE LIMIT 1) as image
              FROM wishlist w
              JOIN products p ON w.product_id = p.id
              LEFT JOIN categories c ON p.category_id = c.id
-             WHERE w.user_id = ? AND p.is_active = 1",
+             WHERE w.user_id = ? AND p.is_active = TRUE",
             [$user_id]
         );
         
@@ -47,10 +47,10 @@ try {
     $placeholders = implode(',', array_fill(0, count($sessionWishlist), '?'));
     $products = $db->fetchAll(
         "SELECT p.id as product_id, p.name, p.price, c.name as category,
-                (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
+                (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = TRUE LIMIT 1) as image
          FROM products p
          LEFT JOIN categories c ON p.category_id = c.id
-         WHERE p.id IN ($placeholders) AND p.is_active = 1",
+         WHERE p.id IN ($placeholders) AND p.is_active = TRUE",
         $sessionWishlist
     );
     

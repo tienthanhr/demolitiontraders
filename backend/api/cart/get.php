@@ -15,8 +15,8 @@ try {
              FROM cart c
              JOIN products p ON c.product_id = p.id
              LEFT JOIN categories cat ON p.category_id = cat.id
-             LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
-             WHERE c.user_id = ? AND p.is_active = 1
+             LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = TRUE
+             WHERE c.user_id = ? AND p.is_active = TRUE
              ORDER BY c.created_at DESC"
         );
         $stmt->execute([$user_id]);
@@ -51,8 +51,8 @@ try {
          FROM cart c
          JOIN products p ON c.product_id = p.id
          LEFT JOIN categories cat ON p.category_id = cat.id
-         LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
-         WHERE c.session_id = ? AND p.is_active = 1
+         LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = TRUE
+         WHERE c.session_id = ? AND p.is_active = TRUE
          ORDER BY c.created_at DESC"
     );
     $stmt->execute([$session_id]);
