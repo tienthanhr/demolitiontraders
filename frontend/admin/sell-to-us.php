@@ -382,6 +382,47 @@ $additionalCSS = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/full
             margin-bottom: 20px;
             color: #ddd;
         }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .view-toggle {
+                width: 100%;
+            }
+            
+            .view-toggle button {
+                flex: 1;
+            }
+            
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-bar label {
+                width: 100%;
+            }
+            
+            .filter-bar select,
+            .filter-bar input {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+        }
 </style>';
 
 include __DIR__ . '/../components/admin-header.php';
@@ -457,6 +498,7 @@ include __DIR__ . '/../components/admin-header.php';
         </div>
 
         <!-- Submissions Table -->
+        <div class="table-container">
         <table>
             <thead>
                 <tr>
@@ -481,6 +523,7 @@ include __DIR__ . '/../components/admin-header.php';
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
@@ -703,20 +746,20 @@ include __DIR__ . '/../components/admin-header.php';
                 
                 return `
                 <tr>
-                    <td><input type="checkbox" class="row-checkbox" value="${sub.id}" onchange="updateBulkActions()"></td>
-                    <td>${sub.id}</td>
-                    <td>${thumbnail}</td>
-                    <td>${formatDate(sub.created_at)}</td>
-                    <td>${escapeHtml(sub.name)}</td>
-                    <td>
+                    <td data-label=""><input type="checkbox" class="row-checkbox" value="${sub.id}" onchange="updateBulkActions()"></td>
+                    <td data-label="ID">${sub.id}</td>
+                    <td data-label="Photo">${thumbnail}</td>
+                    <td data-label="Date">${formatDate(sub.created_at)}</td>
+                    <td data-label="Name">${escapeHtml(sub.name)}</td>
+                    <td data-label="Contact">
                         <div>${escapeHtml(sub.email)}</div>
                         <small>${escapeHtml(sub.phone)}</small>
                     </td>
-                    <td>${escapeHtml(sub.item_name)}</td>
-                    <td><span class="status-badge ${sub.pickup_delivery.toLowerCase().includes('pickup') ? 'status-contacted' : 'status-reviewing'}">${escapeHtml(sub.pickup_delivery)}</span></td>
-                    <td>${sub.pickup_date ? formatDate(sub.pickup_date) : '<em>Not set</em>'}</td>
-                    <td><span class="status-badge status-${sub.status}">${capitalize(sub.status)}</span></td>
-                    <td>
+                    <td data-label="Item">${escapeHtml(sub.item_name)}</td>
+                    <td data-label="Type"><span class="status-badge ${sub.pickup_delivery.toLowerCase().includes('pickup') ? 'status-contacted' : 'status-reviewing'}">${escapeHtml(sub.pickup_delivery)}</span></td>
+                    <td data-label="Pickup Date">${sub.pickup_date ? formatDate(sub.pickup_date) : '<em>Not set</em>'}</td>
+                    <td data-label="Status"><span class="status-badge status-${sub.status}">${capitalize(sub.status)}</span></td>
+                    <td data-label="Actions">
                         <div class="action-btns">
                             <button class="btn-sm btn-view" onclick="viewSubmission(${sub.id})" title="View details">
                                 <i class="fas fa-eye"></i>

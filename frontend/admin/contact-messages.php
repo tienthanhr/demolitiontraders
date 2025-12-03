@@ -251,6 +251,33 @@ include __DIR__ . '/../components/admin-header.php';
         margin-bottom: 20px;
         color: #ddd;
     }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-bar label {
+            width: 100%;
+        }
+        
+        .filter-bar select,
+        .filter-bar input {
+            width: 100%;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="page-header">
@@ -289,6 +316,7 @@ include __DIR__ . '/../components/admin-header.php';
         </label>
     </div>
     
+    <div class="table-container">
     <table>
         <thead>
             <tr>
@@ -310,6 +338,7 @@ include __DIR__ . '/../components/admin-header.php';
             </tr>
         </tbody>
     </table>
+    </div>
 </div>
 
 <!-- View Modal -->
@@ -417,14 +446,14 @@ include __DIR__ . '/../components/admin-header.php';
         
         tbody.innerHTML = messages.map(msg => `
             <tr>
-                <td>${msg.id}</td>
-                <td>${formatDate(msg.created_at)}</td>
-                <td>${escapeHtml(msg.name)}</td>
-                <td><a href="mailto:${msg.email}">${escapeHtml(msg.email)}</a></td>
-                <td>${escapeHtml(msg.subject || 'N/A')}</td>
-                <td>${truncate(escapeHtml(msg.message), 50)}</td>
-                <td><span class="status-badge status-${msg.status}">${capitalize(msg.status)}</span></td>
-                <td>
+                <td data-label="ID">${msg.id}</td>
+                <td data-label="Date">${formatDate(msg.created_at)}</td>
+                <td data-label="Name">${escapeHtml(msg.name)}</td>
+                <td data-label="Email"><a href="mailto:${msg.email}">${escapeHtml(msg.email)}</a></td>
+                <td data-label="Subject">${escapeHtml(msg.subject || 'N/A')}</td>
+                <td data-label="Message">${truncate(escapeHtml(msg.message), 50)}</td>
+                <td data-label="Status"><span class="status-badge status-${msg.status}">${capitalize(msg.status)}</span></td>
+                <td data-label="Actions">
                     <div class="action-btns">
                         <button class="btn-sm btn-view" onclick="viewMessage(${msg.id})" title="View details">
                             <i class="fas fa-eye"></i>

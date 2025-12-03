@@ -227,16 +227,16 @@ function renderCategories() {
             <td>
                 <input type="checkbox" class="category-checkbox" value="${category.id}" onchange="updateBulkActions()">
             </td>
-            <td><strong>${category.id}</strong></td>
-            <td>${category.name}</td>
-            <td><code>${category.slug}</code></td>
-            <td>${productCounts[category.id] || 0} products</td>
-            <td>
+            <td data-label="ID"><strong>${category.id}</strong></td>
+            <td data-label="Name">${category.name}</td>
+            <td data-label="Slug"><code>${category.slug}</code></td>
+            <td data-label="Products">${productCounts[category.id] || 0} products</td>
+            <td data-label="Status">
                 <span class="badge badge-${category.is_active == 1 ? 'active' : 'inactive'}">
                     ${category.is_active == 1 ? 'Active' : 'Inactive'}
                 </span>
             </td>
-            <td>
+            <td data-label="Actions">
                 <div class="action-btns">
                     <button class="btn btn-warning btn-sm" onclick="editCategory(${category.id})" title="Edit">
                         <i class="fas fa-edit"></i>

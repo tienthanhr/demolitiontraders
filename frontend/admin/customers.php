@@ -280,20 +280,20 @@ $customers = $db->fetchAll(
                 <?php else: ?>
                     <?php foreach ($customers as $customer): ?>
                     <tr data-customer-id="<?php echo $customer['id']; ?>">
-                        <td><input type="checkbox" class="customer-checkbox" value="<?php echo $customer['id']; ?>" onchange="updateBulkActions()"></td>
-                        <td><?php echo $customer['id']; ?></td>
-                        <td><strong><?php echo htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']); ?></strong></td>
-                        <td><?php echo htmlspecialchars($customer['email']); ?></td>
-                        <td><?php echo htmlspecialchars($customer['phone'] ?? '-'); ?></td>
-                        <td>
+                        <td data-label="Select"><input type="checkbox" class="customer-checkbox" value="<?php echo $customer['id']; ?>" onchange="updateBulkActions()"></td>
+                        <td data-label="ID"><?php echo $customer['id']; ?></td>
+                        <td data-label="Name"><strong><?php echo htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']); ?></strong></td>
+                        <td data-label="Email"><?php echo htmlspecialchars($customer['email']); ?></td>
+                        <td data-label="Phone"><?php echo htmlspecialchars($customer['phone'] ?? '-'); ?></td>
+                        <td data-label="Status">
                             <span class="badge badge-<?php echo $customer['status']; ?>">
                                 <?php echo ucfirst($customer['status']); ?>
                             </span>
                         </td>
-                        <td><?php echo formatDate($customer['created_at'], 'long'); ?></td>
-                        <td><strong><?php echo $customer['order_count']; ?></strong></td>
-                        <td><strong>$<?php echo number_format($customer['total_spent'], 2); ?></strong></td>
-                        <td>
+                        <td data-label="Registered"><?php echo formatDate($customer['created_at'], 'long'); ?></td>
+                        <td data-label="Orders"><strong><?php echo $customer['order_count']; ?></strong></td>
+                        <td data-label="Total Spent"><strong>$<?php echo number_format($customer['total_spent'], 2); ?></strong></td>
+                        <td data-label="Actions">
                             <button class="btn btn-sm btn-primary" onclick="viewCustomer(<?php echo $customer['id']; ?>)" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </button>

@@ -810,16 +810,16 @@ function renderOrders(orders) {
             
             return `
             <tr data-order-id="${order.id}">
-                <td><input type="checkbox" class="order-checkbox" value="${order.id}" onchange="updateBulkActions()"></td>
-                <td><strong>#${order.id}</strong></td>
-                <td>${customerName}<br><small>${customerEmail}</small></td>
-                <td>${formatDate(order.created_at)}</td>
-                <td><strong>$${parseFloat(order.total_amount).toFixed(2)}</strong></td>
-                <td>
+                <td data-label="Select"><input type="checkbox" class="order-checkbox" value="${order.id}" onchange="updateBulkActions()"></td>
+                <td data-label="Order ID"><strong>#${order.id}</strong></td>
+                <td data-label="Customer">${customerName}<br><small>${customerEmail}</small></td>
+                <td data-label="Date">${formatDate(order.created_at)}</td>
+                <td data-label="Total"><strong>$${parseFloat(order.total_amount).toFixed(2)}</strong></td>
+                <td data-label="Status">
                     <div onclick="updateOrderStatus(${order.id})" style="cursor: pointer !important; display: inline-block !important; padding: 6px 12px !important; border-radius: 12px !important; font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase !important; background-color: ${statusColor.bg} !important; color: ${statusColor.color} !important; line-height: normal !important; white-space: nowrap !important; text-align: center !important; vertical-align: middle !important; min-width: 80px !important;" title="Click to change status">${statusText}</div>
                 </td>
-                <td>${order.payment_method || 'N/A'}</td>
-                <td>
+                <td data-label="Payment">${order.payment_method || 'N/A'}</td>
+                <td data-label="Actions">
                     <div class="action-btns">
                         <button class="btn btn-primary btn-sm" onclick="viewOrder(${order.id})" title="View Details">
                             <i class="fas fa-eye"></i>

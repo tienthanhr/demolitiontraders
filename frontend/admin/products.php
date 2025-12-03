@@ -390,25 +390,25 @@ async function loadProducts(page = 1) {
 
         tbody.innerHTML = data.data.map(product => `
             <tr>
-                <td>
+                <td data-label="Select">
                     <input type="checkbox" class="product-checkbox" value="${product.id}" 
                            ${selectedProductIds.has(parseInt(product.id)) ? 'checked' : ''} 
                            onchange="toggleProductSelection(${product.id})">
                 </td>
-                <td><strong>${product.sku}</strong></td>
-                <td>${product.name.substring(0, 50)}${product.name.length > 50 ? '...' : ''}</td>
-                <td>${product.category_name || 'N/A'}</td>
-                <td><strong>$${parseFloat(product.price).toFixed(2)}</strong></td>
-                <td>${product.stock_quantity}</td>
-                <td>
+                <td data-label="SKU"><strong>${product.sku}</strong></td>
+                <td data-label="Product Name">${product.name.substring(0, 50)}${product.name.length > 50 ? '...' : ''}</td>
+                <td data-label="Category">${product.category_name || 'N/A'}</td>
+                <td data-label="Price"><strong>$${parseFloat(product.price).toFixed(2)}</strong></td>
+                <td data-label="Stock">${product.stock_quantity}</td>
+                <td data-label="Condition">
                     <span class="badge badge-${product.condition_type}">${product.condition_type}</span>
                 </td>
-                <td>
+                <td data-label="Status">
                     <span class="badge badge-${product.is_active == 1 ? 'active' : 'inactive'}">
                         ${product.is_active == 1 ? 'Active' : 'Inactive'}
                     </span>
                 </td>
-                <td>
+                <td data-label="Actions">
                     <div class="action-btns">
                         <button class="btn btn-warning btn-sm" onclick="editProduct(${product.id})" title="Edit">
                             <i class="fas fa-edit"></i>

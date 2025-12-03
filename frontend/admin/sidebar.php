@@ -1,10 +1,18 @@
 <?php
 // Admin URLs now use clean paths with base tag
 ?>
-<aside class="sidebar">
+<!-- Mobile Menu Toggle -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<aside class="sidebar" id="adminSidebar">
     <div class="sidebar-header">
         <h2>Demolition Traders</h2>
         <p>Admin Panel</p>
+        <button class="sidebar-close" id="sidebarClose">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     <nav class="sidebar-menu">
         <a href="admin/index.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
@@ -67,4 +75,57 @@ function adminLogout(event) {
             });
     }
 }
+
+// Mobile menu toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('adminSidebar');
+    const closeBtn = document.getElementById('sidebarClose');
+    
+    if (menuToggle && sidebar) {
+        // Toggle sidebar on button click
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            document.body.classList.toggle('sidebar-open');
+        });
+        
+        // Close sidebar when clicking close button
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+            });
+        }
+        
+        // Close sidebar when clicking overlay (body::before)
+        document.body.addEventListener('click', function(e) {
+            if (document.body.classList.contains('sidebar-open') && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+        
+        // Close sidebar when clicking a menu item on mobile
+        const menuItems = sidebar.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Only close on mobile (when toggle button is visible)
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                    document.body.classList.remove('sidebar-open');
+                }
+            });
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+    }
+});
 </script>

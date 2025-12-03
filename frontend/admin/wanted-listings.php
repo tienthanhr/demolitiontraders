@@ -248,6 +248,38 @@ include __DIR__ . '/../components/admin-header.php';
         margin-bottom: 20px;
         color: #ddd;
     }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-bar label {
+            width: 100%;
+        }
+        
+        .filter-bar select,
+        .filter-bar input {
+            width: 100%;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="page-header">
@@ -287,6 +319,7 @@ include __DIR__ . '/../components/admin-header.php';
         </label>
     </div>
     
+    <div class="table-container">
     <table>
         <thead>
             <tr>
@@ -309,6 +342,7 @@ include __DIR__ . '/../components/admin-header.php';
             </tr>
         </tbody>
     </table>
+    </div>
 </div>
 
 <!-- View Modal -->
@@ -428,18 +462,18 @@ include __DIR__ . '/../components/admin-header.php';
         
         tbody.innerHTML = listings.map(listing => `
             <tr>
-                <td>${listing.id}</td>
-                <td>${formatDate(listing.created_at)}</td>
-                <td>${escapeHtml(listing.username || 'Guest')}</td>
-                <td>
+                <td data-label="ID">${listing.id}</td>
+                <td data-label="Date">${formatDate(listing.created_at)}</td>
+                <td data-label="Name">${escapeHtml(listing.username || 'Guest')}</td>
+                <td data-label="Contact">
                     <div>${escapeHtml(listing.email)}</div>
                     ${listing.phone ? `<small>${escapeHtml(listing.phone)}</small>` : ''}
                 </td>
-                <td>${escapeHtml(listing.category || 'N/A')}</td>
-                <td>${truncate(escapeHtml(listing.description), 50)}</td>
-                <td><span class="status-badge status-active">${listing.match_count || 0}</span></td>
-                <td><span class="status-badge status-${listing.status}">${capitalize(listing.status)}</span></td>
-                <td>
+                <td data-label="Category">${escapeHtml(listing.category || 'N/A')}</td>
+                <td data-label="Description">${truncate(escapeHtml(listing.description), 50)}</td>
+                <td data-label="Matches"><span class="status-badge status-active">${listing.match_count || 0}</span></td>
+                <td data-label="Status"><span class="status-badge status-${listing.status}">${capitalize(listing.status)}</span></td>
+                <td data-label="Actions">
                     <div class="action-btns">
                         <button class="btn-sm btn-view" onclick="viewListing(${listing.id})" title="View details">
                             <i class="fas fa-eye"></i>
