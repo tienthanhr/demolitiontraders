@@ -408,20 +408,27 @@
                     credentials: 'same-origin'
                 });
                 
+                console.log('Cart response status:', response.status, response.ok);
+                
                 if (!response.ok) {
-                    throw new Error('Failed to load cart');
+                    throw new Error('Failed to load cart - HTTP ' + response.status);
                 }
                 
                 const text = await response.text();
+                console.log('Cart response text length:', text.length);
+                
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    console.error('Invalid JSON response:', text);
+                    console.error('Invalid JSON response:', text.substring(0, 500));
                     throw new Error('Invalid response from server');
                 }
                 
+                console.log('Cart data parsed:', data);
+                
                 if (!data.success) {
+                    console.error('Cart API returned success=false:', data.message);
                     throw new Error(data.message || 'Failed to load cart');
                 }
                 
