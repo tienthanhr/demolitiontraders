@@ -6,8 +6,10 @@
 ini_set('session.save_path', '/tmp');
 session_start();
 
+// CORS headers with credentials support
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header("Access-Control-Allow-Origin: $origin");
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Credentials: true');

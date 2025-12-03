@@ -1,9 +1,14 @@
 <?php
+// Configure session for Render
+ini_set('session.save_path', '/tmp');
 session_start();
 
+// CORS headers with credentials support
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
+header("Access-Control-Allow-Origin: $origin");
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, DELETE');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../../config/database.php';

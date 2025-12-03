@@ -1,10 +1,13 @@
 <?php
-// Configure session for cross-domain if needed
+// Configure session for Render environment
+ini_set('session.save_path', '/tmp');
 ini_set('session.cookie_samesite', 'Lax');
 session_start();
 
+// CORS headers with credentials support
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header("Access-Control-Allow-Origin: $origin");
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
