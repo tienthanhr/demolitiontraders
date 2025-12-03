@@ -366,7 +366,8 @@ function closeCategoryModal() {
 // Edit category
 async function editCategory(id) {
     try {
-        const response = await fetch(`${getApiUrl('/api/index.php?request=categories/${id}')}`);
+        const apiPath = `/api/index.php?request=categories/${id}`;
+        const response = await fetch(getApiUrl(apiPath));
         const category = await response.json();
 
         document.getElementById('category-modal-title').textContent = 'Edit Category';
@@ -403,9 +404,8 @@ async function saveCategory(event) {
     }
 
     try {
-        const url = id 
-            ? `${getApiUrl('/api/index.php?request=categories/${id}')}`
-            : `${getApiUrl('/api/index.php?request=categories')}`;
+        const apiPath = id ? `/api/index.php?request=categories/${id}` : '/api/index.php?request=categories';
+        const url = getApiUrl(apiPath);
         
         const response = await fetch(url, {
             method: id ? 'PUT' : 'POST',
@@ -437,11 +437,12 @@ async function deleteCategory(id, name) {
 
     try {
         // Get category data before deletion for undo
-        const categoryResponse = await fetch(`${getApiUrl('/api/index.php?request=categories/${id}')}`);
+        const apiPath = `/api/index.php?request=categories/${id}`;
+        const categoryResponse = await fetch(getApiUrl(apiPath));
         const categoryData = await categoryResponse.json();
         const originalCategory = categoryData.data || categoryData;
 
-        const response = await fetch(`${getApiUrl('/api/index.php?request=categories/${id}')}`, {
+        const response = await fetch(getApiUrl(apiPath), {
             method: 'DELETE'
         });
 
@@ -599,7 +600,8 @@ async function bulkDeleteCategories() {
         
         for (const categoryId of categoryIds) {
             try {
-                const res = await fetch(`${getApiUrl('/api/index.php?request=categories/${categoryId}')}`, {
+                const apiPath = `/api/index.php?request=categories/${categoryId}`;
+                const res = await fetch(getApiUrl(apiPath), {
                     method: 'DELETE'
                 });
                 

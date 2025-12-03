@@ -369,7 +369,8 @@ async function loadProducts(page = 1) {
         const condition = document.getElementById('filter-condition').value;
         const status = document.getElementById('filter-status').value;
 
-        let url = `${getApiUrl('/api/index.php?request=products&page=${page}&per_page=20')}`;
+        const apiPath = `/api/index.php?request=products&page=${page}&per_page=20`;
+        let url = getApiUrl(apiPath);
         if (search) url += `&search=${encodeURIComponent(search)}`;
         if (category) url += `&category=${category}`;
         if (condition) url += `&condition=${condition}`;
@@ -594,7 +595,8 @@ async function applyBulkAction() {
             if (action === 'delete') {
                 // Fetch full product data before deletion
                 try {
-                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${productId}')}`);
+                    const apiPath = `/api/index.php?request=products/${productId}`;
+                    const response = await fetch(getApiUrl(apiPath));
                     const productData = await response.json();
                     if (productData) {
                         originalStates.push({ 
@@ -621,15 +623,16 @@ async function applyBulkAction() {
         
         for (const productId of productIds) {
             try {
+                const apiPath = `/api/index.php?request=products/${productId}`;
                 if (action === 'delete') {
-                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${productId}')}`, {
+                    const response = await fetch(getApiUrl(apiPath), {
                         method: 'DELETE'
                     });
                     if (response.ok) successCount++;
                     else failCount++;
                 } else {
                     const isActive = action === 'activate' ? 1 : 0;
-                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${productId}')}`, {
+                    const response = await fetch(getApiUrl(apiPath), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ is_active: isActive })
@@ -748,7 +751,8 @@ async function undoLastAction() {
             // Restore original active status
             for (const product of lastBulkAction.products) {
                 try {
-                    const response = await fetch(`${getApiUrl('/api/index.php?request=products/${product.id}')}`, {
+                    const apiPath = `/api/index.php?request=products/${product.id}`;
+                    const response = await fetch(getApiUrl(apiPath), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ is_active: product.is_active })
@@ -888,7 +892,8 @@ function openProductModal() {
 
 async function editProduct(id) {
     try {
-        const response = await fetch(`${getApiUrl('/api/index.php?request=products/${id}')}`);
+        const apiPath = `/api/index.php?request=products/${id}`;
+        const response = await fetch(getApiUrl(apiPath));
         const data = await response.json();
         
         // ✅ Handle both response formats
@@ -967,9 +972,8 @@ async function saveProduct(event) {
     }
 
     try {
-        const url = id 
-            ? `${getApiUrl('/api/index.php?request=products/${id}')}`
-            : `${getApiUrl('/api/index.php?request=products')}`;
+        const apiPath = id ? `/api/index.php?request=products/${id}` : '/api/index.php?request=products';
+        const url = getApiUrl(apiPath);
 
         const response = await fetch(url, {
             method: 'POST',
@@ -998,11 +1002,12 @@ async function deleteProduct(id, name) {
 
     try {
         // Get product data before deletion for undo
-        const productResponse = await fetch(`${getApiUrl('/api/index.php?request=products/${id}')}`);
+        const apiPath = `/api/index.php?request=products/${id}`;
+        const productResponse = await fetch(getApiUrl(apiPath));
         const productData = await productResponse.json();
         const originalProduct = productData.data || productData;
 
-        const response = await fetch(`${getApiUrl('/api/index.php?request=products/${id}')}`, {
+        const response = await fetch(getApiUrl(apiPath), {
             method: 'DELETE'
         });
 

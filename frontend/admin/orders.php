@@ -632,13 +632,13 @@ async function bulkDeleteOrders() {
         // First, fetch all order data before deleting
         for (const orderId of orderIds) {
             try {
-                const orderRes = await fetch(`${getApiUrl('/api/index.php?request=orders/${orderId}')}`);
+                const orderRes = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}`;return getApiUrl(p);})());
                 if (orderRes.ok) {
                     const orderData = await orderRes.json();
                     const order = orderData.data || orderData;
                     
                     // Fetch order items
-                    const itemsRes = await fetch(`${getApiUrl('/api/index.php?request=orders/${orderId}/items')}`);
+                    const itemsRes = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/items`;return getApiUrl(p);})());
                     const itemsData = await itemsRes.json();
                     order.items = itemsData.data || itemsData;
                     
@@ -652,7 +652,7 @@ async function bulkDeleteOrders() {
         // Now delete the orders
         for (const orderId of orderIds) {
             try {
-                const res = await fetch(`${getApiUrl('/api/index.php?request=orders&id=${orderId}')}`, {
+                const res = await fetch((()=>{const p=`/api/index.php?request=orders&id=${orderId}`;return getApiUrl(p);})(), {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -870,7 +870,7 @@ async function viewOrder(id) {
     content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading order details...</p></div>';
 
     try {
-        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`);
+        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
         const order = await response.json();
 
         // Parse billing and shipping addresses
@@ -1013,7 +1013,7 @@ async function updateOrderStatus(id) {
     
     // Get current order status
     try {
-        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`);
+        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
         const order = await response.json();
         document.getElementById('new-status').value = order.status;
     } catch (error) {
@@ -1723,7 +1723,7 @@ async function deleteOrder(id) {
     if (!confirmed) return;
     
     try {
-        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}')}`, {
+        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})(), {
             method: 'DELETE'
         });
 
@@ -1759,7 +1759,7 @@ async function sendReceipt(id) {
         sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending receipt email...`;
         document.body.appendChild(sendingMsg);
         
-        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}/send-receipt')}`, {
+        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-receipt`;return getApiUrl(p);})(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -1797,7 +1797,7 @@ async function sendTaxInvoice(id) {
         sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending tax invoice email...`;
         document.body.appendChild(sendingMsg);
 
-        const response = await fetch(`${getApiUrl('/api/index.php?request=orders/${id}/send-tax-invoice')}`, {
+        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-tax-invoice`;return getApiUrl(p);})(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
