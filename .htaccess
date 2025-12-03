@@ -13,6 +13,10 @@ RewriteRule .* - [E=BASE:]
 # Prevent directory listing
 Options -Indexes
 
+# Redirect old /frontend/user/ URLs to root (for old bookmarks/links)
+RewriteCond %{REQUEST_URI} ^/frontend/user/(.+\.php)$ [NC]
+RewriteRule ^frontend/user/(.+\.php)$ %{ENV:BASE}/$1 [R=301,L]
+
 # Admin routes - /admin → frontend/admin/
 RewriteRule ^admin/?$ %{ENV:BASE}/frontend/admin/index.php [L]
 RewriteRule ^admin/sell-to-us$ %{ENV:BASE}/frontend/admin/sell-to-us.php [L]
