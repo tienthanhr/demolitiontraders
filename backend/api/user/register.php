@@ -1,9 +1,16 @@
 <?php
 // User registration API
+// Configure session FIRST before any output
+ini_set('session.save_path', '/tmp');
+session_start();
+
+// CORS headers with credentials support
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header("Access-Control-Allow-Origin: $origin");
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Credentials: true');
 
 require_once '../../config/database.php';
 
@@ -92,11 +99,7 @@ try {
         }
     }
     
-    // Auto login after registration
-    ini_set('session.save_path', '/tmp');
-    session_start();
-    header('Access-Control-Allow-Credentials: true');
-    
+    // Session already started at top of file
     $_SESSION['user_id'] = $userId;
     $_SESSION['user_email'] = $email;
     $_SESSION['user_role'] = 'customer';
