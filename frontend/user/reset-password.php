@@ -45,7 +45,7 @@
     </div>
     <?php include '../components/footer.php'; ?>
     <?php include '../components/toast-notification.php'; ?>
-    <script>
+    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Get token from URL
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
@@ -118,7 +118,7 @@
                     
                     // Redirect to login after 2 seconds
                     setTimeout(() => {
-                        window.location.href = 'login.php';
+                        window.location.href = BASE_PATH + '.php';
                     }, 2000);
                 } else {
                     document.getElementById('resetError').textContent = result.message || 'Password reset failed';

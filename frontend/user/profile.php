@@ -154,7 +154,7 @@ $orders = $db->fetchAll(
                     <div class="empty-state">
                         <i class="fas fa-shopping-bag"></i>
                         <p>You haven't placed any orders yet.</p>
-                        <a href="shop.php" class="btn">Start Shopping</a>
+                        <a href="<?php echo userUrl('shop.php'); ?>" class="btn">Start Shopping</a>
                     </div>
                 <?php else: ?>
                     <table class="orders-table">
@@ -176,7 +176,7 @@ $orders = $db->fetchAll(
                                 <td><?php echo $order['item_count']; ?> items</td>
                                 <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
                                 <td><span class="status-badge status-<?php echo $order['status']; ?>"><?php echo ucfirst($order['status']); ?></span></td>
-                                <td><a href="order-detail.php?id=<?php echo $order['id']; ?>" class="btn btn-secondary">View</a></td>
+                                <td><a href="<?php echo userUrl('order-detail.php?id=<?php echo $order['id']; ?>'); ?>" class="btn btn-secondary">View</a></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

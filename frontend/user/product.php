@@ -16,7 +16,7 @@
         <div class="container">
             <h1 id="product-name">Product Details</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <a href="shop.php">Shop</a> / <span id="product-breadcrumb">Product</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <a href="<?php echo userUrl('shop.php'); ?>">Shop</a> / <span id="product-breadcrumb">Product</span>
             </nav>
         </div>
     </div>
@@ -32,8 +32,8 @@
     <?php include '../components/footer.php'; ?>
     <?php include '../components/toast-notification.php'; ?>
     
-    <script src="assets/js/main.js"></script>
-    <script>
+    <script src="assets/js/main.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
+    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Get product ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
@@ -134,7 +134,7 @@
                         <div class="product-meta">
                             <div class="meta-row">
                                 <span class="meta-label"><i class="fas fa-tag"></i> Category:</span> 
-                                <a href="shop.php?category=${product.category_id}">${product.category_name || 'Uncategorized'}</a>
+                                <a href="<?php echo userUrl('shop.php?category=${product.category_id}'); ?>">${product.category_name || 'Uncategorized'}</a>
                             </div>
                             <div class="meta-row">
                                 <span class="meta-label"><i class="fas fa-certificate"></i> Condition:</span> 
@@ -237,7 +237,7 @@
                     // Trigger cart update event
                     localStorage.setItem('cartUpdated', Date.now());
                     // Redirect to cart page
-                    window.location.href = 'cart.php';
+                    window.location.href = BASE_PATH + '.php';
                 } else {
                     alert('Failed to add product to cart');
                 }

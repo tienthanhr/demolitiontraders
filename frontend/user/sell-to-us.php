@@ -166,7 +166,7 @@
         <div class="container">
             <h1>Sell to Us</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>Sell to Us</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Sell to Us</span>
             </nav>
         </div>
     </div>

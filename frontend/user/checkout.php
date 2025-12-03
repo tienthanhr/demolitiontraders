@@ -554,7 +554,7 @@
         <div class="container">
             <h1>Checkout</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <a href="cart.php">Cart</a> / <span>Checkout</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <a href="<?php echo userUrl('cart.php'); ?>">Cart</a> / <span>Checkout</span>
             </nav>
         </div>
     </div>
@@ -878,8 +878,8 @@
     <?php include '../components/footer.php'; ?>
 <?php include '../components/toast-notification.php'; ?>
     
-    <script src="assets/js/main.js"></script>
-    <script>
+    <script src="assets/js/main.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
+    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Load cart summary
         async function loadCartSummary() {
             try {
@@ -904,7 +904,7 @@
                 
                 if (!data.items || data.items.length === 0) {
                     alert('Your cart is empty!');
-                    window.location.href = 'shop.php';
+                    window.location.href = BASE_PATH + '.php';
                     return;
                 }
                 
@@ -925,7 +925,7 @@
             } catch (error) {
                 console.error('Error loading cart:', error);
                 alert('Error loading cart. Please try again.');
-                window.location.href = 'cart.php';
+                window.location.href = BASE_PATH + '.php';
             }
         }
         
@@ -1235,7 +1235,7 @@
                         </div>
                         ` : `
                         <div class="modal-actions" style="display: flex; gap: 10px;">
-                            <button class="btn-primary" onclick="window.location.href='profile.php'" style="flex: 1; padding: 15px; font-size: 16px;">
+                            <button class="btn-primary" onclick="window.location.href = BASE_PATH + '.php'" style="flex: 1; padding: 15px; font-size: 16px;">
                                 <i class="fas fa-receipt"></i> View Order
                             </button>
                             <button class="btn-secondary" onclick="closeSuccessModal()" style="flex: 1; padding: 15px; font-size: 16px;">
@@ -1258,13 +1258,13 @@
         function closeSuccessModal() {
             const modal = document.getElementById('success-modal');
             if (modal) modal.remove();
-            window.location.href = 'index.php';
+            window.location.href = BASE_PATH + '.php';
         }
         
         async function createAccountFromModal() {
             const billingAddress = window.pendingAccountData;
             if (!billingAddress) {
-                window.location.href = 'index.php';
+                window.location.href = BASE_PATH + '.php';
                 return;
             }
             
@@ -1349,7 +1349,7 @@
         function dismissRegistration() {
             const modal = document.getElementById('register-modal');
             if (modal) modal.remove();
-            window.location.href = 'index.php';
+            window.location.href = BASE_PATH + '.php';
         }
         
         async function submitRegistration() {
@@ -1394,7 +1394,7 @@
                         `You are now logged in.\n` +
                         `You can view your order in your profile.`
                     );
-                    window.location.href = 'profile.php';
+                    window.location.href = BASE_PATH + '.php';
                 } else {
                     alert('Account creation failed: ' + result.message);
                 }
@@ -1676,7 +1676,7 @@
         </div>
     </div>
 
-    <script>
+    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Handle delivery method radio button click
         document.getElementById('option-delivery').addEventListener('click', function(e) {
             if (e.target.type === 'radio' || e.target.closest('label')) {
@@ -1999,7 +1999,7 @@
         }
     </style>
     
-    <script>
+    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
     // Load opening hours from Google Places API
     async function loadOpeningHours() {
         try {

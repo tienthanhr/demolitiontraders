@@ -8,7 +8,7 @@
     <base href="<?php echo FRONTEND_PATH; ?>">
     
     <!-- Load API Helper -->
-    <script src="assets/js/api-helper.js?v=1"></script>
+    <script src="assets/js/api-helper.js?v=1">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
     
     <link rel="stylesheet" href="assets/css/new-style.css?v=4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,7 +21,7 @@
         <div class="container">
             <h1 id="page-title">Shop All Products</h1>
             <nav class="breadcrumb" id="breadcrumb">
-                <a href="index.php">Home</a> / <span>Shop</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Shop</span>
             </nav>
         </div>
     </div>
@@ -131,8 +131,8 @@
 <?php include '../components/toast-notification.php'; ?>
     
     <!-- Chỉ giữ 1 dòng CDN noUiSlider, đặt trước main.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
+    <script src="assets/js/main.js">`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
     <style>
         /* Responsive filter sliders */
         .filter-group #width-slider,
@@ -183,7 +183,7 @@
         -moz-appearance: textfield;
     }
     </style>
-    <script>
+    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
         let currentPage = 1;
         let cartItems = [];
         
@@ -194,11 +194,11 @@
             const pageTitle = document.getElementById('page-title');
             
             if (!categorySelect || categorySelect.value === '') {
-                breadcrumb.innerHTML = '<a href="index.php">Home</a> / <span>Shop</span>';
+                breadcrumb.innerHTML = '<a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Shop</span>';
                 if (pageTitle) pageTitle.textContent = 'Shop All Products';
             } else {
                 const categoryName = categorySelect.options[categorySelect.selectedIndex].text;
-                breadcrumb.innerHTML = '<a href="index.php">Home</a> / <a href="shop.php">Shop</a> / <span>' + categoryName + '</span>';
+                breadcrumb.innerHTML = '<a href="<?php echo userUrl('index.php'); ?>">Home</a> / <a href="<?php echo userUrl('shop.php'); ?>">Shop</a> / <span>' + categoryName + '</span>';
                 if (pageTitle) pageTitle.textContent = categoryName;
             }
         }
@@ -296,7 +296,7 @@
         if (searchVal) {
             url.search = 'search=' + encodeURIComponent(searchVal);
         } else {
-            window.location.href = 'shop.php';
+            window.location.href = BASE_PATH + '.php';
             return;
         }
     } else {
@@ -447,7 +447,7 @@
                         }
                         
                         return '<div class="product-card">' +
-                            '<a href="product-detail.php?id=' + product.id + '">' +
+                            '<a href="<?php echo userUrl('product-detail.php?id=' + product.id + ''); ?>">' +
                                 '<div class="product-image">' +
                                     '<img src="' + imageUrl + '" alt="' + product.name + '" onerror="this.src=\'assets/images/logo.png\'">' +
                                     newBadge + recycledBadge + outOfStockBadge +

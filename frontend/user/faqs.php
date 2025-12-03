@@ -16,7 +16,7 @@
         <div class="container">
             <h1>Frequently Asked Questions</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>FAQs</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>FAQs</span>
             </nav>
         </div>
     </div>
@@ -70,7 +70,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>Yes! We're always interested in purchasing quality building materials, especially native timber, doors, windows, and character items. Visit our <a href="sell-to-us.php">Sell to Us</a> page for more information.</p>
+                        <p>Yes! We're always interested in purchasing quality building materials, especially native timber, doors, windows, and character items. Visit our <a href="<?php echo userUrl('sell-to-us.php'); ?>">Sell to Us</a> page for more information.</p>
                     </div>
                 </div>
                 
@@ -107,7 +107,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>Our stock changes regularly as we receive new materials from demolition sites. If you're looking for something specific, use our <a href="wanted-listing.php">Wanted Listing</a> service and we'll contact you when we have a match.</p>
+                        <p>Our stock changes regularly as we receive new materials from demolition sites. If you're looking for something specific, use our <a href="<?php echo userUrl('wanted-listing.php'); ?>">Wanted Listing</a> service and we'll contact you when we have a match.</p>
                     </div>
                 </div>
                 
@@ -147,7 +147,7 @@
                 <p>Contact us and our friendly team will be happy to help</p>
                 <div class="cta-buttons">
                     <a href="tel:078474989" class="btn btn-primary">Call 07 847 4989</a>
-                    <a href="contact.php" class="btn btn-secondary">Contact Us</a>
+                    <a href="<?php echo userUrl('contact.php'); ?>" class="btn btn-secondary">Contact Us</a>
                 </div>
             </div>
         </div>

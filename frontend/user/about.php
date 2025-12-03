@@ -201,7 +201,7 @@
         <div class="container">
             <h1>About Demolition Traders</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>About</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>About</span>
             </nav>
         </div>
     </div>
@@ -247,11 +247,11 @@
                     <div class="sidebar-box">
                         <h3>Services</h3>
                         <ul class="service-list">
-                            <li><a href="shop.php">Browse Products</a></li>
-                            <li><a href="wanted-listing.php">Wanted Listing</a></li>
-                            <li><a href="sell-to-us.php">Sell to Us</a></li>
-                            <li><a href="cabins.php">Cabins</a></li>
-                            <li><a href="contact.php">Delivery Services</a></li>
+                            <li><a href="<?php echo userUrl('shop.php'); ?>">Browse Products</a></li>
+                            <li><a href="<?php echo userUrl('wanted-listing.php'); ?>">Wanted Listing</a></li>
+                            <li><a href="<?php echo userUrl('sell-to-us.php'); ?>">Sell to Us</a></li>
+                            <li><a href="<?php echo userUrl('cabins.php'); ?>">Cabins</a></li>
+                            <li><a href="<?php echo userUrl('contact.php'); ?>">Delivery Services</a></li>
                         </ul>
                     </div>
                 </aside>

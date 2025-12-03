@@ -16,7 +16,7 @@
         <div class="container">
             <h1>Contact Us</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>Contact</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Contact</span>
             </nav>
         </div>
     </div>

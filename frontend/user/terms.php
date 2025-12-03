@@ -16,7 +16,7 @@
         <div class="container">
             <h1>Terms of Use</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>Terms of Use</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Terms of Use</span>
             </nav>
         </div>
     </div>

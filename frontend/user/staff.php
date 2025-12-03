@@ -16,7 +16,7 @@
         <div class="container">
             <h1>Our Staff</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>Staff</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Staff</span>
             </nav>
         </div>
     </div>
@@ -94,7 +94,7 @@
                 <h2>Need Expert Advice?</h2>
                 <p>Our team is ready to help you with your project. Visit us at our yard or give us a call.</p>
                 <div class="cta-buttons">
-                    <a href="contact.php" class="btn btn-primary">Contact Us</a>
+                    <a href="<?php echo userUrl('contact.php'); ?>" class="btn btn-primary">Contact Us</a>
                     <a href="tel:0800336548466" class="btn btn-secondary">Call 0800 DEMOLITION</a>
                 </div>
             </div>

@@ -16,7 +16,7 @@
         <div class="container">
             <h1>Wanted Listing</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>Wanted Listing</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Wanted Listing</span>
             </nav>
         </div>
     </div>

@@ -15,7 +15,7 @@
     <div class="page-header">
         <div class="container">
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <a href="shop.php">Shop</a> / <span id="product-breadcrumb">Product</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <a href="<?php echo userUrl('shop.php'); ?>">Shop</a> / <span id="product-breadcrumb">Product</span>
             </nav>
         </div>
     </div>
@@ -175,7 +175,7 @@ function displayProduct(product, cartQty = 0) {
                 <div class="product-meta">
                     <div class="meta-row">
                         <span class="meta-label"><i class="fas fa-tag"></i> Category:</span> 
-                        <a href="shop.php?category=${product.category_id}">${product.category_name || 'Uncategorized'}</a>
+                        <a href="<?php echo userUrl('shop.php?category=${product.category_id}'); ?>">${product.category_name || 'Uncategorized'}</a>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label"><i class="fas fa-certificate"></i> Condition:</span> 

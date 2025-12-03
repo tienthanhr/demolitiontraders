@@ -319,7 +319,7 @@ $shipping_address = json_decode($order['shipping_address'], true);
     <?php include '../components/header.php'; ?>
     
     <div class="order-detail-container">
-        <a href="profile.php" class="back-link">
+        <a href="<?php echo userUrl('profile.php'); ?>" class="back-link">
             <i class="fas fa-arrow-left"></i> Back to My Account
         </a>
         

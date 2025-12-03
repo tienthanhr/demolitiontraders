@@ -16,7 +16,7 @@
         <div class="container">
             <h1>My Wishlist</h1>
             <nav class="breadcrumb">
-                <a href="index.php">Home</a> / <span>Wishlist</span>
+                <a href="<?php echo userUrl('index.php'); ?>">Home</a> / <span>Wishlist</span>
             </nav>
         </div>
     </div>
@@ -37,7 +37,7 @@
                     <i class="fa-regular fa-heart"></i>
                     <h3>Your wishlist is empty</h3>
                     <p>Start adding items you love to keep track of them</p>
-                    <a href="shop.php" class="btn btn-primary">Browse Products</a>
+                    <a href="<?php echo userUrl('shop.php'); ?>" class="btn btn-primary">Browse Products</a>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
     <?php include '../components/footer.php'; ?>
     <?php include '../components/toast-notification.php'; ?>
     
-    <script>
+    <script>`nconst BASE_PATH = '<?php echo BASE_PATH; ?>';
         // Load wishlist items
         async function loadWishlist() {
             try {
@@ -108,7 +108,7 @@
                 const inCart = cartProductIds.has(item.product_id);
                 
                 return `
-                <div class="product-card" onclick="window.location.href='product-detail.php?id=${item.product_id}'" style="cursor:pointer">
+                <div class="product-card" onclick="window.location.href = BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer">
                     <div class="product-image">
                         <img src="${imagePath}" alt="${item.name}" onerror="this.src='assets/images/logo.png'">
                         <button class="btn-remove-wishlist" onclick="event.stopPropagation(); removeFromWishlist(${item.product_id})">
@@ -121,7 +121,7 @@
                         <p class="product-price">$${parseFloat(item.price).toFixed(2)}</p>
                         <div class="product-actions">
                             ${inCart 
-                                ? `<button class="btn-add-cart" onclick="event.stopPropagation(); window.location.href='cart.php'" style="background:#28a745;">
+                                ? `<button class="btn-add-cart" onclick="event.stopPropagation(); window.location.href = BASE_PATH + 'cart.php'" style="background:#28a745;">
                                     <i class="fa-solid fa-cart-shopping"></i> Go to Cart
                                 </button>`
                                 : `<button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${item.product_id})">
