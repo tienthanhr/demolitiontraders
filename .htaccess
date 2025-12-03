@@ -13,8 +13,10 @@ RewriteRule .* - [E=BASE:]
 # Prevent directory listing
 Options -Indexes
 
-# Redirect ALL /frontend/*.php URLs to root (including query strings)
+# Redirect ALL /frontend/*.php URLs to root (PRODUCTION ONLY)
 # Must come BEFORE other rewrite rules
+RewriteCond %{HTTP_HOST} !^localhost$ [NC]
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
 RewriteRule ^frontend/(.+\.php)$ /$1 [R=301,L,QSA]
 
 # Admin routes - /admin → frontend/admin/
