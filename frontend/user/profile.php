@@ -99,8 +99,15 @@ $orders = $db->fetchAll(
     
     <div class="account-container">
         <div class="account-header">
-            <h1>My Account</h1>
-            <p>Welcome back, <?php echo htmlspecialchars($user['first_name']); ?>!</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>My Account</h1>
+                    <p>Welcome back, <?php echo htmlspecialchars($user['first_name']); ?>!</p>
+                </div>
+                <a href="<?php echo BASE_PATH; ?>logout.php" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
         </div>
         
         <div class="account-tabs">

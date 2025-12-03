@@ -32,10 +32,37 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
 <header class="site-header">
     <div class="container">
         <div class="header-content">
-            <div class="logo">
-                <a href="<?php echo userUrl('index.php'); ?>">
-                    <img src="assets/images/logo.png" alt="Demolition Traders" style="max-height: 100px;">
-                </a>
+            <div class="header-top-row">
+                <div class="logo">
+                    <a href="<?php echo userUrl('index.php'); ?>">
+                        <img src="assets/images/logo.png" alt="Demolition Traders" style="max-height: 100px;">
+                    </a>
+                </div>
+                
+                <div class="header-info">
+                    <a href="tel:0800336548466" class="info-box phone-info">
+                        <i class="fa-solid fa-phone"></i>
+                        <div>
+                            <strong>Give us a call</strong>
+                            <span>0800 DEMOLITION</span>
+                        </div>
+                    </a>
+                    <a href="https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,6771m/data=!3m1!1e3!4m6!3m5!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104!16s%2Fg%2F1hm6cqmtt?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D" class="info-box location-info" target="_blank">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <div>
+                            <strong>Visit Our Yard</strong>
+                            <span>249 Kahikatea Drive, Hamilton</span>
+                        </div>
+                    </a>
+                    <div class="info-box opening-hours-box hours-info" id="opening-hours-box">
+                        <i class="fa-solid fa-clock"></i>
+                        <div>
+                            <strong>Opening Hours</strong>
+                            <span id="opening-hours-display">Mon-Fri: 8am-5pm</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down dropdown-icon" id="hours-dropdown-icon"></i>
+                    </div>
+                </div>
             </div>
             
             <div class="header-center">
@@ -47,34 +74,10 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                 </div>
                 <div class="tagline">"Take a look... you'll be surprised"</div>
             </div>
-            
-            <div class="header-info">
-                <a href="tel:0800336548466" class="info-box">
-                    <i class="fa-solid fa-phone"></i>
-                    <div>
-                        <strong>Give us a call</strong>
-                        <span>0800 DEMOLITION</span>
-                    </div>
-                </a>
-                <a href="https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,6771m/data=!3m1!1e3!4m6!3m5!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104!16s%2Fg%2F1hm6cqmtt?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D" class="info-box" target="_blank">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <div>
-                        <strong>Visit Our Yard</strong>
-                        <span>249 Kahikatea Drive, Greenlea Lane, Frankton, Hamilton</span>
-                    </div>
-                </a>
-                <div class="info-box opening-hours-box" id="opening-hours-box">
-                    <i class="fa-solid fa-clock"></i>
-                    <div>
-                        <strong>Opening Hours</strong>
-                        <span id="opening-hours-display">Mon-Fri: 8am-5pm, Sat: 8am-4pm</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down dropdown-icon" id="hours-dropdown-icon"></i>
-                </div>
-            </div>
 
             <button class="mobile-menu-toggle" id="mobile-menu-toggle">
                 <i class="fa-solid fa-bars"></i>
+                <span class="menu-text">Menu</span>
             </button>
         </div>
     </div>
@@ -99,6 +102,25 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
 <!-- Navigation Menu -->
 <nav class="main-nav">
     <div class="container">
+        <!-- Mobile Menu Buttons (only visible on mobile) -->
+        <div class="mobile-menu-bar">
+            <button class="mobile-menu-btn" id="mobile-categories-btn">
+                <i class="fa-solid fa-bars"></i> <span>Menu</span>
+            </button>
+            <a href="<?php echo userUrl('login.php'); ?>" class="mobile-menu-btn" id="mobile-login-btn">
+                <i class="fa-solid fa-user"></i> <span>LOGIN</span>
+            </a>
+            <div class="mobile-menu-btn-group">
+                <a href="<?php echo userUrl('wishlist.php'); ?>" class="mobile-menu-btn mobile-wishlist-btn">
+                    <i class="fa-regular fa-heart"></i> <span id="mobile-wishlist-count">0</span>
+                </a>
+                <a href="<?php echo userUrl('cart.php'); ?>" class="mobile-menu-btn mobile-cart-btn">
+                    <i class="fa-solid fa-cart-shopping"></i> <span id="mobile-cart-count">0</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Desktop Menu -->
         <ul class="nav-menu">
             <li class="has-dropdown">
                 <a href="<?php echo userUrl('shop.php?category=plywood'); ?>">Plywood</a>
@@ -190,6 +212,123 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                 </ul>
             </li>
         </ul>
+        
+        <!-- Mobile Navigation Dropdown -->
+        <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
+            <div class="mobile-nav-content">
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=plywood'); ?>" class="mobile-nav-link">
+                        Plywood <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=untreated-plywood'); ?>">Untreated Plywood</a>
+                        <a href="<?php echo userUrl('shop.php?category=mdf'); ?>">MDF</a>
+                        <a href="<?php echo userUrl('shop.php?category=treated-plywood'); ?>">Treated Plywood</a>
+                        <a href="<?php echo userUrl('shop.php?category=acp-seratone'); ?>">ACP / Seratone</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=doors'); ?>" class="mobile-nav-link">
+                        Doors <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=new-aluminium-single-doors'); ?>">New Aluminium Single Doors</a>
+                        <a href="<?php echo userUrl('shop.php?category=new-aluminium-french-doors'); ?>">New Aluminium French Doors</a>
+                        <a href="<?php echo userUrl('shop.php?category=new-exterior-doors'); ?>">New Exterior Doors</a>
+                        <a href="<?php echo userUrl('shop.php?category=new-interior-doors'); ?>">New Interior Doors</a>
+                        <a href="<?php echo userUrl('shop.php?category=recycled-doors'); ?>">Recycled Doors</a>
+                        <a href="<?php echo userUrl('shop.php?category=bi-fold-doors'); ?>">Bi-fold Doors</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=windows'); ?>" class="mobile-nav-link">
+                        Windows <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=aluminium-windows'); ?>">Aluminium Windows</a>
+                        <a href="<?php echo userUrl('shop.php?category=wooden-windows'); ?>">Wooden Windows</a>
+                        <a href="<?php echo userUrl('shop.php?category=bi-fold-sliding-windows'); ?>">Bi-folds</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=sliding-doors'); ?>" class="mobile-nav-link">
+                        Sliding Doors <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=new-aluminium-sliding-doors'); ?>">New Aluminium Sliding Doors</a>
+                        <a href="<?php echo userUrl('shop.php?category=recycled-sliding-doors'); ?>">Recycled Sliding Doors</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=timber'); ?>" class="mobile-nav-link">
+                        Timber <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=mouldings'); ?>">Mouldings</a>
+                        <a href="<?php echo userUrl('shop.php?category=native-timber'); ?>">Native Timber</a>
+                        <a href="<?php echo userUrl('shop.php?category=pine'); ?>">Pine</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=cladding'); ?>" class="mobile-nav-link">
+                        Cladding <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=weatherboard'); ?>">Weatherboard</a>
+                        <a href="<?php echo userUrl('shop.php?category=cement-board'); ?>">Cement Board</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=landscaping'); ?>" class="mobile-nav-link">
+                        Landscaping <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=railway-sleepers'); ?>">Railway Sleepers</a>
+                        <a href="<?php echo userUrl('shop.php?category=pavers'); ?>">Pavers</a>
+                        <a href="<?php echo userUrl('shop.php?category=wire-netting'); ?>">Wire/Netting</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=roofing'); ?>" class="mobile-nav-link">
+                        Roofing <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=iron'); ?>">Iron</a>
+                        <a href="<?php echo userUrl('shop.php?category=flashing-drainage'); ?>">Flashing & Drainage</a>
+                        <a href="<?php echo userUrl('shop.php?category=clearlite'); ?>">Clearlite</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=kitchens'); ?>" class="mobile-nav-link">
+                        Kitchens <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=kitchen-cabinets'); ?>">Kitchen Cabinets</a>
+                        <a href="<?php echo userUrl('shop.php?category=complete-kitchens'); ?>">Complete Kitchens</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=bathroom'); ?>" class="mobile-nav-link">
+                        Bathroom & Laundry <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=baths'); ?>">Baths</a>
+                        <a href="<?php echo userUrl('shop.php?category=hand-basins'); ?>">Hand Basins</a>
+                        <a href="<?php echo userUrl('shop.php?category=vanities'); ?>">Vanities</a>
+                    </div>
+                </div>
+                <div class="mobile-nav-item has-dropdown">
+                    <a href="<?php echo userUrl('shop.php?category=general'); ?>" class="mobile-nav-link">
+                        General <i class="fa-solid fa-plus toggle-icon"></i>
+                    </a>
+                    <div class="mobile-nav-submenu">
+                        <a href="<?php echo userUrl('shop.php?category=character-items'); ?>">Character Items</a>
+                        <a href="<?php echo userUrl('shop.php?category=hardware'); ?>">Hardware</a>
+                        <a href="<?php echo userUrl('shop.php?category=insulation'); ?>">Insulation</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -223,6 +362,7 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         try {
             const data = await apiFetch(getApiUrl('/api/user/me.php'));
             if (data.success && data.user) {
+                // Update desktop header
                 const headerRight = document.getElementById('header-top-right');
                 if (headerRight) {
                     headerRight.innerHTML = `
@@ -232,6 +372,14 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                         <a href="${USER_BASE}cart.php" class="cart-link"><i class="fa-solid fa-cart-shopping"></i> <span id="cart-count">0</span></a>
                     `;
                 }
+                
+                // Update mobile login button
+                const mobileLoginBtn = document.getElementById('mobile-login-btn');
+                if (mobileLoginBtn) {
+                    mobileLoginBtn.href = USER_BASE + 'profile.php';
+                    mobileLoginBtn.innerHTML = `<i class="fa-solid fa-user"></i> <span>${data.user.first_name}</span>`;
+                }
+                
                 // Update counts after DOM update
                 updateWishlistCount();
                 updateCartCount();
@@ -256,23 +404,45 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         }
     }
     
-    // Mobile menu toggle
-    document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    // Mobile menu toggle - Wrap in DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileToggle = document.getElementById('mobile-menu-toggle');
         const navMenu = document.querySelector('.nav-menu');
-        navMenu.classList.toggle('active');
-        if (navMenu.classList.contains('active')) {
-            document.body.classList.add('menu-open');
-        } else {
-            document.body.classList.remove('menu-open');
-        }
-    });
-    // Đóng menu khi click ngoài menu trên mobile
-    document.addEventListener('click', function(e) {
-        const navMenu = document.querySelector('.nav-menu');
-        const toggleBtn = document.getElementById('mobile-menu-toggle');
-        if (navMenu.classList.contains('active') && !navMenu.contains(e.target) && e.target !== toggleBtn) {
-            navMenu.classList.remove('active');
-            document.body.classList.remove('menu-open');
+        
+        if (mobileToggle && navMenu) {
+            // Toggle menu on button click
+            mobileToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navMenu.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (navMenu.classList.contains('active') && 
+                    !navMenu.contains(e.target) && 
+                    !mobileToggle.contains(e.target)) {
+                    navMenu.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                }
+            });
+            
+            // Close menu when clicking on a link
+            const menuLinks = navMenu.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // If it's a parent item with dropdown, toggle dropdown instead
+                    const parentLi = link.closest('li.has-dropdown');
+                    if (parentLi && link.parentElement === parentLi) {
+                        e.preventDefault();
+                        parentLi.classList.toggle('open');
+                    } else {
+                        // Close menu for regular links
+                        navMenu.classList.remove('active');
+                        document.body.classList.remove('menu-open');
+                    }
+                });
+            });
         }
     });
     
@@ -398,6 +568,69 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
     window.addEventListener('focus', function() {
         updateCartCount();
         updateWishlistCount();
+    });
+    
+    // Mobile menu functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mobile categories menu button
+        const mobileCategoriesBtn = document.getElementById('mobile-categories-btn');
+        const mobileNavDropdown = document.getElementById('mobile-nav-dropdown');
+        
+        if (mobileCategoriesBtn && mobileNavDropdown) {
+            mobileCategoriesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                mobileNavDropdown.classList.toggle('active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mobileCategoriesBtn.contains(e.target) && !mobileNavDropdown.contains(e.target)) {
+                    mobileNavDropdown.classList.remove('active');
+                }
+            });
+        }
+        
+        // Mobile dropdown toggles (subcategories)
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const parentItem = this.closest('.mobile-nav-item');
+                const hasSubmenu = parentItem && parentItem.classList.contains('has-dropdown');
+                
+                if (hasSubmenu) {
+                    e.preventDefault();
+                    
+                    // Close other dropdowns
+                    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                        if (item !== parentItem) {
+                            item.classList.remove('active');
+                        }
+                    });
+                    
+                    // Toggle current dropdown
+                    parentItem.classList.toggle('active');
+                }
+            });
+        });
+        
+        // Update mobile wishlist and cart counts
+        function syncMobileCounts() {
+            const wishlistCount = document.getElementById('wishlist-count');
+            const cartCount = document.getElementById('cart-count');
+            const mobileWishlistCount = document.getElementById('mobile-wishlist-count');
+            const mobileCartCount = document.getElementById('mobile-cart-count');
+            
+            if (wishlistCount && mobileWishlistCount) {
+                mobileWishlistCount.textContent = wishlistCount.textContent;
+            }
+            if (cartCount && mobileCartCount) {
+                mobileCartCount.textContent = cartCount.textContent;
+            }
+        }
+        
+        // Sync counts on load and periodically
+        syncMobileCounts();
+        setInterval(syncMobileCounts, 1000);
     });
 </script>
 
