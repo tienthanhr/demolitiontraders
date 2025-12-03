@@ -38,6 +38,7 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 
 // Start session if not already started
+ini_set('session.save_path', '/tmp');
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -198,56 +199,70 @@ try {
             break;
             
         case 'orders':
-            require_once __DIR__ . '/../controllers/OrderController.php';
-            $controller = new OrderController();
-            
-            if ($method === 'GET' && !$id) {
-                sendResponse($controller->index());
-            } elseif ($method === 'GET' && $id) {
-                sendResponse($controller->show($id));
-            } elseif ($method === 'POST' && !$id) {
-                sendResponse($controller->create($input), 201);
-            } elseif ($method === 'POST' && $id && $action === 'send-receipt') {
-                // Send receipt email
-                require_once __DIR__ . '/../services/EmailService.php';
-                $emailService = new EmailService();
-                $order = $controller->show($id);
+            try {
+                require_once __DIR__ . '/../controllers/OrderController.php';
+                $controller = new OrderController();
                 
-                // Get customer email
-                $billing = json_decode($order['billing_address'], true);
-                $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
-                
-                if (!$customerEmail) {
-                    sendError('No customer email found', 400);
-                }
-                
-                $result = $emailService->sendReceipt($order, $customerEmail);
-                if ($result['success']) {
-                    sendResponse($result);
+                if ($method === 'GET' && !$id) {
+                    sendResponse($controller->index());
+                } elseif ($method === 'GET' && $id) {
+                    sendResponse($controller->show($id));
+                } elseif ($method === 'POST' && !$id) {
+                    sendResponse($controller->create($input), 201);
+                } elseif ($method === 'POST' && $id && $action === 'send-receipt') {
+                    // Send receipt email
+                    require_once __DIR__ . '/../services/EmailService.php';
+                    $emailService = new EmailService();
+                    $order = $controller->show($id);
+                    
+                    // Get customer email
+                    $billing = json_decode($order['billing_address'], true);
+                    $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
+                    
+                    if (!$customerEmail) {
+                        sendError('No customer email found', 400);
+                    }
+                    
+                    $result = $emailService->sendReceipt($order, $customerEmail);
+                    if ($result['success']) {
+                        sendResponse($result);
+                    } else {
+                        sendError($result['error'], 500);
+                    }
+                } elseif ($method === 'POST' && $id && $action === 'send-tax-invoice') {
+                    // Send tax invoice email
+                    require_once __DIR__ . '/../services/EmailService.php';
+                    $emailService = new EmailService();
+                    $order = $controller->show($id);
+                    // Get customer email
+                    $billing = json_decode($order['billing_address'], true);
+                    $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
+                    if (!$customerEmail) {
+                        sendError('No customer email found', 400);
+                    }
+                    $result = $emailService->sendTaxInvoice($order, $customerEmail);
+                    if ($result['success']) {
+                        sendResponse($result);
+                    } else {
+                        sendError($result['error'], 500);
+                    }
+                } elseif ($method === 'PUT' && $id) {
+                    sendResponse($controller->update($id, $input));
+                } elseif ($method === 'DELETE' && $id) {
+                    sendResponse($controller->delete($id));
                 } else {
-                    sendError($result['error'], 500);
+                    sendError('Method not allowed', 405);
                 }
-            } elseif ($method === 'POST' && $id && $action === 'send-tax-invoice') {
-                // Send tax invoice email
-                require_once __DIR__ . '/../services/EmailService.php';
-                $emailService = new EmailService();
-                $order = $controller->show($id);
-                // Get customer email
-                $billing = json_decode($order['billing_address'], true);
-                $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
-                if (!$customerEmail) {
-                    sendError('No customer email found', 400);
-                }
-                $result = $emailService->sendTaxInvoice($order, $customerEmail);
-                if ($result['success']) {
-                    sendResponse($result);
+            } catch (Exception $e) {
+                error_log("Orders API Error: " . $e->getMessage());
+                $message = $e->getMessage();
+                // Return appropriate status code for authentication errors
+                if (strpos($message, 'Authentication required') !== false) {
+                    sendError($message, 401);
                 } else {
-                    sendError($result['error'], 500);
+                    sendError($message, 500);
                 }
-            } elseif ($method === 'PUT' && $id) {
-                sendResponse($controller->update($id, $input));
-            } elseif ($method === 'DELETE' && $id) {
-                sendResponse($controller->delete($id));
+            }
             }
             break;
             
