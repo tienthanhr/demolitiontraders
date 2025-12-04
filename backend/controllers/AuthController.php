@@ -44,13 +44,27 @@ class AuthController {
         $_SESSION['first_name'] = $user['first_name'];
         $_SESSION['last_name'] = $user['last_name'];
         $_SESSION['is_admin'] = ($user['role'] === 'admin');
+
+        // Generate CSRF token for admins
+        if ($_SESSION['is_admin']) {
+            if (empty($_SESSION['csrf_token'])) {
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            }
+        }
         
         unset($user['password']);
         
-        return [
+        $responseData = [
             'user' => $user,
             'message' => 'Login successful'
         ];
+
+        // Also return CSRF token in login response for admin users
+        if ($_SESSION['is_admin']) {
+            $responseData['csrf_token'] = $_SESSION['csrf_token'];
+        }
+
+        return $responseData;
     }
     
     /**

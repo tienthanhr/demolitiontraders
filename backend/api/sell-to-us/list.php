@@ -7,9 +7,8 @@
 header('Content-Type: application/json');
 require_once '../../config/database.php';
 
-ini_set('session.save_path', '/tmp');
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    require_once __DIR__ . '/../../core/bootstrap.php';
 }
 
 // Check if user is admin

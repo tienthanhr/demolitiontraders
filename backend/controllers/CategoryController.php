@@ -3,6 +3,8 @@
  * Category Controller
  */
 
+require_once __DIR__ . '/../utils/security.php';
+
 class CategoryController {
     private $db;
     
@@ -33,7 +35,7 @@ class CategoryController {
             );
         }
         
-        return $categories;
+        return escape_output($categories);
     }
     
     /**
@@ -68,7 +70,7 @@ class CategoryController {
             ['category_id' => $category['id']]
         );
         
-        return $category;
+        return escape_output($category);
     }
     
     /**
