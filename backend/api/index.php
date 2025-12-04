@@ -6,7 +6,30 @@
 
 // CRITICAL: Tắt display errors để tránh HTML output làm hỏng JSON response
 ini_set('display_errors', 0);
-error_reporting(0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
+
+// Set up error handler to catch errors before they become fatal
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    error_log("PHP Error [$errno]: $errstr in $errfile on line $errline");
+    // Don't suppress the error, let it continue
+    return false;
+});
+
+// Set up shutdown handler to catch fatal errors
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        error_log("Fatal Error: " . $error['message'] . " in " . $error['file'] . " on line " . $error['line']);
+        // Only send error if headers haven't been sent yet
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode(['error' => 'Internal server error: ' . $error['message']]);
+        }
+    }
+});
 
 // Enhanced CORS headers
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';

@@ -72,8 +72,8 @@ try {
     // Store wanted listing in database
     $stmt = $db->prepare("
         INSERT INTO wanted_listings 
-        (user_id, contact_name, email, phone, category, description, item_name, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+        (user_id, contact_name, email, phone, category, description, item_name, notify_me, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')
     ");
     $stmt->execute([$userId, $name, $email, $phone, $category, $description, $category, $notify ? 1 : 0]);
     $wantedListingId = $db->lastInsertId();

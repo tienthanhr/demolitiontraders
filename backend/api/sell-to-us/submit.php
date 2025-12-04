@@ -99,7 +99,9 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $photosJson = !empty($uploadedFiles) ? json_encode($uploadedFiles) : null;
-    $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $pickupDate, $pickupDelivery, $description, $photosJson]);
+    // Convert empty pickup_date to NULL for PostgreSQL DATE column
+    $preferredDate = !empty($pickupDate) ? $pickupDate : null;
+    $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $preferredDate, $pickupDelivery, $description, $photosJson]);
     
     // Send email to admin
     $emailService = new EmailService();
