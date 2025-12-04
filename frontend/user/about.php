@@ -218,7 +218,7 @@
                     <p>Over the years Demolition Traders has expanded to become the largest supplier of materials to tiny home builders & granny flats. Their tiny home product range includes, new timber, new roofing & flashings, pack lots of treated & untreated plywood, double glazed Aluminium Joinery, & much more. New Zealand's largest range of Double Glazed Ready-Made Aluminium Joinery.</p>
                     <p>Their employees are very friendly, helpful & knowledgeable. Mike & Wayne have been with Demolition Traders for 20 plus years, Karl & Bundy for 10 plus years, while other team members have several years' experience with Demolition Traders & other building related positions.</p>
                     <div style="text-align:center; margin: 18px 0 28px 0;">
-                        <img src="assets/images/DemoTeam.jpg" alt="Demolition Traders Team" style="max-width:320px;width:100%;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.10);margin-bottom:8px;">
+                        <img src="assets/images/DemoTeam.png" alt="Demolition Traders Team" style="max-width:320px;width:100%;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.10);margin-bottom:8px;">
                         <div style="font-size:13px;color:#666;">The Demolition Traders Team</div>
                     </div>
                     <p>For a unique shopping experience, come in & meet the team!</p>
