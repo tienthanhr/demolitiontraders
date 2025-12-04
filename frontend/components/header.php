@@ -145,44 +145,61 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         </div>
         
         <!-- Desktop Menu -->
-        <ul class="nav-menu">
-            <?php
-            // Load categories from database ordered by position
+        <ul class="nav-menu" id="nav-menu-list">
+            <li style="color: white; padding: 10px 8px;">Loading...</li>
+        </ul>
+        
+        <script>
+        // Load categories via API
+        async function loadNavCategories() {
             try {
-                if (!isset($pdo)) {
-                    $pdo = new PDO('mysql:host=localhost;dbname=demolition_traders', 'root', '');
-                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                const response = await fetch(getApiUrl('/api/index.php?request=categories'));
+                const result = await response.json();
+                const categories = result.data || result;
+                
+                if (!Array.isArray(categories) || categories.length === 0) {
+                    return;
                 }
                 
-                // Get main categories ordered by position
-                $stmt = $pdo->prepare('SELECT id, name, slug, parent_id FROM categories WHERE parent_id IS NULL AND is_active = 1 ORDER BY position ASC, name ASC');
-                $stmt->execute();
-                $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                // Filter for main categories (parent_id IS NULL) and active
+                const mainCategories = categories.filter(c => !c.parent_id && c.is_active == 1).sort((a, b) => (a.position || 0) - (b.position || 0));
                 
-                foreach ($mainCategories as $mainCat) {
-                    echo '<li class="has-dropdown">';
-                    echo '<a href="' . userUrl('shop.php?category=' . $mainCat['slug']) . '">' . htmlspecialchars($mainCat['name']) . '</a>';
+                if (mainCategories.length === 0) {
+                    return;
+                }
+                
+                let html = '';
+                mainCategories.forEach(mainCat => {
+                    // Get subcategories
+                    const subCategories = categories.filter(c => c.parent_id === mainCat.id && c.is_active == 1).sort((a, b) => (a.position || 0) - (b.position || 0));
                     
-                    // Get subcategories for this main category
-                    $subStmt = $pdo->prepare('SELECT id, name, slug FROM categories WHERE parent_id = ? AND is_active = 1 ORDER BY position ASC, name ASC');
-                    $subStmt->execute([$mainCat['id']]);
-                    $subCategories = $subStmt->fetchAll(PDO::FETCH_ASSOC);
+                    html += '<li class="has-dropdown">';
+                    html += '<a href="' + BASE_PATH + 'user/shop.php?category=' + mainCat.slug + '">' + mainCat.name + '</a>';
                     
-                    if (!empty($subCategories)) {
-                        echo '<ul class="dropdown">';
-                        foreach ($subCategories as $subCat) {
-                            echo '<li><a href="' . userUrl('shop.php?category=' . $subCat['slug']) . '">' . htmlspecialchars($subCat['name']) . '</a></li>';
-                        }
-                        echo '</ul>';
+                    if (subCategories.length > 0) {
+                        html += '<ul class="dropdown">';
+                        subCategories.forEach(subCat => {
+                            html += '<li><a href="' + BASE_PATH + 'user/shop.php?category=' + subCat.slug + '">' + subCat.name + '</a></li>';
+                        });
+                        html += '</ul>';
                     }
                     
-                    echo '</li>';
-                }
-            } catch (Exception $e) {
-                echo '<!-- Error loading categories: ' . htmlspecialchars($e->getMessage()) . ' -->';
+                    html += '</li>';
+                });
+                
+                document.getElementById('nav-menu-list').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading categories:', error);
             }
-            ?>
-        </ul>
+        }
+        
+        // Load on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadNavCategories);
+        } else {
+            loadNavCategories();
+        }
+        </script>
         
     </div>
 </nav>
