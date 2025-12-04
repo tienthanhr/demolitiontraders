@@ -1,0 +1,427 @@
+/**
+ * CSP Fixes & Inline CSS Extraction
+ * Consolidate all inline styles into external CSS
+ * Version: 1.0.0
+ */
+
+/* ================================================
+   UTILITY CLASSES FOR LAYOUT
+   ================================================ */
+
+/* Padding utilities */
+.px-32 { padding-left: 32px; padding-right: 32px; }
+.px-24 { padding-left: 24px; padding-right: 24px; }
+.py-32 { padding-top: 32px; padding-bottom: 32px; }
+.py-24 { padding-top: 24px; padding-bottom: 24px; }
+.px-20 { padding-left: 20px; padding-right: 20px; }
+.pt-40 { padding-top: 40px; }
+
+/* Margin utilities */
+.mb-0 { margin-bottom: 0; }
+.mb-18 { margin-bottom: 18px; }
+.mb-30 { margin-bottom: 30px; }
+.mb-5 { margin-bottom: 5px; }
+.mb-8 { margin-bottom: 8px; }
+.mt-10 { margin-top: 10px; }
+.mr-5 { margin-right: 5px; }
+
+/* Display utilities */
+.display-none { display: none; }
+.display-block { display: block; }
+.display-flex { display: flex; }
+.display-inline-block { display: inline-block; }
+
+/* Flex utilities */
+.flex-wrap { flex-wrap: wrap; }
+.flex-column { flex-direction: column; }
+.align-items-stretch { align-items: stretch; }
+.justify-content-flex-end { justify-content: flex-end; }
+.gap-32 { gap: 32px; }
+.gap-24 { gap: 24px; }
+.gap-20 { gap: 20px; }
+
+/* Cursor utilities */
+.cursor-pointer { cursor: pointer; }
+.cursor-default { cursor: default; }
+
+/* ================================================
+   SHOP PAGE STYLES
+   ================================================ */
+
+.filter-box {
+    padding: 32px 32px 24px 32px;
+}
+
+.filter-row {
+    gap: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.filter-group {
+    min-width: 180px;
+    margin-bottom: 18px;
+}
+
+.filter-group-min-width-120 {
+    min-width: 120px;
+    margin-bottom: 18px;
+}
+
+.filter-group-min-width-220 {
+    min-width: 220px;
+    max-width: 400px;
+    margin-bottom: 18px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.filter-group-min-width-260 {
+    min-width: 260px;
+}
+
+#dimension-row {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 0;
+    display: none;
+}
+
+#measurements-group {
+    min-width: 180px;
+    flex: 1;
+}
+
+#height-group {
+    min-width: 180px;
+    flex: 1;
+}
+
+#measurements-group label {
+    margin-top: 10px;
+}
+
+#price-slider-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+#price-value {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.filter-input-full {
+    width: 100%;
+    height: 44px;
+    font-size: 1.1em;
+    padding: 0 16px;
+}
+
+.search-button-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 160px;
+    margin-bottom: 18px;
+}
+
+.search-button-style {
+    width: 100%;
+    height: 44px;
+    font-size: 1.1em;
+    align-self: flex-end;
+}
+
+/* ================================================
+   HEADER STYLES
+   ================================================ */
+
+#mobile-menu-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+    background: white;
+}
+
+.header-logo {
+    max-height: 100px;
+}
+
+/* ================================================
+   PRODUCT PAGE STYLES
+   ================================================ */
+
+.page-loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.page-error {
+    text-align: center;
+    padding: 40px;
+    color: #dc3545;
+}
+
+.item-category {
+    color: #666;
+    margin-right: 5px;
+}
+
+/* Status indicators */
+.status-online {
+    color: #4caf50;
+    margin-right: 5px;
+}
+
+.status-offline {
+    color: #f44336;
+    margin-right: 5px;
+}
+
+/* ================================================
+   CART PAGE STYLES
+   ================================================ */
+
+.cart-item-empty-state {
+    text-align: center;
+    padding: 40px;
+}
+
+#recommendations-section {
+    display: none;
+}
+
+#recommendations-section.active {
+    display: block;
+}
+
+.recommendations-carousel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.carousel-btn {
+    flex-shrink: 0;
+}
+
+.recommendations-grid {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    flex: 1;
+}
+
+/* ================================================
+   FOOTER STYLES
+   ================================================ */
+
+#footer {
+    padding: 20px 25px;
+    text-align: left;
+}
+
+.footer-contact {
+    float: left;
+    text-align: left;
+}
+
+.footer-links {
+    float: right;
+    text-align: right;
+}
+
+/* ================================================
+   IMAGE STYLES
+   ================================================ */
+
+.responsive-image {
+    max-height: 100px;
+}
+
+.team-image {
+    max-width: 320px;
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+}
+
+.opening-hours-loading {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+
+/* ================================================
+   BUTTON STYLES
+   ================================================ */
+
+.btn-style-full {
+    width: 100%;
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn-style-margin-top {
+    margin-top: 10px;
+}
+
+.btn-style-margin-top-20 {
+    margin-top: 20px;
+}
+
+.btn-style-display-inline {
+    display: inline-block;
+}
+
+/* ================================================
+   FORM STYLES
+   ================================================ */
+
+.form-file-input {
+    display: none;
+}
+
+.form-helper-text {
+    color: #666;
+    display: block;
+    margin-top: 5px;
+}
+
+.form-helper-text-8 {
+    color: #666;
+    display: block;
+    margin-top: 8px;
+}
+
+.form-pickup-fields {
+    display: none;
+}
+
+.form-pickup-fields.active {
+    display: block;
+}
+
+/* ================================================
+   MODAL STYLES
+   ================================================ */
+
+#confirm-modal-overlay {
+    display: none;
+}
+
+#confirm-modal-overlay.active {
+    display: flex;
+}
+
+.modal-close-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* ================================================
+   RESPONSIVE IMPROVEMENTS
+   ================================================ */
+
+@media (max-width: 768px) {
+    .filter-box {
+        padding: 16px;
+    }
+
+    .filter-row {
+        gap: 16px;
+    }
+
+    .filter-group {
+        min-width: auto;
+        flex: 1;
+        min-width: 150px;
+    }
+
+    #mobile-menu-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .footer-contact,
+    .footer-links {
+        float: none;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 15px;
+    }
+
+    .team-image {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-box {
+        padding: 12px;
+    }
+
+    .filter-row {
+        gap: 12px;
+        flex-direction: column;
+    }
+
+    .filter-group {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .search-button-style {
+        width: 100%;
+    }
+
+    .page-loading,
+    .page-error,
+    .cart-item-empty-state {
+        padding: 20px;
+    }
+}
+
+/* ================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ================================================ */
+
+/* Focus styles for keyboard navigation */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

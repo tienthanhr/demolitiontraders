@@ -12,6 +12,7 @@
     <script>const BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
     
     <link rel="stylesheet" href="assets/css/new-style.css?v=4">
+    <link rel="stylesheet" href="assets/css/csp-fixes.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
 </head>

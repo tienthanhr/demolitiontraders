@@ -12,6 +12,7 @@
     <script src="<?php echo asset('assets/js/api-helper.js?v=1'); ?>"></script>
     
     <link rel="stylesheet" href="<?php echo asset('assets/css/new-style.css?v=6'); ?>">
+    <link rel="stylesheet" href="<?php echo asset('assets/css/csp-fixes.css?v=1'); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/tiny-slider.css">
     <style>
