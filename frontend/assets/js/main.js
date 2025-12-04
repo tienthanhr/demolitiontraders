@@ -192,6 +192,66 @@ function setupInfiniteScroll() {
     }, 200));
 }
 
+// Check for category updates in real-time (polling)
+async function checkCategoryUpdates() {
+    try {
+        const response = await apiFetch(getApiUrl('/api/index.php?request=categories'));
+        const data = await response.json ? response.json() : response;
+        const categories = data.data || data;
+        
+        if (!Array.isArray(categories)) return;
+        
+        // Calculate new checksum
+        const newChecksum = JSON.stringify(categories.map(c => ({ id: c.id, position: c.position, is_active: c.is_active })).sort((a, b) => a.id - b.id));
+        
+        // If checksum changed, categories were updated
+        if (window.categoryChecksum && newChecksum !== window.categoryChecksum) {
+            console.log('Categories updated! Refreshing...');
+            
+            // Update stored categories
+            window.allCategories = categories;
+            window.categoryChecksum = newChecksum;
+            
+            // Reload category dropdowns if they exist
+            const categorySelect = document.getElementById('category-select');
+            if (categorySelect) {
+                const mainCategories = categories.filter(cat => !cat.parent_id);
+                let html = '<option value="">All Categories</option>';
+                mainCategories.forEach(main => {
+                    html += `<option value="${main.id}" data-slug="${main.slug}">${main.name}</option>`;
+                });
+                categorySelect.innerHTML = html;
+                
+                // If a category was previously selected, keep it selected
+                const urlParams = new URLSearchParams(window.location.search);
+                const categorySlug = urlParams.get('category');
+                if (categorySlug) {
+                    const options = categorySelect.querySelectorAll('option');
+                    for (let option of options) {
+                        if (option.getAttribute('data-slug') === categorySlug) {
+                            categorySelect.value = option.value;
+                            categorySelect.dispatchEvent(new Event('change'));
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Show update notification
+            if (typeof showNotification === 'function') {
+                showNotification('Categories updated! Refreshing product list...', 'info');
+            }
+            
+            // Reapply filters if on shop page
+            if (typeof applyFilters === 'function') {
+                applyFilters();
+            }
+        }
+    } catch (error) {
+        // Silently fail for polling - don't spam console
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateCartCount();
@@ -213,6 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 300));
     }
+    
+    // Start polling for category updates every 5 seconds
+    setInterval(checkCategoryUpdates, 5000);
 });
 
 // Export functions for use in other scripts

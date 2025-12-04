@@ -321,6 +321,9 @@
                             keywordsInput.value = searchKeyword;
                         }
                     }
+                    
+                    // Store category checksum for real-time updates
+                    window.categoryChecksum = JSON.stringify(categories.map(c => ({ id: c.id, position: c.position, is_active: c.is_active })).sort((a, b) => a.id - b.id));
                 } else {
                     console.error('Categories not an array:', categories);
                 }
