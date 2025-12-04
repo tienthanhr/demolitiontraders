@@ -73,11 +73,25 @@ class EmailService {
             $this->mailer->addAddress($toEmail, $customerName);
             $this->mailer->Subject = "Tax Invoice - Order #{$order['order_number']}";
             $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
-            // Generate PDF from HTML and attach
-            $pdfPath = generate_invoice_pdf_html($invoiceHtml, 'invoice');
-            $this->mailer->addAttachment($pdfPath, 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf');
+            
+            // Try to generate PDF and attach, but don't fail if PDF generation fails
+            try {
+                $pdfPath = generate_invoice_pdf_html($invoiceHtml, 'invoice');
+                if ($pdfPath && file_exists($pdfPath)) {
+                    $this->mailer->addAttachment($pdfPath, 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf');
+                }
+            } catch (Exception $pdfEx) {
+                error_log("Warning: PDF generation failed for order #{$order['order_number']}: " . $pdfEx->getMessage());
+                // Continue without PDF attachment - email will still send
+            }
+            
             $this->mailer->send();
-            if (file_exists($pdfPath)) unlink($pdfPath);
+            
+            // Clean up if PDF was created
+            if (isset($pdfPath) && $pdfPath && file_exists($pdfPath)) {
+                unlink($pdfPath);
+            }
+            
             error_log("Tax Invoice sent to: $toEmail for order #{$order['order_number']}");
             return ['success' => true, 'message' => 'Tax Invoice sent successfully'];
         } catch (Exception $e) {
