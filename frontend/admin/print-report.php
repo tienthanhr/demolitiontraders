@@ -1,7 +1,6 @@
 <?php
 require_once '../config.php';
 
-ini_set('session.save_path', '/tmp');
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

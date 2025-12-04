@@ -2,7 +2,6 @@
 require_once '../config.php';
 require_once '../components/date-helper.php';
 
-ini_set('session.save_path', '/tmp');
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
