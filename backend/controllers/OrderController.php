@@ -286,8 +286,6 @@ class OrderController {
                 // Log but don't throw - email failure shouldn't break order creation
                 error_log("Failed to send Tax Invoice email: " . $e->getMessage());
             }
-                error_log("Failed to send Tax Invoice email: " . $e->getMessage());
-            }
             
             // Push to IdealPOS (async, don't block order creation)
             try {
