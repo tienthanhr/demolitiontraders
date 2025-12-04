@@ -237,124 +237,133 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
             </li>
         </ul>
         
-        <!-- Mobile Navigation Dropdown -->
-        <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
-            <div class="mobile-nav-content">
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=plywood'); ?>" class="mobile-nav-link">
-                        Plywood <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=untreated-plywood'); ?>">Untreated Plywood</a>
-                        <a href="<?php echo userUrl('shop.php?category=mdf'); ?>">MDF</a>
-                        <a href="<?php echo userUrl('shop.php?category=treated-plywood'); ?>">Treated Plywood</a>
-                        <a href="<?php echo userUrl('shop.php?category=acp-seratone'); ?>">ACP / Seratone</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=doors'); ?>" class="mobile-nav-link">
-                        Doors <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=new-aluminium-single-doors'); ?>">New Aluminium Single Doors</a>
-                        <a href="<?php echo userUrl('shop.php?category=new-aluminium-french-doors'); ?>">New Aluminium French Doors</a>
-                        <a href="<?php echo userUrl('shop.php?category=new-exterior-doors'); ?>">New Exterior Doors</a>
-                        <a href="<?php echo userUrl('shop.php?category=new-interior-doors'); ?>">New Interior Doors</a>
-                        <a href="<?php echo userUrl('shop.php?category=recycled-doors'); ?>">Recycled Doors</a>
-                        <a href="<?php echo userUrl('shop.php?category=bi-fold-doors'); ?>">Bi-fold Doors</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=windows'); ?>" class="mobile-nav-link">
-                        Windows <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=aluminium-windows'); ?>">Aluminium Windows</a>
-                        <a href="<?php echo userUrl('shop.php?category=wooden-windows'); ?>">Wooden Windows</a>
-                        <a href="<?php echo userUrl('shop.php?category=bi-fold-sliding-windows'); ?>">Bi-folds</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=sliding-doors'); ?>" class="mobile-nav-link">
-                        Sliding Doors <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=new-aluminium-sliding-doors'); ?>">New Aluminium Sliding Doors</a>
-                        <a href="<?php echo userUrl('shop.php?category=recycled-sliding-doors'); ?>">Recycled Sliding Doors</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=timber'); ?>" class="mobile-nav-link">
-                        Timber <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=mouldings'); ?>">Mouldings</a>
-                        <a href="<?php echo userUrl('shop.php?category=native-timber'); ?>">Native Timber</a>
-                        <a href="<?php echo userUrl('shop.php?category=pine'); ?>">Pine</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=cladding'); ?>" class="mobile-nav-link">
-                        Cladding <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=weatherboard'); ?>">Weatherboard</a>
-                        <a href="<?php echo userUrl('shop.php?category=cement-board'); ?>">Cement Board</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=landscaping'); ?>" class="mobile-nav-link">
-                        Landscaping <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=railway-sleepers'); ?>">Railway Sleepers</a>
-                        <a href="<?php echo userUrl('shop.php?category=pavers'); ?>">Pavers</a>
-                        <a href="<?php echo userUrl('shop.php?category=wire-netting'); ?>">Wire/Netting</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=roofing'); ?>" class="mobile-nav-link">
-                        Roofing <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=iron'); ?>">Iron</a>
-                        <a href="<?php echo userUrl('shop.php?category=flashing-drainage'); ?>">Flashing & Drainage</a>
-                        <a href="<?php echo userUrl('shop.php?category=clearlite'); ?>">Clearlite</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=kitchens'); ?>" class="mobile-nav-link">
-                        Kitchens <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=kitchen-cabinets'); ?>">Kitchen Cabinets</a>
-                        <a href="<?php echo userUrl('shop.php?category=complete-kitchens'); ?>">Complete Kitchens</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=bathroom'); ?>" class="mobile-nav-link">
-                        Bathroom & Laundry <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=baths'); ?>">Baths</a>
-                        <a href="<?php echo userUrl('shop.php?category=hand-basins'); ?>">Hand Basins</a>
-                        <a href="<?php echo userUrl('shop.php?category=vanities'); ?>">Vanities</a>
-                    </div>
-                </div>
-                <div class="mobile-nav-item has-dropdown">
-                    <a href="<?php echo userUrl('shop.php?category=general'); ?>" class="mobile-nav-link">
-                        General <i class="fa-solid fa-plus toggle-icon"></i>
-                    </a>
-                    <div class="mobile-nav-submenu">
-                        <a href="<?php echo userUrl('shop.php?category=character-items'); ?>">Character Items</a>
-                        <a href="<?php echo userUrl('shop.php?category=hardware'); ?>">Hardware</a>
-                        <a href="<?php echo userUrl('shop.php?category=insulation'); ?>">Insulation</a>
-                    </div>
-                </div>
+    </div>
+</nav>
+
+<!-- Mobile Navigation Dropdown Wrapper - Escape layout constraints -->
+<div id="mobile-menu-wrapper" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9998; display: none; background: white;">
+    <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
+    <div class="mobile-nav-header">
+        <h3>Menu</h3>
+        <button class="mobile-nav-close" id="mobile-nav-close">
+            <i class="fa-solid fa-times"></i>
+        </button>
+    </div>
+    <div class="mobile-nav-content">
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=plywood'); ?>" class="mobile-nav-link">
+                Plywood <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=untreated-plywood'); ?>">Untreated Plywood</a>
+                <a href="<?php echo userUrl('shop.php?category=mdf'); ?>">MDF</a>
+                <a href="<?php echo userUrl('shop.php?category=treated-plywood'); ?>">Treated Plywood</a>
+                <a href="<?php echo userUrl('shop.php?category=acp-seratone'); ?>">ACP / Seratone</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=doors'); ?>" class="mobile-nav-link">
+                Doors <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=new-aluminium-single-doors'); ?>">New Aluminium Single Doors</a>
+                <a href="<?php echo userUrl('shop.php?category=new-aluminium-french-doors'); ?>">New Aluminium French Doors</a>
+                <a href="<?php echo userUrl('shop.php?category=new-exterior-doors'); ?>">New Exterior Doors</a>
+                <a href="<?php echo userUrl('shop.php?category=new-interior-doors'); ?>">New Interior Doors</a>
+                <a href="<?php echo userUrl('shop.php?category=recycled-doors'); ?>">Recycled Doors</a>
+                <a href="<?php echo userUrl('shop.php?category=bi-fold-doors'); ?>">Bi-fold Doors</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=windows'); ?>" class="mobile-nav-link">
+                Windows <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=aluminium-windows'); ?>">Aluminium Windows</a>
+                <a href="<?php echo userUrl('shop.php?category=wooden-windows'); ?>">Wooden Windows</a>
+                <a href="<?php echo userUrl('shop.php?category=bi-fold-sliding-windows'); ?>">Bi-folds</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=sliding-doors'); ?>" class="mobile-nav-link">
+                Sliding Doors <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=new-aluminium-sliding-doors'); ?>">New Aluminium Sliding Doors</a>
+                <a href="<?php echo userUrl('shop.php?category=recycled-sliding-doors'); ?>">Recycled Sliding Doors</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=timber'); ?>" class="mobile-nav-link">
+                Timber <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=mouldings'); ?>">Mouldings</a>
+                <a href="<?php echo userUrl('shop.php?category=native-timber'); ?>">Native Timber</a>
+                <a href="<?php echo userUrl('shop.php?category=pine'); ?>">Pine</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=cladding'); ?>" class="mobile-nav-link">
+                Cladding <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=weatherboard'); ?>">Weatherboard</a>
+                <a href="<?php echo userUrl('shop.php?category=cement-board'); ?>">Cement Board</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=landscaping'); ?>" class="mobile-nav-link">
+                Landscaping <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=railway-sleepers'); ?>">Railway Sleepers</a>
+                <a href="<?php echo userUrl('shop.php?category=pavers'); ?>">Pavers</a>
+                <a href="<?php echo userUrl('shop.php?category=wire-netting'); ?>">Wire/Netting</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=roofing'); ?>" class="mobile-nav-link">
+                Roofing <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=iron'); ?>">Iron</a>
+                <a href="<?php echo userUrl('shop.php?category=flashing-drainage'); ?>">Flashing & Drainage</a>
+                <a href="<?php echo userUrl('shop.php?category=clearlite'); ?>">Clearlite</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=kitchens'); ?>" class="mobile-nav-link">
+                Kitchens <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=kitchen-cabinets'); ?>">Kitchen Cabinets</a>
+                <a href="<?php echo userUrl('shop.php?category=complete-kitchens'); ?>">Complete Kitchens</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=bathroom'); ?>" class="mobile-nav-link">
+                Bathroom & Laundry <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=baths'); ?>">Baths</a>
+                <a href="<?php echo userUrl('shop.php?category=hand-basins'); ?>">Hand Basins</a>
+                <a href="<?php echo userUrl('shop.php?category=vanities'); ?>">Vanities</a>
+            </div>
+        </div>
+        <div class="mobile-nav-item has-dropdown">
+            <a href="<?php echo userUrl('shop.php?category=general'); ?>" class="mobile-nav-link">
+                General <i class="fa-solid fa-plus toggle-icon"></i>
+            </a>
+            <div class="mobile-nav-submenu">
+                <a href="<?php echo userUrl('shop.php?category=character-items'); ?>">Character Items</a>
+                <a href="<?php echo userUrl('shop.php?category=hardware'); ?>">Hardware</a>
+                <a href="<?php echo userUrl('shop.php?category=insulation'); ?>">Insulation</a>
             </div>
         </div>
     </div>
-</nav>
+    </div>
+</div>
 
 <script>
         // Update wishlist count
@@ -428,8 +437,75 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         }
     }
     
+    // Function to close mobile menu
+    function closeMobileMenu() {
+        const mobileMenuWrapper = document.getElementById('mobile-menu-wrapper');
+        if (mobileMenuWrapper) {
+            mobileMenuWrapper.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+    
     // Mobile menu toggle - Wrap in DOMContentLoaded
     document.addEventListener('DOMContentLoaded', function() {
+        // Handle new fullscreen mobile menu
+        const mobileMenuBtn = document.getElementById('mobile-categories-btn');
+        const mobileMenuWrapper = document.getElementById('mobile-menu-wrapper');
+        const mobileNavDropdown = document.getElementById('mobile-nav-dropdown');
+        const mobileNavClose = document.getElementById('mobile-nav-close');
+        
+        if (mobileMenuBtn && mobileMenuWrapper && mobileNavDropdown) {
+            // Open menu
+            mobileMenuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                mobileMenuWrapper.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // Close menu - close button
+            if (mobileNavClose) {
+                mobileNavClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMobileMenu();
+                });
+            }
+            
+            // Close menu - ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mobileMenuWrapper.style.display === 'block') {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Close menu - clicking on wrapper background
+            mobileMenuWrapper.addEventListener('click', function(e) {
+                if (e.target === mobileMenuWrapper) {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Handle dropdown toggle clicks
+            const dropdownToggles = mobileNavDropdown.querySelectorAll('.mobile-nav-item.has-dropdown > .mobile-nav-link');
+            dropdownToggles.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const item = this.closest('.mobile-nav-item');
+                    item.classList.toggle('open');
+                });
+            });
+            
+            // Close menu when clicking regular links (not dropdowns)
+            const regularLinks = mobileNavDropdown.querySelectorAll('.mobile-nav-submenu a');
+            regularLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    closeMobileMenu();
+                });
+            });
+        }
+        
+        // Old mobile toggle (keep for compatibility)
         const mobileToggle = document.getElementById('mobile-menu-toggle');
         const navMenu = document.querySelector('.nav-menu');
         
