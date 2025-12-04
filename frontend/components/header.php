@@ -161,17 +161,23 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                     return;
                 }
                 
-                // Filter for main categories (parent_id IS NULL) and active
-                const mainCategories = categories.filter(c => !c.parent_id && c.is_active == 1).sort((a, b) => (a.position || 0) - (b.position || 0));
+                // Filter for main categories that have position set (organized in admin)
+                // Only show main categories with position NOT NULL and active
+                const mainCategories = categories
+                    .filter(c => !c.parent_id && c.is_active == 1 && (c.position !== null && c.position !== undefined && c.position !== ''))
+                    .sort((a, b) => (a.position || 0) - (b.position || 0));
                 
                 if (mainCategories.length === 0) {
+                    document.getElementById('nav-menu-list').innerHTML = '<li style="color: white; padding: 10px 8px;">Categories</li>';
                     return;
                 }
                 
                 let html = '';
                 mainCategories.forEach(mainCat => {
-                    // Get subcategories
-                    const subCategories = categories.filter(c => c.parent_id === mainCat.id && c.is_active == 1).sort((a, b) => (a.position || 0) - (b.position || 0));
+                    // Get subcategories that are also organized (have position)
+                    const subCategories = categories
+                        .filter(c => c.parent_id === mainCat.id && c.is_active == 1 && (c.position !== null && c.position !== undefined && c.position !== ''))
+                        .sort((a, b) => (a.position || 0) - (b.position || 0));
                     
                     html += '<li class="has-dropdown">';
                     html += '<a href="' + BASE_PATH + 'user/shop.php?category=' + mainCat.slug + '">' + mainCat.name + '</a>';
@@ -213,50 +219,68 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
             <i class="fa-solid fa-times"></i>
         </button>
     </div>
-    <div class="mobile-nav-content">
-        <?php
-        // Load categories for mobile menu (same as desktop)
-        try {
-            if (!isset($pdo)) {
-                $pdo = new PDO('mysql:host=localhost;dbname=demolition_traders', 'root', '');
-                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            }
-            
-            $stmt = $pdo->prepare('SELECT id, name, slug, parent_id FROM categories WHERE parent_id IS NULL AND is_active = 1 ORDER BY position ASC, name ASC');
-            $stmt->execute();
-            $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            foreach ($mainCategories as $mainCat) {
-                $subStmt = $pdo->prepare('SELECT id, name, slug FROM categories WHERE parent_id = ? AND is_active = 1 ORDER BY position ASC, name ASC');
-                $subStmt->execute([$mainCat['id']]);
-                $subCategories = $subStmt->fetchAll(PDO::FETCH_ASSOC);
-                
-                if (!empty($subCategories)) {
-                    echo '<div class="mobile-nav-item has-dropdown">';
-                    echo '<a href="' . userUrl('shop.php?category=' . $mainCat['slug']) . '" class="mobile-nav-link">';
-                    echo htmlspecialchars($mainCat['name']) . ' <i class="fa-solid fa-plus toggle-icon"></i>';
-                    echo '</a>';
-                    echo '<div class="mobile-nav-submenu">';
-                    foreach ($subCategories as $subCat) {
-                        echo '<a href="' . userUrl('shop.php?category=' . $subCat['slug']) . '">' . htmlspecialchars($subCat['name']) . '</a>';
-                    }
-                    echo '</div>';
-                    echo '</div>';
-                } else {
-                    echo '<div class="mobile-nav-item">';
-                    echo '<a href="' . userUrl('shop.php?category=' . $mainCat['slug']) . '" class="mobile-nav-link">';
-                    echo htmlspecialchars($mainCat['name']);
-                    echo '</a>';
-                    echo '</div>';
-                }
-            }
-        } catch (Exception $e) {
-            echo '<!-- Error loading categories: ' . htmlspecialchars($e->getMessage()) . ' -->';
-        }
-        ?>
+    <div class="mobile-nav-content" id="mobile-nav-content">
+        <!-- Loaded via JavaScript -->
     </div>
     </div>
 </div>
+
+<script>
+        // Load mobile categories via API (same as desktop)
+        async function loadMobileCategories() {
+            try {
+                const response = await fetch(getApiUrl('/api/index.php?request=categories'));
+                const result = await response.json();
+                const categories = result.data || result;
+                
+                if (!Array.isArray(categories) || categories.length === 0) {
+                    return;
+                }
+                
+                // Filter for main categories with position set
+                const mainCategories = categories
+                    .filter(c => !c.parent_id && c.is_active == 1 && (c.position !== null && c.position !== undefined && c.position !== ''))
+                    .sort((a, b) => (a.position || 0) - (b.position || 0));
+                
+                let html = '';
+                mainCategories.forEach(mainCat => {
+                    const subCategories = categories
+                        .filter(c => c.parent_id === mainCat.id && c.is_active == 1 && (c.position !== null && c.position !== undefined && c.position !== ''))
+                        .sort((a, b) => (a.position || 0) - (b.position || 0));
+                    
+                    if (subCategories.length > 0) {
+                        html += '<div class="mobile-nav-item has-dropdown">';
+                        html += '<a href="' + BASE_PATH + 'user/shop.php?category=' + mainCat.slug + '" class="mobile-nav-link">';
+                        html += mainCat.name + ' <i class="fa-solid fa-plus toggle-icon"></i>';
+                        html += '</a>';
+                        html += '<div class="mobile-nav-submenu">';
+                        subCategories.forEach(subCat => {
+                            html += '<a href="' + BASE_PATH + 'user/shop.php?category=' + subCat.slug + '">' + subCat.name + '</a>';
+                        });
+                        html += '</div>';
+                        html += '</div>';
+                    } else {
+                        html += '<div class="mobile-nav-item">';
+                        html += '<a href="' + BASE_PATH + 'user/shop.php?category=' + mainCat.slug + '" class="mobile-nav-link">';
+                        html += mainCat.name;
+                        html += '</a>';
+                        html += '</div>';
+                    }
+                });
+                
+                document.getElementById('mobile-nav-content').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading mobile categories:', error);
+            }
+        }
+        
+        // Load on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadMobileCategories);
+        } else {
+            loadMobileCategories();
+        }
+        </script>
 
 <script>
         // Update wishlist count
