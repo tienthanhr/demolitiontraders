@@ -150,25 +150,37 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <!-- Organize Tab -->
     <div id="organize-tab" style="display: none;">
         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <p style="color: #666; margin: 0;"><i class="fas fa-info-circle"></i> <strong>Drag categories to reorder</strong> • Click eye icon to show/hide • Click + to add new category</p>
+            <p style="color: #666; margin: 0;"><i class="fas fa-info-circle"></i> <strong>Drag categories to reorder</strong> • Click eye icon to show/hide • Same layout as the header menu</p>
         </div>
 
-        <!-- Organized Categories in Header Order -->
-        <div style="background: white; padding: 30px; border-radius: 8px; border: 2px solid #e0e0e0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h4 style="margin: 0; color: #333;"><i class="fas fa-grip-vertical"></i> Drag to Reorder</h4>
+        <!-- Header Preview Section -->
+        <div style="background: white; padding: 40px; border-radius: 8px; border: 2px solid #e0e0e0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h4 style="margin: 0; color: #333;"><i class="fas fa-desktop"></i> Header Menu Preview</h4>
                 <button class="btn btn-primary btn-sm" onclick="showAddCategoryModal()">
                     <i class="fas fa-plus"></i> Add New Category
                 </button>
             </div>
-            <div id="header-preview-container" style="display: flex; flex-direction: column; gap: 12px;">
-                <!-- Categories with visibility toggle and drag handles -->
+
+            <!-- Desktop Header Preview (Horizontal Dropdown Style) -->
+            <div style="background: #2c3e50; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;" id="header-preview-container">
+                    <!-- Categories shown horizontally like in actual header -->
+                </div>
+            </div>
+
+            <!-- Drag to Reorder Section (Organized List) -->
+            <h4 style="margin: 30px 0 20px 0; color: #333; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <i class="fas fa-grip-vertical"></i> Reorder Items
+            </h4>
+            <div id="organize-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Draggable items for reordering -->
             </div>
         </div>
 
-        <!-- Hidden Categories Section -->
+        <!-- Hidden Categories Section (moved here) -->
         <div id="hidden-section" style="background: white; padding: 30px; border-radius: 8px; border: 2px solid #f0f0f0; margin-top: 30px; display: none;">
-            <h4 style="margin: 0 0 20px 0; color: #999;"><i class="fas fa-eye-slash"></i> Hidden Categories</h4>
+            <h4 style="margin: 0 0 20px 0; color: #999;"><i class="fas fa-eye-slash"></i> Hidden Categories (Not showing in header)</h4>
             <div id="hidden-categories-container" style="display: flex; flex-wrap: wrap; gap: 12px;">
                 <!-- Hidden categories appear here -->
             </div>
@@ -751,8 +763,7 @@ function loadOrganizeView() {
 
 function renderOrganizeView() {
     const mainContainer = document.getElementById('header-preview-container');
-    const hiddenSection = document.getElementById('hidden-section');
-    const hiddenContainer = document.getElementById('hidden-categories-container');
+    const listContainer = document.getElementById('organize-list-container');
     
     const mainCategories = currentOrder
         .filter(cat => !cat.parent_id)
@@ -762,27 +773,93 @@ function renderOrganizeView() {
     const hiddenMains = mainCategories.filter(cat => !visibilityMap[cat.id]);
     const hiddenSubs = currentOrder.filter(cat => cat.parent_id && !visibilityMap[cat.id]);
     
-    // Render visible categories (main order)
-    let html = '';
-    visibleMains.forEach((mainCat, mainIndex) => {
+    // ===== HEADER PREVIEW (Horizontal Dropdown Style) =====
+    let previewHtml = '';
+    visibleMains.forEach((mainCat) => {
         const subCats = (parentMap[mainCat.id] || [])
             .filter(sub => visibilityMap[sub.id])
             .sort((a, b) => (a.position || 0) - (b.position || 0));
+        
+        previewHtml += `
+            <div style="position: relative;">
+                <div style="
+                    color: white;
+                    padding: 10px 16px;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    background: rgba(255,255,255,0.1);
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                    font-weight: 500;
+                "
+                onmouseenter="this.style.background='rgba(255,255,255,0.2)'; this.parentElement.querySelector('.preview-dropdown').style.display='block';"
+                onmouseleave="this.parentElement.querySelector('.preview-dropdown').style.display='none';">
+                    ${mainCat.name}
+                    ${subCats.length > 0 ? '<i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px;"></i>' : ''}
+                </div>
+                ${subCats.length > 0 ? `
+                    <div class="preview-dropdown" style="
+                        display: none;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        background: white;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        min-width: 200px;
+                        z-index: 100;
+                        margin-top: 4px;
+                    "
+                    onmouseenter="this.style.display='block';"
+                    onmouseleave="this.style.display='none';">
+                        ${subCats.map(sub => `
+                            <div style="
+                                padding: 10px 16px;
+                                border-bottom: 1px solid #f0f0f0;
+                                color: #333;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                font-size: 14px;
+                            "
+                            onmouseenter="this.style.backgroundColor='#f9f9f9';"
+                            onmouseleave="this.style.backgroundColor='white';">
+                                ${sub.name}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    if (visibleMains.length === 0) {
+        previewHtml = '<p style="color: #999; margin: 0;">No visible categories. Use the reorder list below to show categories.</p>';
+    }
+    
+    mainContainer.innerHTML = previewHtml;
+    
+    // ===== REORDER LIST (Draggable Items) =====
+    let listHtml = '';
+    mainCategories.forEach((mainCat, mainIndex) => {
+        const subCats = (parentMap[mainCat.id] || [])
+            .sort((a, b) => (a.position || 0) - (b.position || 0));
+        const isVisible = visibilityMap[mainCat.id];
         const hasSubs = subCats.length > 0;
         
-        html += `
+        listHtml += `
             <div class="organize-item" style="
                 display: flex;
                 align-items: center;
                 gap: 12px;
                 padding: 15px 20px;
-                background: white;
-                border: 2px solid #ddd;
+                background: ${isVisible ? 'white' : '#f5f5f5'};
+                border: 2px solid ${isVisible ? '#ddd' : '#ccc'};
                 border-radius: 8px;
                 margin-bottom: 12px;
                 cursor: grab;
                 transition: all 0.2s;
-                position: relative;
+                opacity: ${isVisible ? '1' : '0.7'};
             "
             draggable="true"
             data-type="main"
@@ -791,18 +868,18 @@ function renderOrganizeView() {
             ondragend="handleDragEnd(event)"
             ondragover="handleDragOver(event)"
             ondrop="handleDrop(event)"
-            onmouseenter="this.style.borderColor='#007bff'; this.style.boxShadow='0 2px 8px rgba(0,123,255,0.2)'; this.style.backgroundColor='#f9fbff';"
-            onmouseleave="this.style.borderColor='#ddd'; this.style.boxShadow='none'; this.style.backgroundColor='white';">
+            onmouseenter="this.style.borderColor='#007bff'; this.style.boxShadow='0 2px 8px rgba(0,123,255,0.2)'; this.style.backgroundColor='${isVisible ? '#f9fbff' : '#f5f5f5'}';"
+            onmouseleave="this.style.borderColor='${isVisible ? '#ddd' : '#ccc'}'; this.style.boxShadow='none'; this.style.backgroundColor='${isVisible ? 'white' : '#f5f5f5'}';">
                 
                 <i class="fas fa-grip-vertical" style="cursor: grab; color: #999; font-size: 18px; min-width: 20px;"></i>
                 
                 <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 600; color: #333; font-size: 16px;">${mainCat.name}</div>
+                    <div style="font-weight: 600; color: ${isVisible ? '#333' : '#999'}; font-size: 16px;">${mainCat.name}</div>
                     ${hasSubs ? `
-                        <div style="font-size: 12px; color: #999; margin-top: 4px;">
+                        <div style="font-size: 12px; color: ${isVisible ? '#999' : '#ccc'}; margin-top: 4px;">
                             ${subCats.length} subcategories
                         </div>
-                    ` : `<div style="font-size: 12px; color: #ccc; margin-top: 4px;">Main category</div>`}
+                    ` : `<div style="font-size: 12px; color: ${isVisible ? '#ccc' : '#ddd'}; margin-top: 4px;">Main category</div>`}
                 </div>
                 
                 <span style="
@@ -822,22 +899,24 @@ function renderOrganizeView() {
                     border: none;
                     cursor: pointer;
                     font-size: 18px;
-                    color: #007bff;
+                    color: ${isVisible ? '#007bff' : '#ccc'};
                     padding: 0 10px;
                     transition: all 0.2s;
                     min-width: 30px;
                     text-align: center;
                 "
                 onclick="toggleVisibility(${mainCat.id}, event)"
-                title="Click to hide"
-                onmouseenter="this.style.color='#0056b3'; this.style.transform='scale(1.2)';"
-                onmouseleave="this.style.color='#007bff'; this.style.transform='scale(1)';">
-                    <i class="fas fa-eye"></i>
+                title="${isVisible ? 'Click to hide' : 'Click to show'}"
+                onmouseenter="this.style.color='${isVisible ? '#0056b3' : '#999'}'; this.style.transform='scale(1.2)';"
+                onmouseleave="this.style.color='${isVisible ? '#007bff' : '#ccc'}'; this.style.transform='scale(1)';">
+                    <i class="fas fa-${isVisible ? 'eye' : 'eye-slash'}"></i>
                 </button>
             </div>
             ${hasSubs ? `
                 <div style="margin: 12px 0 12px 40px; padding: 12px; background: #f9fbff; border-left: 3px solid #007bff; border-radius: 4px;">
-                    ${subCats.map((subCat, subIndex) => `
+                    ${subCats.map((subCat, subIndex) => {
+                        const subIsVisible = visibilityMap[subCat.id];
+                        return `
                         <div class="organize-item-sub" style="
                             display: flex;
                             align-items: center;
@@ -850,7 +929,7 @@ function renderOrganizeView() {
                             cursor: grab;
                             transition: all 0.2s;
                             font-size: 14px;
-                            position: relative;
+                            opacity: ${subIsVisible ? '1' : '0.6'};
                         "
                         draggable="true"
                         data-type="sub"
@@ -865,7 +944,7 @@ function renderOrganizeView() {
                             
                             <i class="fas fa-grip-vertical" style="cursor: grab; color: #ccc; font-size: 14px; min-width: 16px;"></i>
                             
-                            <div style="flex: 1; color: #555;">
+                            <div style="flex: 1; color: ${subIsVisible ? '#555' : '#999'};">
                                 ${subCat.name}
                             </div>
                             
@@ -874,74 +953,33 @@ function renderOrganizeView() {
                                 border: none;
                                 cursor: pointer;
                                 font-size: 14px;
-                                color: #007bff;
+                                color: ${subIsVisible ? '#007bff' : '#ccc'};
                                 padding: 0 8px;
                                 transition: all 0.2s;
                                 min-width: 24px;
                                 text-align: center;
                             "
                             onclick="toggleVisibility(${subCat.id}, event)"
-                            title="Click to hide"
-                            onmouseenter="this.style.color='#0056b3'; this.style.transform='scale(1.2)';"
-                            onmouseleave="this.style.color='#007bff'; this.style.transform='scale(1)';">
-                                <i class="fas fa-eye"></i>
+                            title="${subIsVisible ? 'Click to hide' : 'Click to show'}"
+                            onmouseenter="this.style.color='${subIsVisible ? '#0056b3' : '#999'}'; this.style.transform='scale(1.2)';"
+                            onmouseleave="this.style.color='${subIsVisible ? '#007bff' : '#ccc'}'; this.style.transform='scale(1)';">
+                                <i class="fas fa-${subIsVisible ? 'eye' : 'eye-slash'}"></i>
                             </button>
                         </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             ` : ''}
         `;
     });
     
-    mainContainer.innerHTML = html || '<p style="color: #999; text-align: center; padding: 20px;">No categories yet. Add one to get started!</p>';
+    listContainer.innerHTML = listHtml || '<p style="color: #999; text-align: center; padding: 20px;">No categories yet. Add one to get started!</p>';
     
     // Show hidden section only if there are hidden items
     const allHidden = [...hiddenMains, ...hiddenSubs];
     if (allHidden.length > 0) {
-        hiddenSection.style.display = 'block';
-        let hiddenHtml = '';
-        
-        allHidden.forEach(cat => {
-            hiddenHtml += `
-                <div style="
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 10px 14px;
-                    background: white;
-                    border: 1px solid #ddd;
-                    border-radius: 6px;
-                    font-size: 14px;
-                    color: #666;
-                    transition: all 0.2s;
-                "
-                onmouseenter="this.style.backgroundColor='#f9f9f9'; this.style.borderColor='#007bff';"
-                onmouseleave="this.style.backgroundColor='white'; this.style.borderColor='#ddd';">
-                    <i class="fas fa-eye-slash" style="color: #999;"></i>
-                    ${cat.name}
-                    <button type="button" style="
-                        background: none;
-                        border: none;
-                        cursor: pointer;
-                        font-size: 14px;
-                        color: #007bff;
-                        padding: 0;
-                        margin-left: 6px;
-                        transition: all 0.2s;
-                    "
-                    onclick="toggleVisibility(${cat.id}, event)"
-                    title="Click to show"
-                    onmouseenter="this.style.color='#0056b3';"
-                    onmouseleave="this.style.color='#007bff';">
-                        <i class="fas fa-check"></i>
-                    </button>
-                </div>
-            `;
-        });
-        
-        hiddenContainer.innerHTML = hiddenHtml;
-    } else {
-        hiddenSection.style.display = 'none';
+        // Optional: Add a "Hidden categories" summary at the bottom if needed
+        // For now, hidden items are shown with eye-slash icon in the reorder list
     }
 }
 
@@ -959,17 +997,8 @@ function toggleVisibility(categoryId, event) {
 }
 
 function showAddCategoryModal() {
-    // Open the category modal for adding new category
-    document.getElementById('category-id').value = '';
-    document.getElementById('category-custom-id').value = '';
-    document.getElementById('category-name').value = '';
-    document.getElementById('category-slug').value = '';
-    document.getElementById('category-description').value = '';
-    document.getElementById('category-status').value = '1';
-    document.getElementById('category-modal-title').textContent = 'Add New Category';
-    document.getElementById('custom-id-group').style.display = 'block';
-    document.getElementById('category-modal').classList.add('show');
-    document.getElementById('category-name').focus();
+    // Just call openCategoryModal - it handles everything
+    openCategoryModal();
 }
 
 let draggedElement = null;
