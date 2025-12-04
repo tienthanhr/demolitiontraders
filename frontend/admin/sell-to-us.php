@@ -750,13 +750,13 @@ include __DIR__ . '/../components/admin-header.php';
                     <td data-label="ID">${sub.id}</td>
                     <td data-label="Photo">${thumbnail}</td>
                     <td data-label="Date">${formatDate(sub.created_at)}</td>
-                    <td data-label="Name">${escapeHtml(sub.name)}</td>
+                    <td data-label="Name">${escapeHtml(sub.contact_name || sub.name)}</td>
                     <td data-label="Contact">
                         <div>${escapeHtml(sub.email)}</div>
                         <small>${escapeHtml(sub.phone)}</small>
                     </td>
                     <td data-label="Item">${escapeHtml(sub.item_name)}</td>
-                    <td data-label="Type"><span class="status-badge ${sub.pickup_delivery.toLowerCase().includes('pickup') ? 'status-contacted' : 'status-reviewing'}">${escapeHtml(sub.pickup_delivery)}</span></td>
+                    <td data-label="Type"><span class="status-badge ${(sub.delivery_type || sub.pickup_delivery || '').toLowerCase().includes('pickup') ? 'status-contacted' : 'status-reviewing'}">${escapeHtml(sub.delivery_type || sub.pickup_delivery || 'N/A')}</span></td>
                     <td data-label="Pickup Date">${sub.pickup_date ? formatDate(sub.pickup_date) : '<em>Not set</em>'}</td>
                     <td data-label="Status"><span class="status-badge status-${sub.status}">${capitalize(sub.status)}</span></td>
                     <td data-label="Actions">
@@ -793,17 +793,17 @@ include __DIR__ . '/../components/admin-header.php';
             // Filter by type (pickup/delivery)
             if (typeFilter !== 'all') {
                 filtered = filtered.filter(sub => 
-                    sub.pickup_delivery.toLowerCase().includes(typeFilter)
+                    (sub.delivery_type || sub.pickup_delivery || '').toLowerCase().includes(typeFilter)
                 );
             }
             
             // Search filter
             if (searchTerm) {
                 filtered = filtered.filter(sub => 
-                    sub.name.toLowerCase().includes(searchTerm) ||
-                    sub.email.toLowerCase().includes(searchTerm) ||
-                    sub.item_name.toLowerCase().includes(searchTerm) ||
-                    sub.phone.includes(searchTerm)
+                    (sub.contact_name || sub.name || '').toLowerCase().includes(searchTerm) ||
+                    (sub.email || '').toLowerCase().includes(searchTerm) ||
+                    (sub.item_name || '').toLowerCase().includes(searchTerm) ||
+                    (sub.phone || '').includes(searchTerm)
                 );
             }
             
@@ -840,7 +840,7 @@ include __DIR__ . '/../components/admin-header.php';
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Name:</div>
-                    <div>${escapeHtml(sub.name)}</div>
+                    <div>${escapeHtml(sub.contact_name || sub.name)}</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Email:</div>
@@ -852,7 +852,7 @@ include __DIR__ . '/../components/admin-header.php';
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Location:</div>
-                    <div>${escapeHtml(sub.location || 'N/A')}</div>
+                    <div>${escapeHtml(sub.pickup_address || sub.location || 'N/A')}</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Item Name:</div>
@@ -864,7 +864,7 @@ include __DIR__ . '/../components/admin-header.php';
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Pickup/Delivery:</div>
-                    <div>${escapeHtml(sub.pickup_delivery)}</div>
+                    <div>${escapeHtml(sub.delivery_type || sub.pickup_delivery || 'N/A')}</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Pickup Date:</div>

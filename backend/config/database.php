@@ -219,9 +219,16 @@ class Database {
             if (!$insertId) {
                 try {
                     $insertId = $this->connection->lastInsertId("{$table}_id_seq");
+                    if (!$insertId) {
+                        $this->log("[INSERT][WARNING] Could not get ID from RETURNING or lastInsertId");
+                    }
                 } catch (Exception $e) {
                     $this->log("[INSERT][WARNING] Could not get lastInsertId: " . $e->getMessage());
                 }
+            }
+            
+            if (!$insertId) {
+                throw new Exception("Failed to get insert ID for table $table");
             }
             
             $this->log("[INSERT][SUCCESS] Table: $table, ID: $insertId");
