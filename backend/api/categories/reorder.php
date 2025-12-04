@@ -4,9 +4,9 @@
  * POST /api/categories/reorder.php
  */
 
-require_once '../../config.php';
-require_once '../../backend/utils/security.php';
-require_once '../../backend/config/database.php';
+require_once '../../../frontend/config.php';
+require_once '../../utils/security.php';
+require_once '../../config/database.php';
 
 // Check authentication
 session_start();
