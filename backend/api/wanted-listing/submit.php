@@ -72,10 +72,10 @@ try {
     // Store wanted listing in database
     $stmt = $db->prepare("
         INSERT INTO wanted_listings 
-        (user_id, name, email, phone, category, description, quantity, notify_enabled, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())
+        (user_id, contact_name, email, phone, category, description, item_name, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
     ");
-    $stmt->execute([$userId, $name, $email, $phone, $category, $description, $quantity, $notify ? 1 : 0]);
+    $stmt->execute([$userId, $name, $email, $phone, $category, $description, $category, $notify ? 1 : 0]);
     $wantedListingId = $db->lastInsertId();
     
     // If user is logged in, try to find matching products and add to wishlist

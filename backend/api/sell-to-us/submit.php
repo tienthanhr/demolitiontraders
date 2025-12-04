@@ -95,8 +95,8 @@ try {
     $db = Database::getInstance()->getConnection();
     $stmt = $db->prepare("
         INSERT INTO sell_to_us_submissions 
-        (name, email, phone, location, item_name, quantity, pickup_date, pickup_delivery, description, photos, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        (contact_name, email, phone, pickup_address, item_name, quantity, preferred_date, delivery_type, description, photos)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $photosJson = !empty($uploadedFiles) ? json_encode($uploadedFiles) : null;
     $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $pickupDate, $pickupDelivery, $description, $photosJson]);

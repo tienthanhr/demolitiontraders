@@ -273,7 +273,10 @@ class OrderController {
             }
             
             // Return order details
-            return $this->show($orderId);
+            error_log("OrderController::create - About to call show($orderId)");
+            $orderDetails = $this->show($orderId);
+            error_log("OrderController::create - Successfully retrieved order details, id: " . ($orderDetails['id'] ?? 'unknown'));
+            return $orderDetails;
             
         } catch (Exception $e) {
             error_log("OrderController::create - Exception caught: " . $e->getMessage());
