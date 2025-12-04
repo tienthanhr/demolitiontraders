@@ -1,8 +1,7 @@
 <?php
 // User registration API
 // Configure session FIRST before any output
-ini_set('session.save_path', '/tmp');
-session_start();
+require_once __DIR__ . '/../../core/bootstrap.php';
 
 // CORS headers with credentials support
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';

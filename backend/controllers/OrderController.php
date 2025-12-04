@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../services/IdealPOSService.php';
+require_once __DIR__ . '/../utils/security.php';
 
 class OrderController {
     private $db;

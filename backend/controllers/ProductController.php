@@ -4,6 +4,8 @@
  * Handles product-related operations
  */
 
+require_once __DIR__ . '/../utils/security.php';
+
 class ProductController {
     private $db;
     
@@ -169,7 +171,7 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
         $products = $this->db->fetchAll($sql, $queryParams);
         
         return [
-            'data' => $products,
+            'data' => escape_output($products),
             'pagination' => [
                 'total' => intval($total),
                 'per_page' => $perPage,
@@ -218,7 +220,7 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
             ['category_id' => $product['category_id'], 'product_id' => $product['id']]
         );
         
-        return $product;
+        return escape_output($product);
     }
     
     /**

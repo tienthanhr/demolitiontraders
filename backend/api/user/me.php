@@ -3,8 +3,7 @@
  * Get Current User API
  */
 // Configure session for Render
-ini_set('session.save_path', '/tmp');
-session_start();
+require_once __DIR__ . '/../../core/bootstrap.php';
 
 // CORS headers with credentials support
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
