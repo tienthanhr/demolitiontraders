@@ -82,17 +82,23 @@ class OrderController {
         $userId = $_SESSION['user_id'] ?? null;
         $isAdmin = ($_SESSION['is_admin'] ?? false) || ($_SESSION['role'] ?? '') === 'admin';
         
+        error_log("OrderController::show - Looking for order ID: $id, userId: $userId, isAdmin: $isAdmin");
+        
         $order = $this->db->fetchOne(
             "SELECT * FROM orders WHERE id = :id",
             ['id' => $id]
         );
         
         if (!$order) {
+            error_log("OrderController::show - Order ID $id not found in database");
             throw new Exception('Order not found');
         }
         
+        error_log("OrderController::show - Order found with user_id: " . ($order['user_id'] ?? 'null'));
+        
         // Check authorization - admin can see all orders
         if (!$isAdmin && $order['user_id'] != $userId) {
+            error_log("OrderController::show - Authorization failed: user_id in order is " . var_export($order['user_id'], true) . ", current session user_id is " . var_export($userId, true));
             throw new Exception('Unauthorized access');
         }
         
@@ -199,6 +205,13 @@ class OrderController {
                 'shipping_address' => json_encode($data['shipping_address']),
                 'customer_notes' => $data['notes'] ?? null
             ]);
+            
+            if (!$orderId) {
+                error_log("OrderController::create - ERROR: insert() returned null or false");
+                throw new Exception('Failed to create order - no ID returned from database');
+            }
+            
+            error_log("OrderController::create - Order created with ID: $orderId");
             
             // Create order items
             foreach ($cartItems as $item) {
