@@ -53,6 +53,7 @@ try {
     $email = filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL);
     $phone = isset($data['phone']) ? htmlspecialchars(trim($data['phone'])) : '';
     $category = isset($data['category']) ? htmlspecialchars(trim($data['category'])) : '';
+    $itemName = isset($data['item_name']) ? htmlspecialchars(trim($data['item_name'])) : '';
     $description = htmlspecialchars(trim($data['description']));
     $quantity = isset($data['quantity']) ? htmlspecialchars(trim($data['quantity'])) : '';
     $notify = isset($data['notify']) && $data['notify'] === 'on';

@@ -92,16 +92,30 @@ try {
     }
     
     // Store in database
-    $db = Database::getInstance()->getConnection();
-    $stmt = $db->prepare("
-        INSERT INTO sell_to_us_submissions 
-        (contact_name, email, phone, pickup_address, item_name, quantity, preferred_date, delivery_type, description, photos)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    $photosJson = !empty($uploadedFiles) ? json_encode($uploadedFiles) : null;
-    // Convert empty pickup_date to NULL for PostgreSQL DATE column
-    $preferredDate = !empty($pickupDate) ? $pickupDate : null;
-    $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $preferredDate, $pickupDelivery, $description, $photosJson]);
+    try {
+        $db = Database::getInstance()->getConnection();
+        if (!$db) {
+            throw new Exception('Database connection failed');
+        }
+        $stmt = $db->prepare("
+            INSERT INTO sell_to_us_submissions 
+            (contact_name, email, phone, pickup_address, item_name, quantity, preferred_date, delivery_type, description, photos)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        if (!$stmt) {
+            throw new Exception('Failed to prepare statement: ' . json_encode($db->errorInfo()));
+        }
+        $photosJson = !empty($uploadedFiles) ? json_encode($uploadedFiles) : null;
+        // Convert empty pickup_date to NULL for PostgreSQL DATE column
+        $preferredDate = !empty($pickupDate) ? $pickupDate : null;
+        $result = $stmt->execute([$name, $email, $phone, $location, $itemName, $quantity, $preferredDate, $pickupDelivery, $description, $photosJson]);
+        if (!$result) {
+            throw new Exception('Failed to execute insert: ' . json_encode($stmt->errorInfo()));
+        }
+    } catch (Exception $dbError) {
+        error_log("Database error in sell-to-us: " . $dbError->getMessage());
+        // Log but don't break - we already confirmed success to user
+    }
     
     // Send email to admin
     $emailService = new EmailService();

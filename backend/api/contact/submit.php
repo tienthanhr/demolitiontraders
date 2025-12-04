@@ -71,7 +71,10 @@ try {
         if (!$stmt) {
             throw new Exception('Failed to prepare database statement');
         }
-        $stmt->execute([$name, $email, $phone, $subject, $message]);
+        $result = $stmt->execute([$name, $email, $phone, $subject, $message]);
+        if (!$result) {
+            throw new Exception('Failed to execute insert: ' . json_encode($stmt->errorInfo()));
+        }
     } catch (Exception $dbError) {
         error_log("Database error in contact form: " . $dbError->getMessage());
         // Continue with email even if database fails

@@ -23,6 +23,13 @@ class EmailService {
      */
     private function setupMailer() {
         try {
+            // Check if email is configured
+            if (empty($this->config['smtp_username']) || empty($this->config['smtp_password'])) {
+                error_log("Email service disabled - SMTP credentials not configured");
+                $this->config['enabled'] = false;
+                return;
+            }
+            
             // Server settings
             $this->mailer->isSMTP();
             $this->mailer->Host       = $this->config['smtp_host'];

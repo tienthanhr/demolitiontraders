@@ -271,13 +271,20 @@ class OrderController {
                 $customerEmail = $billing['email'] ?? $data['email'] ?? null;
                 
                 if ($customerEmail) {
-                    // Get complete order with items for email
-                    $completeOrder = $this->show($orderId);
-                    $emailService->sendTaxInvoice($completeOrder, $customerEmail);
-                    error_log("Tax Invoice email sent to: $customerEmail for order #$orderId");
+                    try {
+                        // Get complete order with items for email
+                        $completeOrder = $this->show($orderId);
+                        $emailService->sendTaxInvoice($completeOrder, $customerEmail);
+                        error_log("Tax Invoice email sent to: $customerEmail for order #$orderId");
+                    } catch (Exception $emailEx) {
+                        // Log email error but don't break order creation
+                        error_log("Failed to send Tax Invoice email: " . $emailEx->getMessage());
+                    }
                 }
             } catch (Exception $e) {
                 // Log but don't throw - email failure shouldn't break order creation
+                error_log("Failed to send Tax Invoice email: " . $e->getMessage());
+            }
                 error_log("Failed to send Tax Invoice email: " . $e->getMessage());
             }
             
