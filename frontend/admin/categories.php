@@ -163,17 +163,17 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             </div>
 
             <!-- Desktop Header Preview (Horizontal Dropdown Style) -->
-            <div style="background: #2c3e50; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;" id="header-preview-container">
+            <div style="background: #2c3e50; padding: 12px 15px; border-radius: 8px; margin-bottom: 30px; overflow: visible; position: relative; z-index: 2000;">
+                <div style="display: flex; gap: 6px; align-items: center; white-space: nowrap;" id="header-preview-container">
                     <!-- Categories shown horizontally like in actual header -->
                 </div>
             </div>
 
             <!-- Drag to Reorder Section (Organized List) -->
-            <h4 style="margin: 30px 0 20px 0; color: #333; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+            <h4 style="margin: 20px 0 20px 0; color: #333; padding-top: 20px; border-top: 2px solid #e0e0e0; position: relative; z-index: auto;">
                 <i class="fas fa-grip-vertical"></i> Reorder Items
             </h4>
-            <div id="organize-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+            <div id="organize-list-container" style="display: flex; flex-direction: column; gap: 12px; position: relative; z-index: auto;">
                 <!-- Draggable items for reordering -->
             </div>
         </div>
@@ -261,6 +261,7 @@ let currentOrder = [];
 let originalOrder = [];
 let visibilityMap = {};
 let parentMap = {};
+let expandedCategories = {}; // Track which categories are expanded
 
 // Load categories
 async function loadCategories() {
@@ -268,8 +269,7 @@ async function loadCategories() {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading categories...</p></td></tr>';
 
     try {
-        const response = await fetch(getApiUrl('/api/index.php?request=categories'));
-        const data = await response.json();
+        const data = await apiFetch(getApiUrl('/api/index.php?request=categories'));
         categoriesData = data.data || data;
 
         if (!categoriesData || categoriesData.length === 0) {
@@ -278,8 +278,7 @@ async function loadCategories() {
         }
 
         // Get product counts for each category
-        const countsResponse = await fetch(getApiUrl('/api/index.php?request=products&per_page=1000'));
-        const productsData = await countsResponse.json();
+        const productsData = await apiFetch(getApiUrl('/api/index.php?request=products&per_page=1000'));
         const products = productsData.data || [];
         
         productCounts = {};
@@ -447,8 +446,7 @@ function closeCategoryModal() {
 async function editCategory(id) {
     try {
         const apiPath = `/api/index.php?request=categories/${id}`;
-        const response = await fetch(getApiUrl(apiPath));
-        const category = await response.json();
+        const category = await apiFetch(getApiUrl(apiPath));
 
         document.getElementById('category-modal-title').textContent = 'Edit Category';
         document.getElementById('category-id').value = category.id;
@@ -518,11 +516,10 @@ async function deleteCategory(id, name) {
     try {
         // Get category data before deletion for undo
         const apiPath = `/api/index.php?request=categories/${id}`;
-        const categoryResponse = await fetch(getApiUrl(apiPath));
-        const categoryData = await categoryResponse.json();
+        const categoryData = await apiFetch(getApiUrl(apiPath));
         const originalCategory = categoryData.data || categoryData;
 
-        const response = await fetch(getApiUrl(apiPath), {
+        const response = await apiFetch(getApiUrl(apiPath), {
             method: 'DELETE'
         });
 
@@ -627,12 +624,12 @@ async function undoLastAction() {
         let successCount = 0;
         for (const catData of categories) {
             try {
-                const res = await fetch(getApiUrl('/api/index.php?request=categories'), {
+                const res = await apiFetch(getApiUrl('/api/index.php?request=categories'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(catData)
                 });
-                if (res.ok) successCount++;
+                if (res && res.success) successCount++;
             } catch (err) {
                 console.error('Undo failed for category:', catData.name, err);
             }
@@ -681,11 +678,11 @@ async function bulkDeleteCategories() {
         for (const categoryId of categoryIds) {
             try {
                 const apiPath = `/api/index.php?request=categories/${categoryId}`;
-                const res = await fetch(getApiUrl(apiPath), {
+                const res = await apiFetch(getApiUrl(apiPath), {
                     method: 'DELETE'
                 });
                 
-                if (res.ok) {
+                if (res && res.success) {
                     successCount++;
                 } else {
                     failCount++;
@@ -741,21 +738,31 @@ function loadOrganizeView() {
     currentOrder = JSON.parse(JSON.stringify(categoriesData.sort((a, b) => (a.position || 0) - (b.position || 0))));
     originalOrder = JSON.parse(JSON.stringify(currentOrder));
     
-    // Initialize visibility - all visible by default
-    visibilityMap = {};
-    currentOrder.forEach(cat => {
-        visibilityMap[cat.id] = true;
-    });
-    
-    // Build parent map
+    // Build parent map FIRST - all categories including those without parent
     parentMap = {};
     currentOrder.forEach(cat => {
-        if (cat.parent_id) {
-            if (!parentMap[cat.parent_id]) {
-                parentMap[cat.parent_id] = [];
+        if (cat.parent_id && cat.parent_id !== null && cat.parent_id !== undefined && cat.parent_id !== '') {
+            // Use string key to handle both string and number parent_ids
+            const parentKey = String(cat.parent_id);
+            if (!parentMap[parentKey]) {
+                parentMap[parentKey] = [];
             }
-            parentMap[cat.parent_id].push(cat);
+            parentMap[parentKey].push(cat);
         }
+    });
+    
+    // Initialize visibility - show if position is set, hide if null
+    visibilityMap = {};
+    currentOrder.forEach(cat => {
+        // Show main categories that have position set, hide those without
+        visibilityMap[cat.id] = (cat.position !== null && cat.position !== undefined && cat.position !== '');
+    });
+    
+    // Initialize expanded state - all expanded by default
+    expandedCategories = {};
+    const mainCategories = currentOrder.filter(cat => !cat.parent_id);
+    mainCategories.forEach(cat => {
+        expandedCategories[cat.id] = true;
     });
     
     renderOrganizeView();
@@ -776,26 +783,31 @@ function renderOrganizeView() {
     // ===== HEADER PREVIEW (Horizontal Dropdown Style) =====
     let previewHtml = '';
     visibleMains.forEach((mainCat) => {
-        const subCats = (parentMap[mainCat.id] || [])
+        // Get subcategories - parent_id might be string or number, so compare as strings
+        const subCats = (parentMap[mainCat.id] || parentMap[String(mainCat.id)] || [])
             .filter(sub => visibilityMap[sub.id])
             .sort((a, b) => (a.position || 0) - (b.position || 0));
         
         previewHtml += `
-            <div style="position: relative;">
+            <div style="position: relative; flex-shrink: 0;" class="preview-cat-item"
+            onmouseenter="(() => { clearTimeout(this.hideTimer); const dd = this.querySelector('.preview-dropdown'); if(dd) dd.style.display='block'; }).call(this);"
+            onmouseleave="this.hideTimer = setTimeout(() => { this.querySelector('.preview-dropdown') && (this.querySelector('.preview-dropdown').style.display='none'); }, 100);">
                 <div style="
                     color: white;
-                    padding: 10px 16px;
+                    padding: 5px 9px;
                     cursor: pointer;
-                    border-radius: 4px;
+                    border-radius: 3px;
                     background: rgba(255,255,255,0.1);
                     transition: all 0.2s;
                     white-space: nowrap;
                     font-weight: 500;
+                    font-size: 11px;
+                    display: inline-block;
                 "
-                onmouseenter="this.style.background='rgba(255,255,255,0.2)'; this.parentElement.querySelector('.preview-dropdown').style.display='block';"
-                onmouseleave="this.parentElement.querySelector('.preview-dropdown').style.display='none';">
+                onmouseenter="this.style.background='rgba(255,255,255,0.2)';"
+                onmouseleave="this.style.background='rgba(255,255,255,0.1)';">
                     ${mainCat.name}
-                    ${subCats.length > 0 ? '<i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px;"></i>' : ''}
+                    ${subCats.length > 0 ? '<i class="fas fa-chevron-down" style="margin-left: 4px; font-size: 9px;"></i>' : ''}
                 </div>
                 ${subCats.length > 0 ? `
                     <div class="preview-dropdown" style="
@@ -805,22 +817,24 @@ function renderOrganizeView() {
                         left: 0;
                         background: white;
                         border: 1px solid #ddd;
-                        border-radius: 4px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                        min-width: 200px;
-                        z-index: 100;
+                        border-radius: 3px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                        min-width: 160px;
+                        z-index: 999999;
                         margin-top: 4px;
+                        pointer-events: auto;
                     "
-                    onmouseenter="this.style.display='block';"
-                    onmouseleave="this.style.display='none';">
+                    onmouseenter="clearTimeout(this.parentElement.hideTimer);"
+                    onmouseleave="this.parentElement.hideTimer = setTimeout(() => { this.style.display='none'; }, 100);">
                         ${subCats.map(sub => `
                             <div style="
-                                padding: 10px 16px;
+                                padding: 6px 10px;
                                 border-bottom: 1px solid #f0f0f0;
                                 color: #333;
                                 cursor: pointer;
                                 transition: all 0.2s;
-                                font-size: 14px;
+                                font-size: 11px;
+                                white-space: nowrap;
                             "
                             onmouseenter="this.style.backgroundColor='#f9f9f9';"
                             onmouseleave="this.style.backgroundColor='white';">
@@ -842,7 +856,8 @@ function renderOrganizeView() {
     // ===== REORDER LIST (Draggable Items) =====
     let listHtml = '';
     mainCategories.forEach((mainCat, mainIndex) => {
-        const subCats = (parentMap[mainCat.id] || [])
+        // Get subcategories - parent_id might be string or number
+        const subCats = (parentMap[mainCat.id] || parentMap[String(mainCat.id)] || [])
             .sort((a, b) => (a.position || 0) - (b.position || 0));
         const isVisible = visibilityMap[mainCat.id];
         const hasSubs = subCats.length > 0;
@@ -857,7 +872,7 @@ function renderOrganizeView() {
                 border: 2px solid ${isVisible ? '#ddd' : '#ccc'};
                 border-radius: 8px;
                 margin-bottom: 12px;
-                cursor: grab;
+                cursor: ${hasSubs ? 'pointer' : 'grab'};
                 transition: all 0.2s;
                 opacity: ${isVisible ? '1' : '0.7'};
             "
@@ -868,10 +883,27 @@ function renderOrganizeView() {
             ondragend="handleDragEnd(event)"
             ondragover="handleDragOver(event)"
             ondrop="handleDrop(event)"
+            onclick="${hasSubs ? `toggleExpand(${mainCat.id}, event)` : ''}"
             onmouseenter="this.style.borderColor='#007bff'; this.style.boxShadow='0 2px 8px rgba(0,123,255,0.2)'; this.style.backgroundColor='${isVisible ? '#f9fbff' : '#f5f5f5'}';"
             onmouseleave="this.style.borderColor='${isVisible ? '#ddd' : '#ccc'}'; this.style.boxShadow='none'; this.style.backgroundColor='${isVisible ? 'white' : '#f5f5f5'}';">
                 
                 <i class="fas fa-grip-vertical" style="cursor: grab; color: #999; font-size: 18px; min-width: 20px;"></i>
+                
+                ${hasSubs ? `
+                    <div style="
+                        cursor: pointer;
+                        font-size: 14px;
+                        color: ${isVisible ? '#007bff' : '#ccc'};
+                        padding: 0;
+                        transition: all 0.2s;
+                        min-width: 20px;
+                        text-align: center;
+                    "
+                    onmouseenter="this.style.color='${isVisible ? '#0056b3' : '#999'}'; this.style.transform='scale(1.2)';"
+                    onmouseleave="this.style.color='${isVisible ? '#007bff' : '#ccc'}'; this.style.transform='scale(1)';">
+                        <i class="fas fa-${expandedCategories[mainCat.id] ? 'chevron-down' : 'chevron-right'}"></i>
+                    </div>
+                ` : '<span style="min-width: 20px;"></span>'}
                 
                 <div style="flex: 1; min-width: 0;">
                     <div style="font-weight: 600; color: ${isVisible ? '#333' : '#999'}; font-size: 16px;">${mainCat.name}</div>
@@ -912,7 +944,7 @@ function renderOrganizeView() {
                     <i class="fas fa-${isVisible ? 'eye' : 'eye-slash'}"></i>
                 </button>
             </div>
-            ${hasSubs ? `
+            ${hasSubs && expandedCategories[mainCat.id] ? `
                 <div style="margin: 12px 0 12px 40px; padding: 12px; background: #f9fbff; border-left: 3px solid #007bff; border-radius: 4px;">
                     ${subCats.map((subCat, subIndex) => {
                         const subIsVisible = visibilityMap[subCat.id];
@@ -996,6 +1028,12 @@ function toggleVisibility(categoryId, event) {
     updateChangeIndicator();
 }
 
+function toggleExpand(categoryId, event) {
+    event.stopPropagation();
+    expandedCategories[categoryId] = !expandedCategories[categoryId];
+    renderOrganizeView();
+}
+
 function showAddCategoryModal() {
     // Just call openCategoryModal - it handles everything
     openCategoryModal();
@@ -1051,12 +1089,19 @@ function handleDrop(e) {
                 }
             }
             
-            // Find and swap positions
+            // Find and swap positions in array
             const draggedIdx = currentOrder.findIndex(c => c.id === draggedId);
             const targetIdx = currentOrder.findIndex(c => c.id === targetId);
             
             if (draggedIdx !== -1 && targetIdx !== -1) {
+                // Swap the objects in the array
                 [currentOrder[draggedIdx], currentOrder[targetIdx]] = [currentOrder[targetIdx], currentOrder[draggedIdx]];
+                
+                // Update position values to match new array order
+                currentOrder.forEach((item, index) => {
+                    item.position = index;
+                });
+                
                 updateChangeIndicator();
                 renderOrganizeView();
             }
@@ -1095,7 +1140,7 @@ async function saveOrder() {
             position: index
         }));
         
-        const response = await fetch(getApiUrl('/api/categories/reorder.php'), {
+        const result = await apiFetch(getApiUrl('/api/categories/reorder.php'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1103,15 +1148,13 @@ async function saveOrder() {
             body: JSON.stringify({ orders: updates })
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
+        if (result && result.success) {
             originalOrder = JSON.parse(JSON.stringify(currentOrder));
             document.getElementById('changes-indicator').classList.add('hidden');
             alert('Order saved successfully!');
             loadCategories();
         } else {
-            alert('Error: ' + (result.message || 'Failed to save order'));
+            alert('Error: ' + (result?.message || 'Failed to save order'));
         }
     } catch (error) {
         console.error('Error saving order:', error);

@@ -455,22 +455,7 @@ async function loadOrders() {
         if (status) url += `&status=${status}`;
 
         console.log('Fetching orders from:', url);
-        const response = await fetch(url);
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        
-        const text = await response.text();
-        console.log('Response text:', text);
-        
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('JSON parse error:', e);
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: red;">Invalid JSON response. Check console.</td></tr>';
-            return;
-        }
-        
+        const data = await apiFetch(url);
         console.log('Parsed data:', data);
 
         if (data.error) {
@@ -632,15 +617,12 @@ async function bulkDeleteOrders() {
         // First, fetch all order data before deleting
         for (const orderId of orderIds) {
             try {
-                const orderRes = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}`;return getApiUrl(p);})());
-                if (orderRes.ok) {
-                    const orderData = await orderRes.json();
-                    const order = orderData.data || orderData;
-                    
-                    // Fetch order items
-                    const itemsRes = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/items`;return getApiUrl(p);})());
-                    const itemsData = await itemsRes.json();
-                    order.items = itemsData.data || itemsData;
+                const orderData = await apiFetch(getApiUrl(`/api/index.php?request=orders/${orderId}`));
+                const order = orderData.data || orderData;
+                
+                // Fetch order items
+                const itemsData = await apiFetch(getApiUrl(`/api/index.php?request=orders/${orderId}/items`));
+                order.items = itemsData.data || itemsData;
                     
                     deletedOrders.push(order);
                 }
@@ -652,26 +634,12 @@ async function bulkDeleteOrders() {
         // Now delete the orders
         for (const orderId of orderIds) {
             try {
-                const res = await fetch((()=>{const p=`/api/index.php?request=orders&id=${orderId}`;return getApiUrl(p);})(), {
+                const result = await apiFetch(getApiUrl(`/api/index.php?request=orders&id=${orderId}`), {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' }
                 });
                 
-                if (!res.ok) {
-                    failCount++;
-                    console.error('Failed to delete order', orderId, 'Status:', res.status);
-                    continue;
-                }
-                
-                const text = await res.text();
-                if (!text) {
-                    failCount++;
-                    console.error('Empty response for order', orderId);
-                    continue;
-                }
-                
-                const result = JSON.parse(text);
-                if (result.success) {
+                if (result && result.success) {
                     successCount++;
                 } else {
                     failCount++;
@@ -870,8 +838,7 @@ async function viewOrder(id) {
     content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading order details...</p></div>';
 
     try {
-        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
-        const order = await response.json();
+        const order = await apiFetch(getApiUrl(`/api/index.php?request=orders/${id}`));
 
         // Parse billing and shipping addresses
         let billing = {};
@@ -1013,8 +980,7 @@ async function updateOrderStatus(id) {
     
     // Get current order status
     try {
-        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
-        const order = await response.json();
+        const order = await apiFetch(getApiUrl(`/api/index.php?request=orders/${id}`));
         document.getElementById('new-status').value = order.status;
     } catch (error) {
         console.error('Error fetching order:', error);
@@ -1060,7 +1026,7 @@ async function saveOrderStatus() {
         console.log('Request body:', requestBody);
         
         const apiPath = `/api/index.php?request=orders/${currentOrderId}`;
-        const response = await fetch(getApiUrl(apiPath), {
+        const response = await apiFetch(getApiUrl(apiPath), {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
@@ -1069,25 +1035,14 @@ async function saveOrderStatus() {
             body: JSON.stringify(requestBody)
         });
 
-        console.log('Update response status:', response.status);
-        console.log('Update response ok:', response.ok);
+        console.log('Update response:', response);
         
-        const text = await response.text();
-        console.log('Update response text:', text);
-        
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('JSON parse error:', e);
-            console.error('Response was not valid JSON:', text);
-            alert('Error: Invalid response from server. Check console for details.');
-            return;
-        }
+        // apiFetch already returns parsed JSON or throws error
+        const data = response;
 
         console.log('Parsed response data:', data);
 
-        if (response.ok && !data.error) {
+        if (data && !data.error) {
             closeStatusModal();
             loadOrders();
             
@@ -1113,8 +1068,7 @@ async function saveOrderStatus() {
 async function printOrder(id, status) {
     try {
         const apiPath = `/api/index.php?request=orders/${id}`;
-        const response = await fetch(getApiUrl(apiPath));
-        const order = await response.json();
+        const order = await apiFetch(getApiUrl(apiPath));
         
         // Parse addresses
         let billing = {};
@@ -1723,11 +1677,11 @@ async function deleteOrder(id) {
     if (!confirmed) return;
     
     try {
-        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})(), {
+        const result = await apiFetch(getApiUrl(`/api/index.php?request=orders/${id}`), {
             method: 'DELETE'
         });
 
-        if (response.ok) {
+        if (result && result.success) {
             loadOrders();
             
             // Show success message
@@ -1759,7 +1713,7 @@ async function sendReceipt(id) {
         sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending receipt email...`;
         document.body.appendChild(sendingMsg);
         
-        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-receipt`;return getApiUrl(p);})(), {
+        const response = await apiFetch(getApiUrl(`/api/index.php?request=orders/${id}/send-receipt`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -1812,7 +1766,7 @@ async function sendTaxInvoice(id) {
         sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending tax invoice email...`;
         document.body.appendChild(sendingMsg);
 
-        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-tax-invoice`;return getApiUrl(p);})(), {
+        const response = await apiFetch(getApiUrl(`/api/index.php?request=orders/${id}/send-tax-invoice`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -1909,8 +1863,7 @@ async function updateRevenue(period, customDate = null) {
     try {
         let url = getApiUrl('/api/index.php?request=orders');
         
-        const response = await fetch(url);
-        const data = await response.json();
+        const data = await apiFetch(url);
         
         // Handle both array and object with data property
         const allOrders = Array.isArray(data) ? data : (data.data || []);

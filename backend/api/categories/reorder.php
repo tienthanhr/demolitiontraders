@@ -4,12 +4,20 @@
  * POST /api/categories/reorder.php
  */
 
+// Initialize session via bootstrap (must be first)
+require_once '../../core/bootstrap.php';
 require_once '../../../frontend/config.php';
 require_once '../../utils/security.php';
 require_once '../../config/database.php';
 
+// Debug: Log session data
+error_log("Reorder.php - Session ID: " . session_id());
+error_log("Reorder.php - SESSION data: " . json_encode($_SESSION));
+error_log("Reorder.php - user_id: " . ($_SESSION['user_id'] ?? 'NOT SET'));
+error_log("Reorder.php - role: " . ($_SESSION['role'] ?? 'NOT SET'));
+error_log("Reorder.php - user_role: " . ($_SESSION['user_role'] ?? 'NOT SET'));
+
 // Check authentication
-session_start();
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
 
 if (!isset($_SESSION['user_id']) || !$isAdmin) {
