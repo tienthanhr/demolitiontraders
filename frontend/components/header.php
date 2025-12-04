@@ -146,95 +146,42 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         
         <!-- Desktop Menu -->
         <ul class="nav-menu">
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=plywood'); ?>">Plywood</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=untreated-plywood'); ?>">Untreated Plywood</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=mdf'); ?>">MDF</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=treated-plywood'); ?>">Treated Plywood</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=acp-seratone'); ?>">ACP / Seratone</a></li>
-                </ul>
-            </li>
-                     <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=doors'); ?>">Doors</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=new-aluminium-single-doors'); ?>">New Aluminium Single Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=new-aluminium-french-doors'); ?>">New Aluminium French Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=new-exterior-doors'); ?>">New Exterior Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=new-interior-doors'); ?>">New Interior Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=recycled-doors'); ?>">Recycled Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=bi-fold-doors'); ?>">Bi-fold Doors</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=windows'); ?>">Windows</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=aluminium-windows'); ?>">Aluminium Windows</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=wooden-windows'); ?>">Wooden Windows</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=bi-fold-sliding-windows'); ?>">Bi-folds</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=sliding-doors'); ?>">Sliding Doors</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=new-aluminium-sliding-doors'); ?>">New Aluminium Sliding Doors</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=recycled-sliding-doors'); ?>">Recycled Sliding Doors</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=timber'); ?>">Timber</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=mouldings'); ?>">Mouldings</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=native-timber'); ?>">Native Timber</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=pine'); ?>">Pine</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=cladding'); ?>">Cladding</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=weatherboard'); ?>">Weatherboard</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=cement-board'); ?>">Cement Board</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=landscaping'); ?>">Landscaping</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=railway-sleepers'); ?>">Railway Sleepers</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=pavers'); ?>">Pavers</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=wire-netting'); ?>">Wire/Netting</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=roofing'); ?>">Roofing</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=iron'); ?>">Iron</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=flashing-drainage'); ?>">Flashing & Drainage</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=clearlite'); ?>">Clearlite</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=kitchens'); ?>">Kitchens</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=kitchen-cabinets'); ?>">Kitchen Cabinets</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=complete-kitchens'); ?>">Complete Kitchens</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=bathroom'); ?>">Bathroom & Laundry</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=baths'); ?>">Baths</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=hand-basins'); ?>">Hand Basins</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=vanities'); ?>">Vanities</a></li>
-                </ul>
-            </li>
-            <li class="has-dropdown">
-                <a href="<?php echo userUrl('shop.php?category=general'); ?>">General</a>
-                <ul class="dropdown">
-                    <li><a href="<?php echo userUrl('shop.php?category=character-items'); ?>">Character Items</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=hardware'); ?>">Hardware</a></li>
-                    <li><a href="<?php echo userUrl('shop.php?category=insulation'); ?>">Insulation</a></li>
-                </ul>
-            </li>
+            <?php
+            // Load categories from database ordered by position
+            try {
+                if (!isset($pdo)) {
+                    $pdo = new PDO('mysql:host=localhost;dbname=demolition_traders', 'root', '');
+                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                }
+                
+                // Get main categories ordered by position
+                $stmt = $pdo->prepare('SELECT id, name, slug, parent_id FROM categories WHERE parent_id IS NULL AND is_active = 1 ORDER BY position ASC, name ASC');
+                $stmt->execute();
+                $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                foreach ($mainCategories as $mainCat) {
+                    echo '<li class="has-dropdown">';
+                    echo '<a href="' . userUrl('shop.php?category=' . $mainCat['slug']) . '">' . htmlspecialchars($mainCat['name']) . '</a>';
+                    
+                    // Get subcategories for this main category
+                    $subStmt = $pdo->prepare('SELECT id, name, slug FROM categories WHERE parent_id = ? AND is_active = 1 ORDER BY position ASC, name ASC');
+                    $subStmt->execute([$mainCat['id']]);
+                    $subCategories = $subStmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    if (!empty($subCategories)) {
+                        echo '<ul class="dropdown">';
+                        foreach ($subCategories as $subCat) {
+                            echo '<li><a href="' . userUrl('shop.php?category=' . $subCat['slug']) . '">' . htmlspecialchars($subCat['name']) . '</a></li>';
+                        }
+                        echo '</ul>';
+                    }
+                    
+                    echo '</li>';
+                }
+            } catch (Exception $e) {
+                echo '<!-- Error loading categories: ' . htmlspecialchars($e->getMessage()) . ' -->';
+            }
+            ?>
         </ul>
         
     </div>
@@ -250,117 +197,46 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         </button>
     </div>
     <div class="mobile-nav-content">
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=plywood'); ?>" class="mobile-nav-link">
-                Plywood <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=untreated-plywood'); ?>">Untreated Plywood</a>
-                <a href="<?php echo userUrl('shop.php?category=mdf'); ?>">MDF</a>
-                <a href="<?php echo userUrl('shop.php?category=treated-plywood'); ?>">Treated Plywood</a>
-                <a href="<?php echo userUrl('shop.php?category=acp-seratone'); ?>">ACP / Seratone</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=doors'); ?>" class="mobile-nav-link">
-                Doors <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=new-aluminium-single-doors'); ?>">New Aluminium Single Doors</a>
-                <a href="<?php echo userUrl('shop.php?category=new-aluminium-french-doors'); ?>">New Aluminium French Doors</a>
-                <a href="<?php echo userUrl('shop.php?category=new-exterior-doors'); ?>">New Exterior Doors</a>
-                <a href="<?php echo userUrl('shop.php?category=new-interior-doors'); ?>">New Interior Doors</a>
-                <a href="<?php echo userUrl('shop.php?category=recycled-doors'); ?>">Recycled Doors</a>
-                <a href="<?php echo userUrl('shop.php?category=bi-fold-doors'); ?>">Bi-fold Doors</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=windows'); ?>" class="mobile-nav-link">
-                Windows <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=aluminium-windows'); ?>">Aluminium Windows</a>
-                <a href="<?php echo userUrl('shop.php?category=wooden-windows'); ?>">Wooden Windows</a>
-                <a href="<?php echo userUrl('shop.php?category=bi-fold-sliding-windows'); ?>">Bi-folds</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=sliding-doors'); ?>" class="mobile-nav-link">
-                Sliding Doors <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=new-aluminium-sliding-doors'); ?>">New Aluminium Sliding Doors</a>
-                <a href="<?php echo userUrl('shop.php?category=recycled-sliding-doors'); ?>">Recycled Sliding Doors</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=timber'); ?>" class="mobile-nav-link">
-                Timber <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=mouldings'); ?>">Mouldings</a>
-                <a href="<?php echo userUrl('shop.php?category=native-timber'); ?>">Native Timber</a>
-                <a href="<?php echo userUrl('shop.php?category=pine'); ?>">Pine</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=cladding'); ?>" class="mobile-nav-link">
-                Cladding <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=weatherboard'); ?>">Weatherboard</a>
-                <a href="<?php echo userUrl('shop.php?category=cement-board'); ?>">Cement Board</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=landscaping'); ?>" class="mobile-nav-link">
-                Landscaping <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=railway-sleepers'); ?>">Railway Sleepers</a>
-                <a href="<?php echo userUrl('shop.php?category=pavers'); ?>">Pavers</a>
-                <a href="<?php echo userUrl('shop.php?category=wire-netting'); ?>">Wire/Netting</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=roofing'); ?>" class="mobile-nav-link">
-                Roofing <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=iron'); ?>">Iron</a>
-                <a href="<?php echo userUrl('shop.php?category=flashing-drainage'); ?>">Flashing & Drainage</a>
-                <a href="<?php echo userUrl('shop.php?category=clearlite'); ?>">Clearlite</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=kitchens'); ?>" class="mobile-nav-link">
-                Kitchens <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=kitchen-cabinets'); ?>">Kitchen Cabinets</a>
-                <a href="<?php echo userUrl('shop.php?category=complete-kitchens'); ?>">Complete Kitchens</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=bathroom'); ?>" class="mobile-nav-link">
-                Bathroom & Laundry <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=baths'); ?>">Baths</a>
-                <a href="<?php echo userUrl('shop.php?category=hand-basins'); ?>">Hand Basins</a>
-                <a href="<?php echo userUrl('shop.php?category=vanities'); ?>">Vanities</a>
-            </div>
-        </div>
-        <div class="mobile-nav-item has-dropdown">
-            <a href="<?php echo userUrl('shop.php?category=general'); ?>" class="mobile-nav-link">
-                General <i class="fa-solid fa-plus toggle-icon"></i>
-            </a>
-            <div class="mobile-nav-submenu">
-                <a href="<?php echo userUrl('shop.php?category=character-items'); ?>">Character Items</a>
-                <a href="<?php echo userUrl('shop.php?category=hardware'); ?>">Hardware</a>
-                <a href="<?php echo userUrl('shop.php?category=insulation'); ?>">Insulation</a>
-            </div>
-        </div>
+        <?php
+        // Load categories for mobile menu (same as desktop)
+        try {
+            if (!isset($pdo)) {
+                $pdo = new PDO('mysql:host=localhost;dbname=demolition_traders', 'root', '');
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            }
+            
+            $stmt = $pdo->prepare('SELECT id, name, slug, parent_id FROM categories WHERE parent_id IS NULL AND is_active = 1 ORDER BY position ASC, name ASC');
+            $stmt->execute();
+            $mainCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach ($mainCategories as $mainCat) {
+                $subStmt = $pdo->prepare('SELECT id, name, slug FROM categories WHERE parent_id = ? AND is_active = 1 ORDER BY position ASC, name ASC');
+                $subStmt->execute([$mainCat['id']]);
+                $subCategories = $subStmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                if (!empty($subCategories)) {
+                    echo '<div class="mobile-nav-item has-dropdown">';
+                    echo '<a href="' . userUrl('shop.php?category=' . $mainCat['slug']) . '" class="mobile-nav-link">';
+                    echo htmlspecialchars($mainCat['name']) . ' <i class="fa-solid fa-plus toggle-icon"></i>';
+                    echo '</a>';
+                    echo '<div class="mobile-nav-submenu">';
+                    foreach ($subCategories as $subCat) {
+                        echo '<a href="' . userUrl('shop.php?category=' . $subCat['slug']) . '">' . htmlspecialchars($subCat['name']) . '</a>';
+                    }
+                    echo '</div>';
+                    echo '</div>';
+                } else {
+                    echo '<div class="mobile-nav-item">';
+                    echo '<a href="' . userUrl('shop.php?category=' . $mainCat['slug']) . '" class="mobile-nav-link">';
+                    echo htmlspecialchars($mainCat['name']);
+                    echo '</a>';
+                    echo '</div>';
+                }
+            }
+        } catch (Exception $e) {
+            echo '<!-- Error loading categories: ' . htmlspecialchars($e->getMessage()) . ' -->';
+        }
+        ?>
     </div>
     </div>
 </div>

@@ -706,10 +706,6 @@ async function bulkDeleteCategories() {
 loadCategories();
 
 // ===== ORGANIZE TAB FUNCTIONS =====
-let currentOrder = [];
-let originalOrder = [];
-let parentMap = {};
-let visibilityMap = {}; // Track which categories are visible
 
 function switchTab(tab) {
     // Update buttons
