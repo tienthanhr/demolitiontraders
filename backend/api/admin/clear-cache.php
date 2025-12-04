@@ -1,9 +1,10 @@
 <?php
 /**
  * Clear Cache API
- * Clears website cache files
  */
-require_once 'csrf_middleware.php'; // Handles session start, admin auth, and CSRF token validation.
+require_once '../../api/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
+
 header('Content-Type: application/json');
 
 try {

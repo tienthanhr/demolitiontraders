@@ -2,9 +2,8 @@
 /**
  * Export Products to CSV
  */
-require_once 'csrf_middleware.php'; // Handles admin auth. CSRF token not required for GET requests.
-
-require_once '../../config/database.php';
+require_once '../../api/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation for GET requests
 
 try {
     $db = Database::getInstance();
