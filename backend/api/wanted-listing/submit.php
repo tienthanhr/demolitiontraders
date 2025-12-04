@@ -157,6 +157,7 @@ try {
     
 } catch (Exception $e) {
     error_log("Wanted listing form error: " . $e->getMessage());
+    error_log("Wanted listing stack trace: " . $e->getTraceAsString());
     
     // Clean buffer
     if (ob_get_level()) {
@@ -166,7 +167,8 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false, 
-        'error' => 'An error occurred. Please try again.'
+        'error' => 'An error occurred. Please try again.',
+        'debug' => $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
     
     exit;

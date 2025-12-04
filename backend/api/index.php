@@ -291,6 +291,7 @@ try {
                 }
             } catch (Exception $e) {
                 error_log("Orders API Error: " . $e->getMessage());
+                error_log("Orders API Stack Trace: " . $e->getTraceAsString());
                 $message = $e->getMessage();
                 // Return appropriate status code for authentication errors
                 if (strpos($message, 'Authentication required') !== false) {
