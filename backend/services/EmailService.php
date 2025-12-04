@@ -32,6 +32,10 @@ class EmailService {
             $this->mailer->SMTPSecure = $this->config['smtp_secure'];
             $this->mailer->Port       = $this->config['smtp_port'];
             
+            // Add timeouts to prevent hanging
+            $this->mailer->Timeout    = 10;
+            $this->mailer->SMTPDebug  = 0;
+            
             // From
             $this->mailer->setFrom($this->config['from_email'], $this->config['from_name']);
             $this->mailer->addReplyTo($this->config['reply_to'], $this->config['from_name']);

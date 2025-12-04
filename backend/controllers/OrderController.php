@@ -11,8 +11,13 @@ class OrderController {
     private $idealpos;
     
     public function __construct() {
-        $this->db = Database::getInstance();
-        $this->idealpos = new IdealPOSService();
+        try {
+            $this->db = Database::getInstance();
+            $this->idealpos = new IdealPOSService();
+        } catch (Exception $e) {
+            error_log("OrderController::__construct error: " . $e->getMessage());
+            throw new Exception("Failed to initialize order controller: " . $e->getMessage());
+        }
     }
     
     /**

@@ -59,25 +59,42 @@ try {
     }
     
     // Store in database
-    $db = Database::getInstance()->getConnection();
-    $stmt = $db->prepare("
-        INSERT INTO contact_submissions (name, email, phone, subject, message, created_at)
-        VALUES (?, ?, ?, ?, ?, NOW())
-    ");
-    $stmt->execute([$name, $email, $phone, $subject, $message]);
+    try {
+        $db = Database::getInstance()->getConnection();
+        if (!$db) {
+            throw new Exception('Database connection failed');
+        }
+        $stmt = $db->prepare("
+            INSERT INTO contact_submissions (name, email, phone, subject, message, created_at)
+            VALUES (?, ?, ?, ?, ?, NOW())
+        ");
+        if (!$stmt) {
+            throw new Exception('Failed to prepare database statement');
+        }
+        $stmt->execute([$name, $email, $phone, $subject, $message]);
+    } catch (Exception $dbError) {
+        error_log("Database error in contact form: " . $dbError->getMessage());
+        // Continue with email even if database fails
+        error_log("Continuing with email despite database error");
+    }
     
-    // Send email to admin
-    $emailService = new EmailService();
-    $emailResult = $emailService->sendContactFormEmail([
-        'name' => $name,
-        'email' => $email,
-        'phone' => $phone,
-        'subject' => $subject,
-        'message' => $message
-    ]);
-    
-    if (!$emailResult['success']) {
-        error_log("Contact form email failed: " . $emailResult['error']);
+    // Send email to admin (with timeout protection)
+    try {
+        $emailService = new EmailService();
+        $emailResult = $emailService->sendContactFormEmail([
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'subject' => $subject,
+            'message' => $message
+        ]);
+        
+        if (!$emailResult['success']) {
+            error_log("Contact form email failed: " . $emailResult['error']);
+        }
+    } catch (Exception $emailError) {
+        // Log but don't break - return success to user
+        error_log("Contact form email error (non-blocking): " . $emailError->getMessage());
     }
     
     // Clean buffer and output JSON

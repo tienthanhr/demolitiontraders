@@ -34,11 +34,22 @@ class Database {
                 // Parse PostgreSQL URL from Render
                 // Format: postgresql://user:password@host:port/dbname
                 $parts = parse_url($databaseUrl);
-                $host = $parts['host'];
+                
+                if (!$parts) {
+                    throw new Exception("Invalid DATABASE_URL format");
+                }
+                
+                $host = $parts['host'] ?? null;
                 $port = $parts['port'] ?? 5432;
-                $dbname = ltrim($parts['path'], '/');
-                $username = $parts['user'];
-                $password = $parts['pass'];
+                $dbname = ltrim($parts['path'] ?? '', '/');
+                $username = $parts['user'] ?? null;
+                $password = $parts['pass'] ?? '';
+                
+                // Validate parsed values
+                if (!$host || !$dbname || !$username) {
+                    error_log("DATABASE_URL parsing failed: host=$host, dbname=$dbname, user=$username");
+                    throw new Exception("Invalid DATABASE_URL: missing required components");
+                }
                 
                 $dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
             } else {
@@ -66,8 +77,14 @@ class Database {
             $this->connection = new PDO($dsn, $username, $password, $options);
             
         } catch (PDOException $e) {
-            error_log("Database connection error: " . $e->getMessage());
-            die("Database connection failed. Please check configuration.");
+            $errorMsg = "Database connection error: " . $e->getMessage() . " (Code: " . $e->getCode() . ")";
+            error_log($errorMsg);
+            // Throw as regular Exception so it can be caught by the API router
+            throw new Exception($errorMsg);
+        } catch (Exception $e) {
+            $errorMsg = "Database configuration error: " . $e->getMessage();
+            error_log($errorMsg);
+            throw new Exception($errorMsg);
         }
     }
     
