@@ -8,7 +8,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const categorySelect = document.getElementById('category-select');
     if (categorySelect) {
         categorySelect.addEventListener('change', function() {
+            console.log('[SHOP-EVENTS] Category changed:', this.value);
+            
+            // Update subcategories if function exists
+            if (window.updateSubcategories) {
+                window.updateSubcategories(this.value);
+            }
+            
             handleCategoryChange();
+            // Small delay to ensure handleCategoryChange completes, then apply filters
+            setTimeout(function() {
+                console.log('[SHOP-EVENTS] Applying filters after category change');
+                applyFilters();
+            }, 100);
+        });
+    }
+
+    // Subcategory select change handler
+    const subcategorySelect = document.getElementById('subcategory-select');
+    if (subcategorySelect) {
+        subcategorySelect.addEventListener('change', function() {
+            console.log('[SHOP-EVENTS] Subcategory changed:', this.value);
+            handleCategoryChange();
+            // Small delay to ensure handleCategoryChange completes, then apply filters
+            setTimeout(function() {
+                console.log('[SHOP-EVENTS] Applying filters after subcategory change');
+                applyFilters();
+            }, 100);
         });
     }
 
@@ -16,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const treatmentSelect = document.getElementById('treatment-select');
     if (treatmentSelect) {
         treatmentSelect.addEventListener('change', function() {
+            console.log('[SHOP-EVENTS] Treatment changed:', this.value);
             applyFilters();
         });
     }
@@ -24,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const thicknessSelect = document.getElementById('thickness-select');
     if (thicknessSelect) {
         thicknessSelect.addEventListener('change', function() {
+            console.log('[SHOP-EVENTS] Thickness changed:', this.value);
             applyFilters();
         });
     }
@@ -33,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (keywordsInput) {
         keywordsInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                console.log('[SHOP-EVENTS] Enter pressed in keywords');
                 applyFilters();
             }
         });
@@ -43,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchBtn) {
         searchBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            console.log('[SHOP-EVENTS] Search button clicked');
             applyFilters();
         });
     }

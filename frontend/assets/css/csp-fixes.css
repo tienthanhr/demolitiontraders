@@ -635,11 +635,6 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Link underline for accessibility */
-a:not([class]) {
-    text-decoration: underline;
-}
-
 /* Image alt text handling */
 img {
     max-width: 100%;
@@ -696,5 +691,19 @@ a:focus,
 a:hover {
     color: #000;
     text-decoration: underline;
+}
+
+/* Dropdown menu visibility on .open class (for click handlers) */
+.has-dropdown.open > .dropdown,
+.nav-menu > li.open > ul.dropdown {
+    display: block !important;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Remove focus outline on links (accessibility: keep for keyboard, remove visual clutter on click) */
+a:focus-visible {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
 }
 

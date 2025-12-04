@@ -40,6 +40,13 @@
                             <option value="">All Categories</option>
                         </select>
                     </div>
+                    <!-- Sub-category select (shown when main category selected) -->
+                    <div class="filter-group" style="min-width:180px; margin-bottom: 18px; display: none;" id="subcategory-group">
+                        <label for="subcategory-select">Sub-Category</label>
+                        <select id="subcategory-select" name="subcategory" class="filter-select" autocomplete="off">
+                            <option value="">All Sub-Categories</option>
+                        </select>
+                    </div>
                     <div id="dimension-row" style="display:flex; gap:24px; width:100%; max-width:700px; margin-bottom:0; display:none;">
                         <!-- Width Slider -->
                         <div class="filter-group" id="measurements-group" style="min-width:180px; flex:1;">
@@ -229,11 +236,54 @@
                 
                 const categories = data.data || data;
                 
-                // Populate category dropdown
+                // Store all categories for sub-category lookup
+                window.allCategories = categories;
+                
+                // Populate category dropdown with ONLY main categories
                 const categorySelect = document.getElementById('category-select');
+                const subcategoryGroup = document.getElementById('subcategory-group');
+                const subcategorySelect = document.getElementById('subcategory-select');
+                
                 if (Array.isArray(categories)) {
-                    categorySelect.innerHTML = '<option value="">All Categories</option>' +
-                        categories.map(cat => '<option value="' + cat.id + '" data-slug="' + cat.slug + '">' + cat.name + '</option>').join('');
+                    // Get only main categories - those with no parent AND have children, OR are typical main categories
+                    const mainCategories = categories.filter(cat => {
+                        if (cat.parent_id) return false; // Skip if it has a parent
+                        
+                        // Check if this category has children
+                        const hasChildren = categories.some(c => c.parent_id === cat.id);
+                        return true; // Show all top-level categories
+                    });
+                    
+                    let html = '<option value="">All Categories</option>';
+                    mainCategories.forEach(main => {
+                        html += `<option value="${main.id}" data-slug="${main.slug}">${main.name}</option>`;
+                    });
+                    
+                    categorySelect.innerHTML = html;
+                    
+                    // NOTE: Event listeners for category/subcategory change are handled in shop-events.js
+                    // This ensures consistent behavior with auto-apply filters
+                    // Just update subcategories when category changes
+                    const updateSubcategories = (selectedId) => {
+                        const subcategories = categories.filter(cat => cat.parent_id == selectedId);
+                        
+                        if (subcategories.length > 0) {
+                            // Show subcategory select with children
+                            subcategoryGroup.style.display = 'block';
+                            let subHtml = '<option value="">All Sub-Categories</option>';
+                            subcategories.forEach(sub => {
+                                subHtml += `<option value="${sub.id}" data-slug="${sub.slug}">${sub.name}</option>`;
+                            });
+                            subcategorySelect.innerHTML = subHtml;
+                        } else {
+                            // Hide subcategory select if no children
+                            subcategoryGroup.style.display = 'none';
+                            subcategorySelect.innerHTML = '<option value="">All Sub-Categories</option>';
+                        }
+                    };
+                    
+                    // Store the update function globally so shop-events.js can use it
+                    window.updateSubcategories = updateSubcategories;
                     
                     // Check if there's a category parameter in the URL
                     const urlParams = new URLSearchParams(window.location.search);
@@ -246,7 +296,20 @@
                         for (let option of options) {
                             if (option.getAttribute('data-slug') === categorySlug) {
                                 categorySelect.value = option.value;
-                                handleCategoryChange();
+                                // Trigger change event to show subcategories
+                                categorySelect.dispatchEvent(new Event('change'));
+                                
+                                // If it's a subcategory, select it too
+                                const subcats = categories.filter(cat => cat.parent_id == option.value);
+                                if (subcats.length > 0) {
+                                    const subOptions = subcategorySelect.querySelectorAll('option');
+                                    for (let subOpt of subOptions) {
+                                        if (subOpt.getAttribute('data-slug') === categorySlug) {
+                                            subcategorySelect.value = subOpt.value;
+                                            break;
+                                        }
+                                    }
+                                }
                                 break;
                             }
                         }
@@ -270,21 +333,35 @@
         // Handle category change
        function handleCategoryChange() {
     const categorySelect = document.getElementById('category-select');
-    const selectedValue = categorySelect.value;
-    const selectedText = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase();
+    const subcategorySelect = document.getElementById('subcategory-select');
+    
+    // Get selected category ID (prefer subcategory if selected)
+    const selectedValue = subcategorySelect.value || categorySelect.value;
+    
+    // Get selected category name (from main or sub)
+    let selectedText = '';
+    if (subcategorySelect.value) {
+        // Subcategory is selected
+        selectedText = subcategorySelect.options[subcategorySelect.selectedIndex].text.toLowerCase();
+    } else {
+        // Main category is selected
+        selectedText = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase();
+    }
+    
     // Hide all dynamic filter groups
     document.getElementById('treatment-group').style.display = 'none';
     document.getElementById('thickness-group').style.display = 'none';
     document.getElementById('dimension-row').style.display = 'none';
-    // Show relevant filters based on category
-    if (selectedText.includes('plywood') || selectedText.includes('timber') || selectedText.includes('wood')) {
+    
+    // Show relevant filters based on category name
+    if (selectedText.includes('plywood') || selectedText.includes('timber') || selectedText.includes('wood') || selectedText.includes('mdf')) {
         document.getElementById('treatment-group').style.display = 'block';
         document.getElementById('thickness-group').style.display = 'block';
     }
     if (
         selectedText.includes('door') ||
         selectedText.includes('window') ||
-        selectedText.includes('sliding door')
+        selectedText.includes('sliding')
     ) {
         document.getElementById('dimension-row').style.display = 'flex';
     }
@@ -317,10 +394,24 @@
                 const params = new URLSearchParams(window.location.search);
                 params.set('page', currentPage);
                 
-                // Get selected category
+                // Get selected category or subcategory
                 const categorySelect = document.getElementById('category-select');
-                if (categorySelect && categorySelect.value) {
-                    params.set('category', categorySelect.value);
+                const subcategorySelect = document.getElementById('subcategory-select');
+                
+                // If subcategory is selected, use it
+                // If only main category is selected, get all its subcategories
+                if (subcategorySelect && subcategorySelect.value) {
+                    // Subcategory selected - show only that subcategory
+                    params.set('category', subcategorySelect.value);
+                } else if (categorySelect && categorySelect.value) {
+                    // Main category selected - show main + all its subcategories
+                    const mainCatId = categorySelect.value;
+                    const subcategories = window.allCategories.filter(cat => cat.parent_id == mainCatId).map(cat => cat.id);
+                    
+                    // Include main category + all subcategories
+                    const categoryIds = [mainCatId, ...subcategories];
+                    console.log('[SHOP] Main category selected, including subcategories:', categoryIds);
+                    params.set('category', categoryIds.join(','));
                 }
                 
                 // Get treatment filter

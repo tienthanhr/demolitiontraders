@@ -55,7 +55,23 @@ class ProductController {
         
         // Category filter
         if (!empty($params['category'])) {
-            if (is_numeric($params['category'])) {
+            // Support multiple category IDs (comma-separated)
+            if (strpos($params['category'], ',') !== false) {
+                // Multiple categories - use named parameters
+                $categoryIds = array_map('trim', explode(',', $params['category']));
+                $categoryIds = array_filter($categoryIds, 'is_numeric');
+                
+                if (!empty($categoryIds)) {
+                    $placeholders = [];
+                    foreach ($categoryIds as $index => $catId) {
+                        $paramName = 'category_' . $index;
+                        $placeholders[] = ':' . $paramName;
+                        $queryParams[$paramName] = $catId;
+                    }
+                    $where[] = "p.category_id IN (" . implode(',', $placeholders) . ")";
+                }
+            } elseif (is_numeric($params['category'])) {
+                // Single numeric category ID
                 $where[] = 'p.category_id = :category_id';
                 $queryParams['category_id'] = $params['category'];
                 $cat = $this->db->fetchOne("SELECT slug FROM categories WHERE id = :id", ['id' => $params['category']]);
@@ -63,6 +79,7 @@ class ProductController {
                     $plywoodCategoryId = $params['category'];
                 }
             } else {
+                // Category slug
                 $categorySql = "SELECT id, slug FROM categories WHERE slug = :category_slug";
                 $category = $this->db->fetchOne($categorySql, ['category_slug' => $params['category']]);
                 if ($category) {

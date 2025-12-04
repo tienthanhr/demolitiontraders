@@ -37,6 +37,63 @@ document.addEventListener('DOMContentLoaded', function() {
             closeMobileMenu();
         });
     }
+
+    // Dropdown menu handler - Click to navigate, show dropdown on hover
+    const dropdownTogles = document.querySelectorAll('.has-dropdown > a');
+    dropdownTogles.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const parent = this.closest('.has-dropdown');
+            const dropdown = parent?.querySelector('.dropdown');
+            
+            // If no dropdown, just navigate normally
+            if (!dropdown) {
+                return;
+            }
+            
+            // Special keys: Ctrl/Cmd/Shift = open in new tab (allow default)
+            if (e.ctrlKey || e.metaKey || e.shiftKey) {
+                return;
+            }
+            
+            // Mobile: just navigate (allow default)
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                return;
+            }
+            
+            // Desktop: prevent default and close any open dropdowns
+            // This allows CSS hover to handle dropdown display
+            e.preventDefault();
+            
+            // Close all open dropdowns
+            document.querySelectorAll('.has-dropdown.open').forEach(item => {
+                item.classList.remove('open');
+            });
+            
+            // Navigate after closing dropdown
+            window.location.href = this.href;
+        });
+    });
+
+    // Close dropdown when clicking elsewhere
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-menu')) {
+            document.querySelectorAll('.has-dropdown.open').forEach(item => {
+                item.classList.remove('open');
+            });
+        }
+    });
+
+    // Remove focus outline on links after click (better UX, keep for keyboard)
+    const allLinks = document.querySelectorAll('a');
+    allLinks.forEach(link => {
+        link.addEventListener('mousedown', function() {
+            this.style.outline = 'none';
+        });
+        link.addEventListener('blur', function() {
+            this.style.outline = '';
+        });
+    });
 });
 
 /**

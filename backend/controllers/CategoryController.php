@@ -22,16 +22,16 @@ class CategoryController {
                    ($_SESSION['is_admin'] ?? false) === true;
         
         if ($isAdmin) {
-            // Admin sees all categories
+            // Admin sees all categories, ordered by position
             $categories = $this->db->fetchAll(
-                "SELECT * FROM categories ORDER BY display_order ASC, name ASC"
+                "SELECT * FROM categories ORDER BY position ASC, name ASC"
             );
         } else {
-            // Public sees only active categories
+            // Public sees only active categories, ordered by position
             $categories = $this->db->fetchAll(
                 "SELECT * FROM categories 
                  WHERE is_active = 1 
-                 ORDER BY display_order ASC, name ASC"
+                 ORDER BY position ASC, name ASC"
             );
         }
         
