@@ -72,28 +72,32 @@ class EmailService {
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($toEmail, $customerName);
             $this->mailer->Subject = "Tax Invoice - Order #{$order['order_number']}";
-            $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
             
             // Try to generate PDF and attach, but don't fail if PDF generation fails
+            $pdfAttached = false;
             try {
                 $pdfPath = generate_invoice_pdf_html($invoiceHtml, 'invoice');
                 if ($pdfPath && file_exists($pdfPath)) {
                     $this->mailer->addAttachment($pdfPath, 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf');
+                    $pdfAttached = true;
+                    $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
+                } else {
+                    $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order! Your order has been received and is being processed.<br><br>Regards,<br>Demolition Traders Team";
                 }
-            } catch (Exception $pdfEx) {
+            } catch (Throwable $pdfEx) {
                 error_log("Warning: PDF generation failed for order #{$order['order_number']}: " . $pdfEx->getMessage());
                 // Continue without PDF attachment - email will still send
+                $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order! Your order has been received and is being processed.<br><br>Regards,<br>Demolition Traders Team";
             }
             
-            $this->mailer->send();
+            error_log("Tax Invoice sent to: $toEmail for order #{$order['order_number']}" . ($pdfAttached ? " with PDF" : " (without PDF)"));
+            return ['success' => true, 'message' => 'Tax Invoice sent successfully'];
             
             // Clean up if PDF was created
+            // Note: Clean up happens after send is successful
             if (isset($pdfPath) && $pdfPath && file_exists($pdfPath)) {
-                unlink($pdfPath);
+                @unlink($pdfPath);
             }
-            
-            error_log("Tax Invoice sent to: $toEmail for order #{$order['order_number']}");
-            return ['success' => true, 'message' => 'Tax Invoice sent successfully'];
         } catch (Exception $e) {
             error_log("Failed to send Tax Invoice: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];

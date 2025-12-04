@@ -45,10 +45,12 @@ try {
     // Generate unique token
     $token = bin2hex(random_bytes(32));
     
-    // Save token to database (let MySQL handle the expiry time)
+    // Save token to database with expiry time
+    // Use PostgreSQL syntax: NOW() + INTERVAL '1 hour'
+    // MySQL will also support this syntax
     $db->query(
         "INSERT INTO password_reset_tokens (user_id, token, expires_at, used) 
-         VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 1 HOUR), 0)",
+         VALUES (:user_id, :token, NOW() + INTERVAL '1 hour', 0)",
         [
             'user_id' => $user['id'],
             'token' => $token
