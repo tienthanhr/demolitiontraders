@@ -426,7 +426,7 @@
                         // Use logo for missing, invalid, or old upload paths
                         if (!imageUrl || 
                             imageUrl.trim() === '' || 
-                            imageUrl === 'assets/images/no-image.jpg' ||
+                            imageUrl === 'assets/images/logo.png' ||
                             imageUrl.includes('null') ||
                             imageUrl === 'null' ||
                             imageUrl.includes('/demolitiontraders/uploads/') ||  // Old upload path

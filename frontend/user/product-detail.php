@@ -102,7 +102,7 @@ function displayProduct(product, cartQty = 0) {
     document.getElementById('product-breadcrumb').textContent = product.name;
     document.title = product.name + ' - Demolition Traders';
 
-    const imageUrl = product.image ? product.image : 'assets/images/placeholder.jpg';
+    const imageUrl = product.image ? product.image : 'assets/images/logo.png';
     let availableStock = Math.max(0, (parseInt(product.stock_quantity) || 0) - (parseInt(cartQty) || 0));
     const totalStock = parseInt(product.stock_quantity) || 0;
     const inCart = parseInt(cartQty) || 0;

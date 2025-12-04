@@ -405,14 +405,14 @@
                     <h2>List your wanted item</h2>
                     <p>Let us know what items you can't find on our website.</p>
                     <p class="button-wrap"><a href="<?php echo userUrl('wanted-listing.php'); ?>" class="btn">List your item</a></p>
-                    <img src="assets/images/home_panel1.jpg" alt="">
+                    <img src="assets/images/hero-banner.jpg" alt="List your wanted item" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;">
                 </div>
                 <div class="cta-panel">
                     <h3 class="blue">Unused items on your hands?</h3>
                     <h2>Sell your unwanted items</h2>
                     <p>We are interested in good quality aluminium and wooden joinery, kitchens, and more.</p>
                     <p class="button-wrap"><a href="<?php echo userUrl('sell-to-us.php'); ?>" class="btn">Sell us your items</a></p>
-                    <img src="assets/images/home_panel2.jpg" alt="">
+                    <img src="assets/images/hero-banner.jpg" alt="Sell your items" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;">
                 </div>
             </div>
         </div>

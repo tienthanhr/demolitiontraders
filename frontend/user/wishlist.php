@@ -101,7 +101,7 @@
             const grid = document.getElementById('wishlist-grid');
             grid.innerHTML = items.map(item => {
                 // Fix image path
-                let imagePath = item.image || 'assets/images/placeholder.jpg';
+                let imagePath = item.image || 'assets/images/logo.png';
                 if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/demolitiontraders/')) {
                     imagePath = '/demolitiontraders/' + imagePath.replace(/^\/+/, '');
                 }

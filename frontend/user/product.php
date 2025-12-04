@@ -67,7 +67,7 @@
             document.getElementById('product-breadcrumb').textContent = product.name;
             document.title = product.name + ' - Demolition Traders';
             
-            const imageUrl = product.image ? product.image : 'assets/images/placeholder.jpg';
+            const imageUrl = product.image ? product.image : 'assets/images/logo.png';
             const stockStatus = product.stock_quantity > 0 ? 
                 '<span class="in-stock"><i class="fas fa-check-circle"></i> In Stock (' + product.stock_quantity + ' available)</span>' : 
                 '<span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>';

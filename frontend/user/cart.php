@@ -470,7 +470,7 @@
                     
                     container.innerHTML = data.items.map(item => {
                         // Fix image path
-                        let imagePath = item.image || 'assets/images/no-image.jpg';
+                        let imagePath = item.image || 'assets/images/logo.png';
                         
                         // If it's a relative path (like 'uploads/xxx.jpg'), add /demolitiontraders/
                         if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/')) {
@@ -690,7 +690,7 @@
             
             grid.innerHTML = items.map(item => {
                 // Fix image path
-                let imagePath = item.image || 'assets/images/no-image.jpg';
+                let imagePath = item.image || 'assets/images/logo.png';
                 
                 // If it's a relative path (like 'uploads/xxx.jpg'), add /demolitiontraders/
                 if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/')) {
