@@ -2,17 +2,8 @@
 /**
  * Export Products to CSV
  */
-session_start();
-
-// Check if user is admin
-$isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
-
-if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    header('HTTP/1.1 403 Forbidden');
-    exit('Unauthorized access');
-}
-
-require_once '../../config/database.php';
+require_once '../../api/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation for GET requests
 
 try {
     $db = Database::getInstance();

@@ -56,15 +56,10 @@ if (isset($_GET['request']) && $_GET['request'] === 'health') {
     exit;
 }
 
-// Load configuration
+// Initialize secure session and load configurations
+require_once __DIR__ . '/../core/bootstrap.php';
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
-
-// Start session if not already started
-ini_set('session.save_path', '/tmp');
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // Set error handling based on config (nhưng vẫn log errors, không display)
 if (Config::isDebug()) {

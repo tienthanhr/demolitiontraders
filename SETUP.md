@@ -14,8 +14,8 @@ DB_USER=root
 DB_PASS=
 
 # IdealPOS Credentials (IMPORTANT!)
-IDEALPOS_API_KEY=your-actual-api-key-here
-IDEALPOS_STORE_ID=your-actual-store-id-here
+IDEALPOS_API_KEY=<your-idealpos-api-key>
+IDEALPOS_STORE_ID=<your-idealpos-store-id>
 ```
 
 ### Step 2: Import Database
@@ -32,13 +32,19 @@ cd C:\xampp\mysql\bin
 mysql -u root -p < C:\xampp\htdocs\demolitiontraders\database\schema.sql
 ```
 
-### Step 3: Test the Website
+### Step 3: Create Admin User
+
+After importing the database, create your first admin user by running the script from the project root:
+```bash
+php backend/scripts/create_admin.php <email> <password> <first_name> <last_name>
+```
+See `CREATE_ADMIN_USER.md` for more details.
+
+### Step 4: Test the Website
 
 1. Make sure Apache and MySQL are running in XAMPP
 2. Open browser: http://localhost/demolitiontraders
-3. Admin login: http://localhost/demolitiontraders/admin
-   - Username: admin@demolitiontraders.co.nz
-   - Password: admin123 (CHANGE THIS!)
+3. Login with the admin credentials you just created: http://localhost/demolitiontraders/admin
 
 ### Step 4: Setup IdealPOS Integration
 

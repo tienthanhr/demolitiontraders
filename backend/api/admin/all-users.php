@@ -2,20 +2,12 @@
 /**
  * Get All Users API
  */
-session_start();
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+require_once '../../api/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
 
-require_once '../../config/database.php';
+header('Content-Type: application/json');
 
 try {
-    // Check if user is admin
-    $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
-    
-    if (!isset($_SESSION['user_id']) || !$isAdmin) {
-        throw new Exception('Unauthorized access');
-    }
-    
     $db = Database::getInstance();
     
     // Get all users

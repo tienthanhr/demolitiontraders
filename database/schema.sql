@@ -296,8 +296,8 @@ INSERT INTO categories (name, slug, description, display_order) VALUES
 ('ACP Seratone', 'acp-seratone', 'ACP boards and panels', 10);
 
 -- Insert Default Admin User (password: admin123)
-INSERT INTO users (email, password, first_name, last_name, role, status) VALUES
-('admin@demolitiontraders.co.nz', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'User', 'admin', 'active');
+-- Note: Default admin user has been removed for security.
+-- Use the `backend/scripts/create_admin.php` script to create an initial admin account.
 
 -- Insert Default Settings
 INSERT INTO settings (setting_key, setting_value, description) VALUES

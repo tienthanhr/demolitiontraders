@@ -67,7 +67,7 @@ try {
     $db = Database::getInstance()->getConnection();
     
     // Check if user is logged in
-    session_start();
+    require_once __DIR__ . '/../../core/bootstrap.php';
     $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
     
     // Store wanted listing in database

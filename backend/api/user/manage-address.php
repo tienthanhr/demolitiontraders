@@ -2,7 +2,7 @@
 /**
  * Manage User Address API (Create/Update/Delete)
  */
-session_start();
+require_once __DIR__ . '/../../core/bootstrap.php';
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, PUT, DELETE');
