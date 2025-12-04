@@ -47,13 +47,13 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                             <span>0800 DEMOLITION</span>
                         </div>
                     </a>
-                    <a href="https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,6771m/data=!3m1!1e3!4m6!3m5!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104!16s%2Fg%2F1hm6cqmtt?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D" class="info-box location-info" target="_blank">
+                    <button class="info-box location-info" id="location-btn">
                         <i class="fa-solid fa-location-dot"></i>
                         <div>
                             <strong>Visit Our Yard</strong>
                             <span>249 Kahikatea Drive, Hamilton</span>
                         </div>
-                    </a>
+                    </button>
                     <div class="info-box opening-hours-box hours-info" id="opening-hours-box">
                         <i class="fa-solid fa-clock"></i>
                         <div>
@@ -95,6 +95,30 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         </div>
         <div class="opening-hours-list" id="opening-hours-list">
             <div class="loading">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Location Map Modal -->
+<div class="location-modal" id="location-modal">
+    <div class="modal-backdrop-location" id="modal-backdrop-location"></div>
+    <div class="location-map-container" id="location-map-container">
+        <div class="location-map-header">
+            <h3>Demolition Traders Location</h3>
+            <button class="close-btn" id="close-location-modal">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="location-map-content">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3193.1234567890!2d175.2449009!3d-37.8072319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d6d21fa970b5073%3A0x229ec1a4d67e239a!2sDemolition%20Traders!5e0!3m2!1sen!2snz!4v1234567890" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div class="location-details">
+                <p><strong>Demolition Traders</strong></p>
+                <p>249 Kahikatea Drive, Hamilton, New Zealand</p>
+                <p>Phone: <a href="tel:0800336548466">0800 DEMOLITION</a></p>
+                <button class="btn-google-maps" onclick="window.open('https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,6771m/data=!3m1!1e3!4m6!3m5!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104!16s%2Fg%2F1hm6cqmtt?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D', '_blank')">
+                    <i class="fa-brands fa-google"></i> <span>Open in Google Maps</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -516,6 +540,25 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         document.body.style.overflow = 'hidden';
     });
     
+    // Location button click
+    document.getElementById('location-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const modal = document.getElementById('location-modal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // Close location modal
+    function closeLocationModal() {
+        const modal = document.getElementById('location-modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    document.getElementById('close-location-modal')?.addEventListener('click', closeLocationModal);
+    document.getElementById('modal-backdrop-location')?.addEventListener('click', closeLocationModal);
+    
     // Close modal functions
     function closeHoursModal() {
         const modal = document.getElementById('opening-hours-modal');
@@ -536,6 +579,7 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeHoursModal();
+            closeLocationModal();
         }
     });
     
