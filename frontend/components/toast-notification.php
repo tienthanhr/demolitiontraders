@@ -7,11 +7,11 @@
         <div class="confirm-icon">
             <i class="fas fa-question-circle"></i>
         </div>
-        <h3 id="confirm-title">Confirm Action</h3>
-        <p id="confirm-message">Are you sure?</p>
+        <h3 id="confirm-title" class="confirm-modal-title">Confirm Action</h3>
+        <p id="confirm-message" class="confirm-modal-message">Are you sure?</p>
         <div class="confirm-buttons">
-            <button class="btn-cancel" onclick="window.confirmModalResolve(false)">Cancel</button>
-            <button class="btn-confirm" onclick="window.confirmModalResolve(true)">Confirm</button>
+            <button class="btn-cancel" data-action="confirm-cancel">Cancel</button>
+            <button class="btn-confirm" data-action="confirm-ok">Confirm</button>
         </div>
     </div>
 </div>
@@ -312,7 +312,7 @@ window.showToast = function(message, type = 'info', duration = 4000) {
     toast.innerHTML = `
         <div class="toast-icon">${icons[type] || icons.info}</div>
         <div class="toast-content">${message}</div>
-        <button class="toast-close" onclick="this.closest('.toast').remove()">×</button>
+        <button class="toast-close">×</button>
     `;
     
     container.appendChild(toast);
@@ -413,3 +413,6 @@ window.showConfirm = function(message, title = 'Confirm Action', isDanger = fals
     window.originalConfirm = originalConfirm;
 })();
 </script>
+
+<!-- Load toast events handler (CSP compliant) -->
+<script src="<?php echo asset('assets/js/toast-events.js'); ?>"></script>

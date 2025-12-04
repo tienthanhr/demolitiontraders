@@ -638,5 +638,8 @@ function displayProduct(product, cartQty = 0) {
             event.target.classList.add('active');
         }
     </script>
+    
+    <!-- Load product events handler (CSP compliant) -->
+    <script src="<?php echo asset('assets/js/product-events.js'); ?>"></script>
 </body>
 </html>

@@ -115,7 +115,7 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                 <p><strong>Demolition Traders</strong></p>
                 <p>249 Kahikatea Drive, Hamilton, New Zealand</p>
                 <p>Phone: <a href="tel:0800336548466">0800 DEMOLITION</a></p>
-                <button class="btn-google-maps" onclick="window.open('https://www.google.com/maps/place/Demolition+Traders/@-37.8072281,175.2449009,6771m/data=!3m1!1e3!4m6!3m5!1s0x6d6d21fa970b5073:0x229ec1a4d67e239a!8m2!3d-37.8072319!4d175.2624104!16s%2Fg%2F1hm6cqmtt?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D', '_blank')">
+                <button class="btn-google-maps">
                     <i class="fa-brands fa-google"></i> <span>Open in Google Maps</span>
                 </button>
             </div>
@@ -400,7 +400,7 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                 if (headerRight) {
                     headerRight.innerHTML = `
                         <a href="${USER_BASE}profile.php"><i class="fa-solid fa-user"></i> ${data.user.first_name}</a>
-                        <a href="#" onclick="logout(); return false;"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+                        <a href="#" data-action="logout"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
                         <a href="${USER_BASE}wishlist.php" class="wishlist-link"><i class="fa-regular fa-heart"></i> <span id="wishlist-count">0</span></a>
                         <a href="${USER_BASE}cart.php" class="cart-link"><i class="fa-solid fa-cart-shopping"></i> <span id="cart-count">0</span></a>
                     `;
@@ -753,5 +753,8 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         setInterval(syncMobileCounts, 1000);
     });
 </script>
+
+<!-- Load header events handler (CSP compliant) -->
+<script src="<?php echo asset('assets/js/header-events.js'); ?>"></script>
 
 <?php include 'url-cleaner.php'; ?>

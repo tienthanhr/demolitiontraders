@@ -35,7 +35,7 @@
                 <div class="filter-row" style="gap: 32px; display: flex; flex-wrap: wrap; align-items: stretch;">
                     <div class="filter-group" style="min-width:180px; margin-bottom: 18px;">
                         <label for="category-select">Category</label>
-                        <select id="category-select" name="category" class="filter-select" onchange="handleCategoryChange()" autocomplete="off">
+                        <select id="category-select" name="category" class="filter-select" autocomplete="off">
                             <option value="">All Categories</option>
                         </select>
                     </div>
@@ -93,7 +93,7 @@
                     </div>
                     <div class="filter-group" style="display:flex; flex-direction:column; justify-content:flex-end; min-width:160px; margin-bottom: 18px;">
                         <label for="search-btn">&nbsp;</label>
-                        <button id="search-btn" name="search-btn" class="btn btn-primary" onclick="applyFilters()" style="width: 100%; height:44px; font-size:1.1em; align-self:flex-end;">SEARCH</button>
+                        <button id="search-btn" name="search-btn" class="btn btn-primary" style="width: 100%; height:44px; font-size:1.1em; align-self:flex-end;">SEARCH</button>
                     </div>
                 </div>
             </div>
@@ -755,5 +755,8 @@
             });
         });
     </script>
+    
+    <!-- Load shop events handler (CSP compliant) -->
+    <script src="<?php echo asset('assets/js/shop-events.js'); ?>"></script>
 </body>
 </html>

@@ -328,7 +328,7 @@
         <div class="cart-items">
             <div class="cart-header">
                 <h2>Your Cart (<span id="cart-item-count">0</span> items)</h2>
-                <button class="btn-empty-cart" onclick="emptyCart()" id="empty-cart-btn" style="display:none;">
+                <button class="btn-empty-cart" id="empty-cart-btn" style="display:none;">
                     <i class="fas fa-trash"></i> Empty Cart
                 </button>
             </div>
@@ -372,13 +372,13 @@
             <h3>You May Also Like</h3>
         </div>
         <div class="recommendations-carousel">
-            <button class="carousel-btn prev" id="carousel-prev" onclick="scrollCarousel(-1)">
+            <button class="carousel-btn prev" id="carousel-prev">
                 <i class="fas fa-chevron-left"></i>
             </button>
             <div class="recommendations-grid" id="recommendations-grid">
                 <!-- Recommendations will be loaded here -->
             </div>
-            <button class="carousel-btn next" id="carousel-next" onclick="scrollCarousel(1)">
+            <button class="carousel-btn next" id="carousel-next">
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
@@ -483,19 +483,18 @@
                         
                         return `
                         <div class="cart-item">
-                            <img src="${imagePath}" alt="${item.name}" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer" onerror="this.src='assets/images/logo.png'">
-                            <div class="item-details" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer">
+                            <img src="${imagePath}" alt="${item.name}" class="cart-item-image" data-product-id="${item.product_id}" style="cursor:pointer">
+                            <div class="item-details" data-product-id="${item.product_id}" style="cursor:pointer">
                                 <h3>${item.name}</h3>
                                 ${item.category_name ? `<p class="item-category">${item.category_name}</p>` : ''}
                             </div>
                             <div class="item-price">$${parseFloat(item.price).toFixed(2)}</div>
                             <div class="quantity-control">
-                                <button onclick="updateQuantity(${item.product_id}, ${item.quantity - 1})">-</button>
-                                <input type="number" value="${item.quantity}" min="1" max="${item.stock_quantity || 999}" 
-                                    onchange="updateQuantity(${item.product_id}, this.value)">
-                                <button onclick="updateQuantity(${item.product_id}, ${item.quantity + 1})">+</button>
+                                <button class="qty-btn qty-decrease" data-product-id="${item.product_id}" data-action="decrease">-</button>
+                                <input type="number" value="${item.quantity}" min="1" max="${item.stock_quantity || 999}" class="qty-input" data-product-id="${item.product_id}">
+                                <button class="qty-btn qty-increase" data-product-id="${item.product_id}" data-action="increase">+</button>
                             </div>
-                            <button class="remove-btn" onclick="removeItem(${item.product_id})">
+                            <button class="remove-btn" data-action="remove-item" data-product-id="${item.product_id}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -790,5 +789,8 @@
             loadCart();
         });
     </script>
+    
+    <!-- Load cart events handler (CSP compliant) -->
+    <script src="<?php echo asset('assets/js/cart-events.js'); ?>"></script>
 </body>
 </html>

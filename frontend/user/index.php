@@ -486,10 +486,11 @@
                             <a href="${BASE_PATH}product-detail.php?id=${product.id}">
                                 <img src="${product.image || DEFAULT_IMAGE}" 
                                      alt="${product.name}"
-                                     onerror="this.onerror=null;this.src='assets/images/logo.png'">
+                                     class="product-img"
+                                     data-product-image>
                             </a>
                             <div class="product-actions">
-                                <button class="wishlist-btn" onclick="addToWishlist(${product.id})">
+                                <button class="wishlist-btn" data-action="add-to-wishlist" data-product-id="${product.id}">
                                     <i class="far fa-heart"></i>
                                 </button>
                                 <a href="${BASE_PATH}product-detail.php?id=${product.id}" class="view-btn">
@@ -625,5 +626,8 @@
             }
         });
     </script>
+    
+    <!-- Load product events handler (CSP compliant) -->
+    <script src="<?php echo asset('assets/js/product-events.js'); ?>"></script>
 </body>
 </html>
