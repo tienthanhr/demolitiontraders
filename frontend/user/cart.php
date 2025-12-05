@@ -606,12 +606,16 @@
         
         // Empty entire cart
         async function emptyCart() {
+            console.log('emptyCart() called');
             const confirmed = await showConfirm(
                 'Are you sure you want to empty your cart? This will remove all items.',
                 'Empty Cart',
                 true
             );
-            if (!confirmed) return;
+            if (!confirmed) {
+                console.log('User cancelled empty cart');
+                return;
+            }
             
             try {
                 console.log('Attempting to empty cart...');
