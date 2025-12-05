@@ -401,10 +401,10 @@
         <div class="container">
             <div class="cta-panels-grid">
                 <div class="cta-panel">
-                    <h3 class="blue">Struggling to find something?</h3>
-                    <h2>List your wanted item</h2>
-                    <p>Let us know what items you can't find on our website.</p>
-                    <p class="button-wrap"><a href="<?php echo userUrl('wanted-listing.php'); ?>" class="btn">List your item</a></p>
+                    <h3 class="blue">Can't find what you're looking for?</h3>
+                    <h2>Let us know what you need</h2>
+                    <p>If you can't find the product you need on our website, send us a request.</p>
+                    <p class="button-wrap"><a href="<?php echo userUrl('wanted-listing.php'); ?>" class="btn">Send a product request</a></p>
                 </div>
                 <div class="cta-panel">
                     <h3 class="blue">Unused items on your hands?</h3>
