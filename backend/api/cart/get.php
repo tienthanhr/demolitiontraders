@@ -52,7 +52,7 @@ try {
          JOIN products p ON c.product_id = p.id
          LEFT JOIN categories cat ON p.category_id = cat.id
          LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = TRUE
-         WHERE c.session_id = ? AND p.is_active = TRUE
+         WHERE (c.session_id = ? OR (c.user_id IS NULL AND c.session_id IS NULL)) AND p.is_active = TRUE
          ORDER BY c.created_at DESC"
     );
     $stmt->execute([$session_id]);

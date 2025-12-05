@@ -46,13 +46,12 @@ try {
         [$session_id]
     );
     
-    // Also delete items with NULL or 0 user_id as fallback
+    // Also delete items with NULL session_id and NULL/0 user_id (orphaned items)
     $result2 = $db->query(
-        "DELETE FROM cart WHERE (user_id IS NULL OR user_id = 0) AND session_id = ?",
-        [$session_id]
+        "DELETE FROM cart WHERE (session_id IS NULL AND (user_id IS NULL OR user_id = 0))"
     );
     
-    // Verify cart is empty
+    // Verify cart is empty for this session
     $count = $db->fetchOne(
         "SELECT COUNT(*) as count FROM cart WHERE session_id = ? OR (user_id IS NULL OR user_id = 0)",
         [$session_id]
