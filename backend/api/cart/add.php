@@ -139,7 +139,8 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Product added to cart',
-        'cart_count' => $count['count']
+        'cart_count' => $count['count'],
+        'session_id' => $session_id
     ]);
     
 } catch (Exception $e) {
