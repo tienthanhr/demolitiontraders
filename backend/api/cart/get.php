@@ -44,6 +44,8 @@ try {
     // OR get from database using session_id
     $session_id = session_id();
     
+    error_log("Guest cart get - Session ID: $session_id");
+    
     $stmt = $db->prepare(
         "SELECT c.product_id, c.quantity, p.name, p.price, p.stock_quantity,
                 cat.name as category_name,
@@ -57,6 +59,8 @@ try {
     );
     $stmt->execute([$session_id]);
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    error_log("Guest cart get - Items found: " . count($items));
     
     // Calculate summary
     $subtotal = 0;
