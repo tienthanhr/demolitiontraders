@@ -242,7 +242,9 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
             }
             
             // Get allowed columns from database
-            $columnsResult = $this->db->fetchAll("DESCRIBE products");
+            $columnsResult = $this->db->fetchAll(
+                "SELECT column_name as Field FROM information_schema.columns WHERE table_name = 'products'"
+            );
             $allowedColumns = array_column($columnsResult, 'Field');
             
             // Prepare product data
@@ -340,7 +342,9 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
             }
             
             // Get allowed columns
-            $columnsResult = $this->db->fetchAll("DESCRIBE products");
+            $columnsResult = $this->db->fetchAll(
+                "SELECT column_name as Field FROM information_schema.columns WHERE table_name = 'products'"
+            );
             $allowedColumns = array_column($columnsResult, 'Field');
             
             // Prepare update data
