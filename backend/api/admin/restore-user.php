@@ -2,11 +2,18 @@
 /**
  * Admin Restore User API
  */
+<<<<<<< HEAD
 require_once '../../api/bootstrap.php'; // Ensures session is started securely
 require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
 
 header('Content-Type: application/json');
 
+=======
+require_once '../../core/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
+
+header('Content-Type: application/json');
+>>>>>>> security-hardening
 try {
     $data = json_decode(file_get_contents('php://input'), true);
     

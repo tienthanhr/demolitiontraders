@@ -6,30 +6,7 @@
 
 // CRITICAL: Tắt display errors để tránh HTML output làm hỏng JSON response
 ini_set('display_errors', 0);
-error_reporting(E_ALL);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
-
-// Set up error handler to catch errors before they become fatal
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    error_log("PHP Error [$errno]: $errstr in $errfile on line $errline");
-    // Don't suppress the error, let it continue
-    return false;
-});
-
-// Set up shutdown handler to catch fatal errors
-register_shutdown_function(function() {
-    $error = error_get_last();
-    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-        error_log("Fatal Error: " . $error['message'] . " in " . $error['file'] . " on line " . $error['line']);
-        // Only send error if headers haven't been sent yet
-        if (!headers_sent()) {
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Internal server error: ' . $error['message']]);
-        }
-    }
-});
+error_reporting(0);
 
 // Enhanced CORS headers
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
@@ -58,6 +35,7 @@ if (isset($_GET['request']) && $_GET['request'] === 'health') {
 
 // Initialize secure session and load configurations
 require_once __DIR__ . '/../core/bootstrap.php';
+require_once __DIR__ . '/../middleware/rate_limit.php'; // Apply rate limiting to all API requests
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 
@@ -255,50 +233,40 @@ try {
                     sendResponse($controller->create($input), 201);
                 } elseif ($method === 'POST' && $id && $action === 'send-receipt') {
                     // Send receipt email
-                    try {
-                        require_once __DIR__ . '/../services/EmailService.php';
-                        $emailService = new EmailService();
-                        $order = $controller->show($id);
-                        
-                        // Get customer email
-                        $billing = json_decode($order['billing_address'], true);
-                        $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
-                        
-                        if (!$customerEmail) {
-                            sendError('No customer email found', 400);
-                        }
-                        
-                        $result = $emailService->sendReceipt($order, $customerEmail);
-                        if ($result['success']) {
-                            sendResponse($result);
-                        } else {
-                            sendError($result['error'], 500);
-                        }
-                    } catch (Exception $e) {
-                        error_log("Send receipt error: " . $e->getMessage());
-                        sendError('Failed to send receipt: ' . $e->getMessage(), 500);
+                    require_once __DIR__ . '/../services/EmailService.php';
+                    $emailService = new EmailService();
+                    $order = $controller->show($id);
+                    
+                    // Get customer email
+                    $billing = json_decode($order['billing_address'], true);
+                    $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
+                    
+                    if (!$customerEmail) {
+                        sendError('No customer email found', 400);
+                    }
+                    
+                    $result = $emailService->sendReceipt($order, $customerEmail);
+                    if ($result['success']) {
+                        sendResponse($result);
+                    } else {
+                        sendError($result['error'], 500);
                     }
                 } elseif ($method === 'POST' && $id && $action === 'send-tax-invoice') {
                     // Send tax invoice email
-                    try {
-                        require_once __DIR__ . '/../services/EmailService.php';
-                        $emailService = new EmailService();
-                        $order = $controller->show($id);
-                        // Get customer email
-                        $billing = json_decode($order['billing_address'], true);
-                        $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
-                        if (!$customerEmail) {
-                            sendError('No customer email found', 400);
-                        }
-                        $result = $emailService->sendTaxInvoice($order, $customerEmail);
-                        if ($result['success']) {
-                            sendResponse($result);
-                        } else {
-                            sendError($result['error'], 500);
-                        }
-                    } catch (Exception $e) {
-                        error_log("Send tax invoice error: " . $e->getMessage());
-                        sendError('Failed to send tax invoice: ' . $e->getMessage(), 500);
+                    require_once __DIR__ . '/../services/EmailService.php';
+                    $emailService = new EmailService();
+                    $order = $controller->show($id);
+                    // Get customer email
+                    $billing = json_decode($order['billing_address'], true);
+                    $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
+                    if (!$customerEmail) {
+                        sendError('No customer email found', 400);
+                    }
+                    $result = $emailService->sendTaxInvoice($order, $customerEmail);
+                    if ($result['success']) {
+                        sendResponse($result);
+                    } else {
+                        sendError($result['error'], 500);
                     }
                 } elseif ($method === 'PUT' && $id) {
                     sendResponse($controller->update($id, $input));
@@ -309,7 +277,6 @@ try {
                 }
             } catch (Exception $e) {
                 error_log("Orders API Error: " . $e->getMessage());
-                error_log("Orders API Stack Trace: " . $e->getTraceAsString());
                 $message = $e->getMessage();
                 // Return appropriate status code for authentication errors
                 if (strpos($message, 'Authentication required') !== false) {

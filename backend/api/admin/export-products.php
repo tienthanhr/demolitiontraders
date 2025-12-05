@@ -2,10 +2,16 @@
 /**
  * Export Products to CSV
  */
+<<<<<<< HEAD
 require_once '../../api/bootstrap.php'; // Ensures session is started securely
 require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation for GET requests
 
 try {
+=======
+require_once '../../core/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
+
+>>>>>>> security-hardening
     $db = Database::getInstance();
     
     // Fetch all products with category names

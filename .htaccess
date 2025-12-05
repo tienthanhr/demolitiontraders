@@ -10,6 +10,32 @@ RewriteCond %{HTTP_HOST} !^localhost$ [NC]
 RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
 RewriteRule .* - [E=BASE:]
 
+# --- Security Enhancements ---
+
+# 1. Block access to server-status
+RewriteRule ^server-status/?$ - [F,L]
+
+# 2. Add Security Headers
+<IfModule mod_headers.c>
+    # Content Security Policy (CSP)
+    Header set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self';"
+
+    # Prevent Clickjacking
+    Header set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME-type sniffing
+    Header set X-Content-Type-Options "nosniff"
+
+    # Control referrer information
+    Header set Referrer-Policy "no-referrer-when-downgrade"
+
+    # HTTP Strict Transport Security (HSTS) - Only send if on HTTPS
+    Header set Strict-Transport-Security "max-age=63072000" env=HTTPS
+
+    # Permissions Policy
+    Header set Permissions-Policy "geolocation=()"
+</IfModule>
+
 # Prevent directory listing
 Options -Indexes
 
