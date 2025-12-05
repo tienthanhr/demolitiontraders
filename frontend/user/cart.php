@@ -465,8 +465,15 @@
                     document.getElementById('recommendations-section').style.display = 'none';
                     recommendationsLoaded = false;
                 } else {
-                    if (checkoutBtn) checkoutBtn.style.display = 'block';
-                    if (emptyBtn) emptyBtn.style.display = 'block';
+                    console.log('Showing empty/checkout buttons, item count:', count);
+                    if (checkoutBtn) {
+                        checkoutBtn.style.display = 'block';
+                        console.log('Checkout button shown');
+                    }
+                    if (emptyBtn) {
+                        emptyBtn.style.display = 'block';
+                        console.log('Empty cart button shown');
+                    }
                     
                     container.innerHTML = data.items.map(item => {
                         // Fix image path
