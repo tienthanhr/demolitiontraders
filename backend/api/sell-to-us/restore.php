@@ -15,7 +15,7 @@ try {
         throw new Exception('Submission ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     // Restore by removing [DELETED] tag from notes and changing status back
     $query = "UPDATE sell_to_us_submissions 

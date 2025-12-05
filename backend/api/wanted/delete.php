@@ -15,7 +15,7 @@ try {
         throw new Exception('Listing ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     // Delete listing (matches will be cascade deleted)
     $query = "DELETE FROM wanted_listings WHERE id = :id";

@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../bootstrap.php';
 
 try {
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     if (isset($_SESSION['user_id'])) {
         // Logged in user - get from database

@@ -14,7 +14,7 @@ try {
         throw new Exception('Listing ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $query = "UPDATE wanted_listings 
               SET notes = REPLACE(notes, SUBSTRING(notes, LOCATE('[DELETED]', notes), LOCATE('\\n', notes, LOCATE('[DELETED]', notes)) - LOCATE('[DELETED]', notes) + 1), ''),

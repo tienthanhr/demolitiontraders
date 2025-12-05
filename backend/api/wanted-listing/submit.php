@@ -64,7 +64,7 @@ try {
         exit;
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     // Check if user is logged in
     require_once __DIR__ . '/../../core/bootstrap.php';

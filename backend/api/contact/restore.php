@@ -14,7 +14,7 @@ try {
         throw new Exception('Contact ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $query = "UPDATE contact_submissions SET status = 'new' WHERE id = :id";
     $stmt = $db->prepare($query);

@@ -15,7 +15,7 @@ try {
         throw new Exception('Contact ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $query = "DELETE FROM contact_submissions WHERE id = :id";
     $stmt = $db->prepare($query);

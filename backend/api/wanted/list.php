@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 try {
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     // Get all wanted listings first
     $query = "SELECT * FROM wanted_listings ORDER BY created_at DESC";

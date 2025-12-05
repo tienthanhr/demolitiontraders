@@ -15,7 +15,7 @@ try {
         throw new Exception('Listing ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $query = "UPDATE wanted_listings SET 
               status = :status,

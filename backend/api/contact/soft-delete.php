@@ -14,7 +14,7 @@ try {
         throw new Exception('Contact ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $deleteNote = "Deleted by admin " . $_SESSION['user_id'] . " at " . date('Y-m-d H:i:s');
     $query = "UPDATE contact_submissions SET status = 'resolved' WHERE id = :id";

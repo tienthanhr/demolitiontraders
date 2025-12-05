@@ -18,7 +18,7 @@ try {
         exit;
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     // Get submission first to delete photos
     $stmt = $db->prepare("SELECT photos FROM sell_to_us_submissions WHERE id = :id");

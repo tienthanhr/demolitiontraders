@@ -15,7 +15,7 @@ try {
         throw new Exception('Submission ID is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     // Get the submission before deleting to store in notes
     $query = "SELECT * FROM sell_to_us_submissions WHERE id = :id";

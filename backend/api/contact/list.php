@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 try {
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $query = "SELECT * FROM contact_submissions 
               ORDER BY created_at DESC";

@@ -7,13 +7,13 @@ header('Access-Control-Allow-Origin: *');
 require_once '../../config/database.php';
 
 try {
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     if (isset($_SESSION['user_id'])) {
         // Logged in user
         $user_id = $_SESSION['user_id'];
         
-        $stmt = $db->prepare(
+        $items = $db->fetchAll(
             "SELECT c.product_id, c.quantity, p.name, p.price, p.stock_quantity,
                     cat.name as category_name,
                     pi.image_url as image
@@ -22,10 +22,9 @@ try {
              LEFT JOIN categories cat ON p.category_id = cat.id
              LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
              WHERE c.user_id = ? AND p.is_active = 1
-             ORDER BY c.created_at DESC"
+             ORDER BY c.created_at DESC",
+            [$user_id]
         );
-        $stmt->execute([$user_id]);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         echo json_encode([
             'success' => true,

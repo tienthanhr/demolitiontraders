@@ -15,7 +15,7 @@ try {
         throw new Exception('IDs array is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $deleteNote = "Bulk deleted by admin " . $_SESSION['user_id'] . " at " . date('Y-m-d H:i:s');
     $placeholders = str_repeat('?,', count($data['ids']) - 1) . '?';
