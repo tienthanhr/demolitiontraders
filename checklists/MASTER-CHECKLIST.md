@@ -796,3 +796,14 @@
 **END OF MASTER CHECKLIST**
 
 *Remember: This is a living document. Update it daily to track your progress!*
+
+## ✅ Checklist Chuẩn Cho Các Release
+
+- [ ] Quét phụ thuộc
+- [ ] Mã hóa output
+- [ ] Prepared statements
+- [ ] RBAC
+- [ ] Input validation
+- [ ] Quản lý bí mật
+- [ ] Cập nhật định kỳ
+- [ ] Quét bảo mật định kỳ (OWASP ZAP) sau mỗi thay đổi lớn
