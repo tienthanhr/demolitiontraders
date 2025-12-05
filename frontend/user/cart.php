@@ -618,18 +618,20 @@
                     method: 'POST',
                     credentials: 'same-origin'
                 });
+                console.log('Empty cart response:', data);
                 if (data.success) {
-                    // Trigger cart update event
-                    localStorage.setItem('cartUpdated', Date.now());
-                    document.dispatchEvent(new Event('cartUpdated'));
-                    
-                    // Reset cart state
+                    // Clear any cached data
                     currentCartProductIds = '';
                     
-                    // Reload cart
-                    loadCart();
+                    // Trigger cart update event
+                    localStorage.setItem('cartUpdated', Date.now().toString());
+                    document.dispatchEvent(new Event('cartUpdated'));
                     
-                    alert('Cart emptied successfully');
+                    // Wait a bit then reload to ensure DB is updated
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Force full page reload to ensure clean slate
+                    window.location.reload();
                 } else {
                     alert('Failed to empty cart: ' + (data.message || 'Unknown error'));
                 }
