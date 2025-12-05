@@ -208,8 +208,8 @@
         async function loadCartItems() {
             try {
                 const data = await apiFetch(getApiUrl('/api/cart/list.php'));
-                if (data.success && Array.isArray(data.data)) {
-                    cartItems = data.data.map(item => item.product_id);
+                if (data.success && Array.isArray(data.items)) {
+                    cartItems = data.items.map(item => item.product_id);
                 } else {
                     cartItems = [];
                 }
@@ -656,7 +656,7 @@
                     await loadCartItems();
                     loadProducts();
                 } else {
-                    alert(data.message || 'Error adding product to cart');
+                    alert(response.message || 'Error adding product to cart');
                 }
             } catch (error) {
                 console.error('Error adding to cart:', error);
