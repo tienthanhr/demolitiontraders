@@ -1,36 +1,20 @@
 # Báo cáo Đánh giá Bảo mật - Demolition Traders
 
-**Ngày đánh giá:** 2025-12-03
-**Người đánh giá:** Jules (AI Software Engineer)
-<<<<<<< HEAD
-**Ngày cập nhật (Giai đoạn 2):** 2025-12-03
-
-## Tóm tắt Tổng quan
-
-Trang web Demolition Traders được xây dựng trên nền tảng PHP tùy chỉnh. Cuộc đánh giá ban đầu đã xác định một số lỗ hổng bảo mật. **Bản cập nhật Giai đoạn 2 này xác nhận rằng các lỗ hổng nghiêm trọng nhất, bao gồm CSRF, Session Hardening, và XSS, đã được khắc phục thành công theo các yêu cầu chi tiết.**
-
-Ứng dụng hiện tại đã được củng cố đáng kể, tuân thủ các thực hành bảo mật web hiện đại.
-
----
-
-## Tình trạng sau khi Khắc phục (Giai đoạn 2)
-
-Tất cả các lỗ hổng được liệt kê dưới đây đã được giải quyết. Mã nguồn hiện tại đã được củng cố đáng kể, đặc biệt là trong các lĩnh vực quản lý phiên, xác thực quản trị viên và mã hóa đầu ra.
-=======
+**Ngày đánh giá:** 2025-12-03  
+**Người đánh giá:** Jules (AI Software Engineer)  
 **Ngày cập nhật (Giai đoạn 3):** 2025-12-04
 
 ## Tóm tắt Tổng quan
 
-Trang web Demolition Traders được xây dựng trên nền tảng PHP tùy chỉnh. Các giai đoạn trước đã khắc phục các lỗ hổng ứng dụng nghiêm trọng. Giai đoạn 3 tập trung vào việc củng cố bảo mật ở cấp độ máy chủ và cơ sở hạ tầng dựa trên kết quả quét của OWASP ZAP.
+Trang web Demolition Traders được xây dựng trên nền tảng PHP tùy chỉnh. Các giai đoạn trước đã khắc phục các lỗ hổng ứng dụng nghiêm trọng (CSRF, XSS, hardening session, v.v.). Giai đoạn 3 tập trung củng cố bảo mật ở cấp độ máy chủ và cơ sở hạ tầng dựa trên kết quả quét của OWASP ZAP.
 
-**Bản cập nhật Giai đoạn 3 này xác nhận rằng các vấn đề về cấu hình máy chủ, security header, và thiếu rate limiting đã được giải quyết.**
+**Bản cập nhật Giai đoạn 3 này xác nhận rằng các vấn đề về cấu hình máy chủ, security header, và thiếu rate limiting đã được giải quyết, trong khi tất cả bản vá ứng dụng ở Giai đoạn 2 vẫn được duy trì.**
 
 ---
 
 ## Tình trạng sau khi Khắc phục (Giai đoạn 3)
 
-Các thay đổi trong giai đoạn này giúp bảo vệ ứng dụng khỏi việc rò rỉ thông tin, các cuộc tấn công phía client (như clickjacking), và các cuộc tấn công tự động ở mức độ cơ bản.
->>>>>>> security-hardening
+Các thay đổi trong giai đoạn này giúp bảo vệ ứng dụng khỏi việc rò rỉ thông tin, các cuộc tấn công phía client (như clickjacking), và các cuộc tấn công tự động ở mức độ cơ bản. Những bản vá ứng dụng từ Giai đoạn 2 vẫn giữ nguyên hiệu lực.
 
 ---
 
@@ -40,7 +24,6 @@ Các thay đổi trong giai đoạn này giúp bảo vệ ứng dụng khỏi vi
 
 ---
 
-<<<<<<< HEAD
 ### 1. Lỗ hổng Cross-Site Request Forgery (CSRF) trong Khu vực Quản trị - <span style="color:green;">ĐÃ KHẮC PHỤC (Giai đoạn 2)</span>
 
 *   **Tóm tắt Lỗ hổng:** Các endpoint quản trị thiếu cơ chế bảo vệ chống lại tấn công CSRF.
@@ -110,17 +93,19 @@ Các thay đổi trong giai đoạn này giúp bảo vệ ứng dụng khỏi vi
     1.  Tệp `demolitiontraders.sql` đã bị xóa.
     2.  Tệp `SETUP.md` đã được cập nhật để sử dụng các placeholder thay vì các giá trị nhạy cảm.
     3.  Tệp `.gitignore` đã được củng cố.
-=======
-### 1. Truy cập Công khai vào `/server-status` - <span style="color:green;">ĐÃ KHẮC PHỤC (Giai đoạn 3)</span>
+
+---
+
+### 8. Truy cập Công khai vào `/server-status` - <span style="color:green;">ĐÃ KHẮC PHỤC (Giai đoạn 3)</span>
 
 *   **Tóm tắt Lỗ hổng:** Endpoint `/server-status` của Apache bị lộ công khai, có thể làm rò rỉ thông tin nhạy cảm về máy chủ.
-*   **Hành động Khắc phục:**
+*   **Hành động Khắc Phục:**
     *   Đã thêm một quy tắc `RewriteRule ^server-status/?$ - [F,L]` vào tệp `.htaccess` ở thư mục gốc.
     *   Quy tắc này chặn tất cả các yêu cầu đến `/server-status` và trả về lỗi 403 Forbidden.
 
 ---
 
-### 2. Thiếu các Security Header Quan trọng - <span style="color:green;">ĐÃ KHẮC PHỤC (Giai đoạn 3)</span>
+### 9. Thiếu các Security Header Quan trọng - <span style="color:green;">ĐÃ KHẮC PHỤC (Giai đoạn 3)</span>
 
 *   **Tóm tắt Lỗ hổng:** Ứng dụng không gửi các security header được khuyến nghị, làm tăng nguy cơ bị tấn công phía client.
 *   **Hành động Khắc phục:** Đã thêm các header sau vào tệp `.htaccess`:
@@ -133,7 +118,7 @@ Các thay đổi trong giai đoạn này giúp bảo vệ ứng dụng khỏi vi
 
 ---
 
-### 3. Thiếu Cơ chế Rate Limiting - <span style="color:green;">ĐÃ KHẮC PHỤC (Giai đoạn 3)</span>
+### 10. Thiếu Cơ chế Rate Limiting - <span style="color:green;">ĐÃ KHẮC PHỤC (Giai đoạn 3)</span>
 
 *   **Tóm tắt Lỗ hổng:** Các API không có giới hạn yêu cầu, có thể bị lạm dụng bởi các cuộc tấn công brute-force hoặc DoS.
 *   **Hành động Khắc phục:**
@@ -144,16 +129,10 @@ Các thay đổi trong giai đoạn này giúp bảo vệ ứng dụng khỏi vi
 
 ---
 
-*Ghi chú: Các lỗ hổng đã được khắc phục trong các giai đoạn trước (CSRF, XSS, Session Hardening, v.v.) vẫn được duy trì ở trạng thái đã sửa.*
->>>>>>> security-hardening
-
----
-
 ## Checklist Bảo mật để Duy trì trong Tương lai
 
 Để duy trì và cải thiện tình hình bảo mật của ứng dụng, hãy xem xét các thực hành tốt nhất sau đây:
 
-<<<<<<< HEAD
 *   **Rà soát Phụ thuộc (Dependencies):** Thường xuyên quét các thư viện của bên thứ ba (ví dụ: `composer`, `npm`) để tìm các lỗ hổng đã biết.
 *   **Mã hóa tất cả Đầu ra:** Đảm bảo rằng bất kỳ dữ liệu động nào được hiển thị trên trang đều được mã hóa bằng `htmlspecialchars()` hoặc một cơ chế tương đương.
 *   **Sử dụng Prepared Statements:** Tiếp tục sử dụng prepared statements cho tất cả các truy vấn cơ sở dữ liệu.
@@ -161,13 +140,4 @@ Các thay đổi trong giai đoạn này giúp bảo vệ ứng dụng khỏi vi
 *   **Xác thực Đầu vào:** Xác thực tất cả dữ liệu đến từ người dùng.
 *   **Quản lý Bí mật:** Không bao giờ hardcode các khóa API, mật khẩu, hoặc các bí mật khác trong mã nguồn.
 *   **Cập nhật Thường xuyên:** Giữ cho máy chủ, PHP, và các thư viện khác được cập nhật lên các phiên bản mới nhất.
-=======
-*   **Rà soát Phụ thuộc (Dependencies):** Thường xuyên quét các thư viện của bên thứ ba.
-*   **Mã hóa tất cả Đầu ra:** Đảm bảo mọi dữ liệu động đều được mã hóa.
-*   **Sử dụng Prepared Statements:** Tiếp tục sử dụng cho tất cả các truy vấn cơ sở dữ liệu.
-*   **Thực thi Kiểm soát Truy cập:** Luôn kiểm tra quyền cho các endpoint mới.
-*   **Xác thực Đầu vào:** Xác thực tất cả dữ liệu từ người dùng.
-*   **Quản lý Bí mật:** Không hardcode thông tin nhạy cảm.
-*   **Cập nhật Thường xuyên:** Giữ cho máy chủ, PHP, và các thư viện được cập nhật.
-*   **Quét Bảo mật Định kỳ:** Chạy các công cụ như OWASP ZAP định kỳ sau khi có các thay đổi lớn.
->>>>>>> security-hardening
+*   **Quét Bảo mật Định kỳ:** Chạy các công cụ như OWASP ZAP sau mỗi thay đổi lớn để phát hiện sớm các vấn đề mới.
