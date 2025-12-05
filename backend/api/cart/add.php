@@ -1,8 +1,6 @@
 <?php
 // Configure session for Render environment
-ini_set('session.save_path', '/tmp');
-ini_set('session.cookie_samesite', 'Lax');
-session_start();
+require_once __DIR__ . '/../../core/bootstrap.php';
 
 // CORS headers with credentials support
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';

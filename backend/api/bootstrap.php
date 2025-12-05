@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.save_path', '/tmp');
     ini_set('session.cookie_samesite', 'Lax');
-    session_start();
+require_once __DIR__ . '/../core/bootstrap.php';
 }
 
 // Include database

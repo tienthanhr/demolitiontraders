@@ -10,6 +10,13 @@ RewriteCond %{HTTP_HOST} !^localhost$ [NC]
 RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
 RewriteRule .* - [E=BASE:]
 
+# --- Security Enhancements ---
+
+# 1. Block access to server-status
+RewriteRule ^server-status/?$ - [F,L]
+
+# 2. Security Headers are now handled by PHP in backend/core/bootstrap.php
+
 # Prevent directory listing
 Options -Indexes
 

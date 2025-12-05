@@ -2,22 +2,11 @@
 /**
  * Admin Update User Role API
  */
-session_start();
+require_once '../../core/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
+
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type');
-
-require_once '../../config/database.php';
-
 try {
-    // Check if user is admin
-    $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
-    
-    if (!isset($_SESSION['user_id']) || !$isAdmin) {
-        throw new Exception('Unauthorized access');
-    }
-    
     $data = json_decode(file_get_contents('php://input'), true);
     
     if (empty($data['user_id']) || empty($data['role'])) {

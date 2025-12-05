@@ -1,6 +1,6 @@
 <?php
 // Get order detail for logged in user
-session_start();
+require_once __DIR__ . '/../../core/bootstrap.php';
 require_once '../../config/database.php';
 header('Content-Type: application/json');
 
