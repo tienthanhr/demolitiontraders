@@ -423,15 +423,20 @@
                         let imageUrl = product.image;
                         const logoPath = 'assets/images/logo.png';
                         
+                        // Debug log
+                        console.log('Product:', product.name, 'Image URL:', imageUrl);
+                        
                         // Use logo for missing, invalid, or old upload paths
                         if (!imageUrl || 
                             imageUrl.trim() === '' || 
                             imageUrl === 'assets/images/logo.png' ||
                             imageUrl.includes('null') ||
-                            imageUrl === 'null' ||
-                            imageUrl.includes('/demolitiontraders/uploads/') ||  // Old upload path
-                            imageUrl.startsWith('/uploads/')) {  // Direct uploads path (likely missing)
+                            imageUrl === 'null') {
                             imageUrl = logoPath;
+                            console.log('Using fallback logo for:', product.name);
+                        } else if (imageUrl.startsWith('/')) {
+                            // If path starts with /, use it as-is (it's already absolute from root)
+                            console.log('Using absolute path:', imageUrl);
                         }
                         
                         const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
