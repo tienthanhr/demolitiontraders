@@ -3,8 +3,7 @@ FROM php:8.2-apache
 # Install PostgreSQL and MySQL PDO drivers
 RUN apt-get update && apt-get install -y \
     libpq-dev \
-    default-mysql-client \
-    && docker-php-ext-install pdo pdo_pgsql pdo_mysql pgsql \
+    && docker-php-ext-install pdo pdo_pgsql pgsql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

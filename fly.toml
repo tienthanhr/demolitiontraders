@@ -1,9 +1,9 @@
 # Fly.io Configuration for Demolition Traders
 app = "demolitiontraders"
-primary_region = "sin"  # Singapore
+primary_region = "sin"
 
 [build]
-  image = "demolitiontraders:latest"
+  dockerfile = "Dockerfile"
 
 [env]
   APP_ENV = "production"
