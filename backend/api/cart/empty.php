@@ -46,17 +46,14 @@ try {
         [$session_id]
     );
     
-    // Also delete items with NULL session_id and NULL/0 user_id (orphaned items)
-    $result2 = $db->query(
-        "DELETE FROM cart WHERE (session_id IS NULL AND (user_id IS NULL OR user_id = 0))"
-    );
+    error_log("Deleted " . ($result ?: 0) . " items with session_id");
     
     // Verify cart is empty for this session
     $count = $db->fetchOne(
-        "SELECT COUNT(*) as count FROM cart WHERE session_id = ? OR (user_id IS NULL OR user_id = 0)",
+        "SELECT COUNT(*) as count FROM cart WHERE session_id = ?",
         [$session_id]
     );
-    error_log("After delete, remaining items: " . ($count ? $count['count'] : 0));
+    error_log("After delete, remaining items for session: " . ($count ? $count['count'] : 0));
     
     echo json_encode([
         'success' => true,
