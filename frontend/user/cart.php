@@ -614,18 +614,14 @@
             if (!confirmed) return;
             
             try {
-                const response = await fetch(getApiUrl('/api/cart/empty.php'), {
+                const data = await apiFetch(getApiUrl('/api/cart/empty.php'), {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    credentials: 'same-origin'
                 });
-                const data = await response.json();
                 if (data.success) {
                     // Trigger cart update event
                     localStorage.setItem('cartUpdated', Date.now());
-                    window.dispatchEvent(new StorageEvent('storage', {
-                        key: 'cartUpdated',
-                        newValue: Date.now().toString()
-                    }));
+                    document.dispatchEvent(new Event('cartUpdated'));
                     
                     // Reset cart state
                     currentCartProductIds = '';
@@ -635,11 +631,11 @@
                     
                     alert('Cart emptied successfully');
                 } else {
-                    alert('Failed to empty cart');
+                    alert('Failed to empty cart: ' + (data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Error emptying cart:', error);
-                alert('Error emptying cart');
+                alert('Error emptying cart: ' + error.message);
             }
         }
         
