@@ -53,6 +53,41 @@ try {
         // Logged in user
         $user_id = $_SESSION['user_id'];
         
+        // Get current quantity in cart
+        $currentItem = $db->fetchOne(
+            "SELECT quantity FROM cart WHERE user_id = ? AND product_id = ?",
+            [$user_id, $product_id]
+        );
+        
+        if (!$currentItem) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Item not found in cart'
+            ]);
+            exit;
+        }
+        
+        // Calculate new quantity change
+        $quantityDifference = $quantity - intval($currentItem['quantity']);
+        
+        // Get total quantity of this product in cart (in case of multiple cart entries - shouldn't happen but safety check)
+        $totalInCart = $db->fetchOne(
+            "SELECT SUM(quantity) as total FROM cart WHERE product_id = ? AND user_id = ?",
+            [$product_id, $user_id]
+        );
+        
+        $newTotal = intval($totalInCart['total']) + $quantityDifference;
+        
+        // Check if new total would exceed stock
+        if ($newTotal > $product['stock_quantity']) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Requested quantity exceeds available stock',
+                'available' => $product['stock_quantity'] - (intval($totalInCart['total']) - intval($currentItem['quantity']))
+            ]);
+            exit;
+        }
+        
         $db->query(
             "UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?",
             [$quantity, $user_id, $product_id]
@@ -67,6 +102,41 @@ try {
     
     // Guest user
     $session_id = session_id();
+    
+    // Get current quantity in cart
+    $currentItem = $db->fetchOne(
+        "SELECT quantity FROM cart WHERE session_id = ? AND product_id = ?",
+        [$session_id, $product_id]
+    );
+    
+    if (!$currentItem) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Item not found in cart'
+        ]);
+        exit;
+    }
+    
+    // Calculate new quantity change
+    $quantityDifference = $quantity - intval($currentItem['quantity']);
+    
+    // Get total quantity of this product in cart
+    $totalInCart = $db->fetchOne(
+        "SELECT SUM(quantity) as total FROM cart WHERE product_id = ? AND session_id = ?",
+        [$product_id, $session_id]
+    );
+    
+    $newTotal = intval($totalInCart['total']) + $quantityDifference;
+    
+    // Check if new total would exceed stock
+    if ($newTotal > $product['stock_quantity']) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Requested quantity exceeds available stock',
+            'available' => $product['stock_quantity'] - (intval($totalInCart['total']) - intval($currentItem['quantity']))
+        ]);
+        exit;
+    }
     
     $db->query(
         "UPDATE cart SET quantity = ? WHERE session_id = ? AND product_id = ?",

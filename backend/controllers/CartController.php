@@ -11,23 +11,20 @@ class CartController {
     public function __construct() {
         $this->db = Database::getInstance();
         // Session already started in API index.php
-        
-        if (!isset($_SESSION['cart_id'])) {
-            $_SESSION['cart_id'] = uniqid('cart_', true);
-        }
-        
-        $this->sessionId = $_SESSION['cart_id'];
+        // Use PHP's built-in session_id() for guest users
+        $this->sessionId = session_id();
     }
     
     /**
      * Get cart contents
      */
-    public function get() {
+    public function get($includeSuccess = false) {
         $userId = $_SESSION['user_id'] ?? null;
+        error_log("[CartController::get] Fetching cart, userId: " . ($userId ? $userId : 'null') . ", sessionId: " . $this->sessionId);
         
         if ($userId) {
             $items = $this->db->fetchAll(
-                "SELECT c.*, p.name, p.price, p.stock_quantity, p.slug,
+                "SELECT c.product_id, c.quantity, p.name, p.price, p.stock_quantity, p.slug,
                  (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
                  FROM cart c
                  JOIN products p ON c.product_id = p.id
@@ -36,7 +33,7 @@ class CartController {
             );
         } else {
             $items = $this->db->fetchAll(
-                "SELECT c.*, p.name, p.price, p.stock_quantity, p.slug,
+                "SELECT c.product_id, c.quantity, p.name, p.price, p.stock_quantity, p.slug,
                  (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
                  FROM cart c
                  JOIN products p ON c.product_id = p.id
@@ -44,6 +41,8 @@ class CartController {
                 ['session_id' => $this->sessionId]
             );
         }
+        
+        error_log("[CartController::get] Found " . count($items) . " items in cart");
         
         $subtotal = 0;
         foreach ($items as &$item) {
@@ -54,7 +53,7 @@ class CartController {
         // Prices already include GST, no additional tax calculation needed
         $total = $subtotal;
         
-        return [
+        $result = [
             'items' => $items,
             'summary' => [
                 'subtotal' => number_format($subtotal, 2, '.', ''),
@@ -62,6 +61,12 @@ class CartController {
                 'item_count' => count($items)
             ]
         ];
+        
+        if ($includeSuccess) {
+            $result['success'] = true;
+        }
+        
+        return $result;
     }
     
     /**
@@ -75,6 +80,8 @@ class CartController {
         $productId = $data['product_id'];
         $quantity = max(1, intval($data['quantity'] ?? 1));
         $userId = $_SESSION['user_id'] ?? null;
+        
+        error_log("[CartController::add] Adding product $productId with qty $quantity, userId: " . ($userId ? $userId : 'null') . ", sessionId: " . $this->sessionId);
         
         // Check product exists and has stock
         $product = $this->db->fetchOne(
@@ -106,6 +113,7 @@ class CartController {
         if ($existing) {
             // Update quantity
             $newQuantity = $existing['quantity'] + $quantity;
+            error_log("[CartController::add] Item exists, updating quantity from " . $existing['quantity'] . " to $newQuantity");
             
             if ($product['stock_quantity'] < $newQuantity) {
                 throw new Exception('Insufficient stock');
@@ -119,6 +127,7 @@ class CartController {
             );
         } else {
             // Add new item
+            error_log("[CartController::add] New item, inserting into cart");
             $this->db->insert('cart', [
                 'user_id' => $userId,
                 'session_id' => $userId ? null : $this->sessionId,
@@ -127,7 +136,8 @@ class CartController {
             ]);
         }
         
-        return $this->get();
+        error_log("[CartController::add] Item added successfully, fetching updated cart");
+        return $this->get(true);
     }
     
     /**
@@ -141,6 +151,8 @@ class CartController {
         $productId = $data['product_id'];
         $quantity = max(0, intval($data['quantity'] ?? 1));
         $userId = $_SESSION['user_id'] ?? null;
+        
+        error_log("[CartController::update] Updating product $productId to quantity $quantity, userId: " . ($userId ? $userId : 'null') . ", sessionId: " . $this->sessionId);
         
         if ($quantity === 0) {
             return $this->remove($productId);
@@ -173,7 +185,8 @@ class CartController {
             );
         }
         
-        return $this->get();
+        error_log("[CartController::update] Quantity updated, fetching updated cart");
+        return $this->get(true);
     }
     
     /**
@@ -181,6 +194,7 @@ class CartController {
      */
     public function remove($productId) {
         $userId = $_SESSION['user_id'] ?? null;
+        error_log("[CartController::remove] Removing product $productId, userId: " . ($userId ? $userId : 'null') . ", sessionId: " . $this->sessionId);
         
         if ($userId) {
             $this->db->delete(
@@ -196,7 +210,8 @@ class CartController {
             );
         }
         
-        return $this->get();
+        error_log("[CartController::remove] Product removed, fetching updated cart");
+        return $this->get(true);
     }
     
     /**
@@ -204,6 +219,7 @@ class CartController {
      */
     public function clear() {
         $userId = $_SESSION['user_id'] ?? null;
+        error_log("[CartController::clear] Clearing cart, userId: " . ($userId ? $userId : 'null') . ", sessionId: " . $this->sessionId);
         
         if ($userId) {
             $this->db->delete('cart', 'user_id = :user_id', ['user_id' => $userId]);
@@ -211,6 +227,16 @@ class CartController {
             $this->db->delete('cart', 'session_id = :session_id', ['session_id' => $this->sessionId]);
         }
         
-        return ['message' => 'Cart cleared successfully'];
+        error_log("[CartController::clear] Cart cleared successfully");
+        return [
+            'success' => true,
+            'message' => 'Cart cleared successfully',
+            'items' => [],
+            'summary' => [
+                'subtotal' => '0.00',
+                'total' => '0.00',
+                'item_count' => 0
+            ]
+        ];
     }
 }

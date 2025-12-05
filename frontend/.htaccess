@@ -1,10 +1,105 @@
-RewriteEngine On
-RewriteBase /demolitiontraders/frontend/
+# ============================================================================
+# DEMOLITION TRADERS - MOD REWRITE CONFIGURATION (frontend/)
+# ============================================================================
 
-# Serve static files directly
-RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteEngine On
+RewriteBase /demolitiontraders/
+
+# ============================================================================
+# SECURITY & GENERAL RULES
+# ============================================================================
+
+# Disable directory listing
+Options -Indexes
+
+# Prevent access to hidden files and directories
+RewriteRule "^\." - [F,L]
+
+# Prevent access to web.config files
+RewriteRule "^web\.config" - [F,L]
+
+# ============================================================================
+# STATIC ASSETS & FILES (Allow direct access)
+# ============================================================================
+
+# Allow access to existing files
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Allow access to existing directories
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Route everything else to index.php
-RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
+# ============================================================================
+# API ROUTES (Backend API Router)
+# ============================================================================
+
+# Route /api/... to backend/api/index.php
+RewriteRule ^api/(.*)$ backend/api/index.php?request=$1 [QSA,L]
+
+# ============================================================================
+# LOGOUT & SPECIAL ROUTES
+# ============================================================================
+
+# Allow direct logout access
+RewriteRule ^logout\.php$ - [L]
+
+# ============================================================================
+# ADMIN ROUTES (/admin/... → frontend/admin/...)
+# ============================================================================
+
+# /admin → /frontend/admin/index.php
+RewriteRule ^admin/?$ frontend/admin/index.php [L]
+
+# /admin-login → /frontend/admin-login.php
+RewriteRule ^admin-login/?$ frontend/admin-login.php [L]
+
+# /admin/* → /frontend/admin/*
+RewriteRule ^admin/(.+)$ frontend/admin/$1 [L]
+
+# ============================================================================
+# USER PAGES & PUBLIC ROUTES (/page → /frontend/user/page.php)
+# ============================================================================
+
+# Root / → /frontend/user/index.php
+RewriteRule ^$ frontend/user/index.php [L]
+
+# Main user pages
+RewriteRule ^index/?$ frontend/user/index.php [L]
+RewriteRule ^shop/?$ frontend/user/shop.php [QSA,L]
+RewriteRule ^product-detail/?$ frontend/user/product-detail.php [QSA,L]
+RewriteRule ^cart/?$ frontend/user/cart.php [L]
+RewriteRule ^checkout/?$ frontend/user/checkout.php [L]
+RewriteRule ^wishlist/?$ frontend/user/wishlist.php [L]
+
+# Authentication pages
+RewriteRule ^login/?$ frontend/user/login.php [L]
+RewriteRule ^reset-password/?$ frontend/user/reset-password.php [L]
+
+# User account pages
+RewriteRule ^profile/?$ frontend/user/profile.php [L]
+RewriteRule ^order-detail/?$ frontend/user/order-detail.php [QSA,L]
+
+# Information pages
+RewriteRule ^about/?$ frontend/user/about.php [L]
+RewriteRule ^contact/?$ frontend/user/contact.php [L]
+RewriteRule ^faqs/?$ frontend/user/faqs.php [L]
+RewriteRule ^terms/?$ frontend/user/terms.php [L]
+RewriteRule ^staff/?$ frontend/user/staff.php [L]
+
+# Business pages
+RewriteRule ^cabins/?$ frontend/user/cabins.php [L]
+RewriteRule ^sell-to-us/?$ frontend/user/sell-to-us.php [L]
+RewriteRule ^wanted-listing/?$ frontend/user/wanted-listing.php [L]
+
+# ============================================================================
+# CATCH-ALL & SECURITY
+# ============================================================================
+
+# Prevent direct access to frontend/user/ and frontend/admin/ directories
+RewriteRule ^frontend/(user|admin)/ - [F,L]
+
+# Prevent direct PHP file access in frontend/ (except through rewrites)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^frontend/.*\.php$ - [F,L]

@@ -83,16 +83,36 @@ try {
             );
         }
         
-        // Get cart count
-        $count = $db->fetchOne(
-            "SELECT COUNT(*) as count FROM cart WHERE user_id = ?",
+        // Get updated cart
+        $items = $db->fetchAll(
+            "SELECT c.product_id, c.quantity, p.name, p.price, p.stock_quantity,
+                    cat.name as category_name,
+                    COALESCE(MIN(pi.image_url), 'assets/images/logo.png') as image
+             FROM cart c
+             JOIN products p ON c.product_id = p.id
+             LEFT JOIN categories cat ON p.category_id = cat.id
+             LEFT JOIN product_images pi ON p.id = pi.product_id
+             WHERE c.user_id = ?
+             GROUP BY c.product_id, c.quantity, p.name, p.price, p.stock_quantity, cat.name
+             ORDER BY c.id DESC",
             [$user_id]
         );
+        
+        // Calculate summary
+        $subtotal = 0;
+        foreach ($items as $item) {
+            $subtotal += floatval($item['price']) * intval($item['quantity']);
+        }
         
         echo json_encode([
             'success' => true,
             'message' => 'Product added to cart',
-            'cart_count' => $count['count']
+            'items' => $items,
+            'summary' => [
+                'subtotal' => number_format($subtotal, 2, '.', ''),
+                'total' => number_format($subtotal, 2, '.', ''),
+                'item_count' => count($items)
+            ]
         ]);
         exit;
     }
@@ -131,15 +151,36 @@ try {
         error_log("Guest cart - Insert complete");
     }
     
-    $count = $db->fetchOne(
-        "SELECT COUNT(*) as count FROM cart WHERE session_id = ?",
+    // Get updated cart
+    $items = $db->fetchAll(
+        "SELECT c.product_id, c.quantity, p.name, p.price, p.stock_quantity,
+                cat.name as category_name,
+                COALESCE(MIN(pi.image_url), 'assets/images/logo.png') as image
+         FROM cart c
+         JOIN products p ON c.product_id = p.id
+         LEFT JOIN categories cat ON p.category_id = cat.id
+         LEFT JOIN product_images pi ON p.id = pi.product_id
+         WHERE c.session_id = ?
+         GROUP BY c.product_id, c.quantity, p.name, p.price, p.stock_quantity, cat.name
+         ORDER BY c.id DESC",
         [$session_id]
     );
+    
+    // Calculate summary
+    $subtotal = 0;
+    foreach ($items as $item) {
+        $subtotal += floatval($item['price']) * intval($item['quantity']);
+    }
     
     echo json_encode([
         'success' => true,
         'message' => 'Product added to cart',
-        'cart_count' => $count['count'],
+        'items' => $items,
+        'summary' => [
+            'subtotal' => number_format($subtotal, 2, '.', ''),
+            'total' => number_format($subtotal, 2, '.', ''),
+            'item_count' => count($items)
+        ],
         'session_id' => $session_id
     ]);
     

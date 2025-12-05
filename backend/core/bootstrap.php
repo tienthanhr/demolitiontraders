@@ -18,10 +18,14 @@ ini_set('session.use_only_cookies', 1);
 
 // 2. Set secure cookie parameters.
 $is_secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+$domain = $_SERVER['HTTP_HOST'] ?? '';
+// Remove port from domain if present for cookie
+$domain = explode(':', $domain)[0];
+
 session_set_cookie_params([
     'lifetime' => 86400, // 24 hours
     'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'] ?? '',
+    'domain' => $domain,
     'secure' => $is_secure, // Send cookie only over HTTPS.
     'httponly' => true,      // Prevent JavaScript access to the session cookie.
     'samesite' => 'Lax'      // CSRF protection. 'Lax' is a good balance.

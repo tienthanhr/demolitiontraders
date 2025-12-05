@@ -59,6 +59,13 @@
                 loadProductWithCart(productId);
             }
         });
+        
+        // Listen for direct dispatch events from same window
+        document.addEventListener('cartUpdated', function() {
+            if (productId) {
+                loadProductWithCart(productId);
+            }
+        });
 
    async function loadProductWithCart(id) {
     try {
@@ -391,7 +398,8 @@ function displayProduct(product, cartQty = 0) {
             addButton.style.pointerEvents = 'none';
             addButton.style.opacity = '0.6';
             
-            const url = getApiUrl('/api/cart/add.php');
+            // Use correct API endpoint through index.php
+            const url = getApiUrl('/api/index.php?request=cart/add');
             const payload = { product_id: productId, quantity: quantity };
             
             console.log('Request URL:', url);
@@ -438,11 +446,18 @@ function displayProduct(product, cartQty = 0) {
                         `;
                         document.body.insertAdjacentHTML('beforeend', modalHTML);
                         
-                        // Update stock display
-                        const stockElem = document.querySelector('.product-stock .in-stock');
-                        if (stockElem) {
-                            stockElem.outerHTML = '<span class="in-cart"><i class="fas fa-shopping-cart"></i> Already in your cart - Ready to checkout!</span>';
-                        }
+                        // Trigger cart update event
+                        localStorage.setItem('cartUpdated', Date.now());
+                        document.dispatchEvent(new Event('cartUpdated'));
+                        
+                        // Reload product UI to update button states and show correct message
+                        setTimeout(() => {
+                            const productId = new URLSearchParams(window.location.search).get('id');
+                            if (productId) {
+                                loadProductWithCart(productId);
+                            }
+                        }, 1500);
+                        
                         return; // Exit early, don't show success notification
                     }
                     
@@ -456,7 +471,8 @@ function displayProduct(product, cartQty = 0) {
                         
                         // Always reload product to get updated stock and display correct button
                         setTimeout(() => {
-                            loadProductWithCart(productId);
+                            const pId = new URLSearchParams(window.location.search).get('id');
+                            if (pId) loadProductWithCart(pId);
                         }, 500);
                     } else {
                         // Check for out of stock or already in cart error

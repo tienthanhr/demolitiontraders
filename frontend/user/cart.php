@@ -539,6 +539,25 @@
                 if (error.name === 'AbortError') {
                     console.error('Cart request timed out');
                 }
+                
+                // Show error message to user
+                const container = document.getElementById('cart-items');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="empty-cart">
+                            <i class="fas fa-exclamation-circle" style="color: #f44336;"></i>
+                            <h2>Unable to Load Cart</h2>
+                            <p>${error.message || 'There was an error loading your cart. Please try refreshing the page.'}</p>
+                            <button class="btn btn-primary" onclick="location.reload()" style="margin-top:20px;">Refresh Page</button>
+                        </div>
+                    `;
+                }
+                
+                // Hide checkout and buttons
+                const checkoutBtn = document.getElementById('checkout-button');
+                const emptyBtn = document.getElementById('empty-cart-btn');
+                if (checkoutBtn) checkoutBtn.style.display = 'none';
+                if (emptyBtn) emptyBtn.style.display = 'none';
             } finally {
                 loadCartInProgress = false;
             }
@@ -550,10 +569,11 @@
             if (!confirmed) return;
             
             try {
-                const response = await fetch(getApiUrl('/api/cart/remove.php'), {
-                    method: 'POST',
+                // Use correct API endpoint through index.php
+                const response = await fetch(getApiUrl('/api/index.php?request=cart/remove/' + productId), {
+                    method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId })
+                    credentials: 'same-origin'
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -586,10 +606,12 @@
             }
             
             try {
-                const response = await fetch(getApiUrl('/api/cart/update.php'), {
-                    method: 'POST',
+                // Use correct API endpoint through index.php
+                const response = await fetch(getApiUrl('/api/index.php?request=cart/update'), {
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId, quantity: newQty })
+                    body: JSON.stringify({ product_id: productId, quantity: newQty }),
+                    credentials: 'same-origin'
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -603,11 +625,19 @@
                     // Reload cart but recommendations won't reload (cart IDs haven't changed)
                     loadCart();
                 } else {
-                    showError(data.message || 'Failed to update quantity');
+                    // Show error and reset input to current value
+                    const errorMsg = data.message || 'Failed to update quantity';
+                    showError(errorMsg);
+                    
+                    // Reset the input field to current cart quantity
+                    loadCart();
                 }
             } catch (error) {
                 console.error('Error updating quantity:', error);
                 showError('Error updating quantity');
+                
+                // Reset the input field
+                loadCart();
             }
         }
         
@@ -626,18 +656,28 @@
             
             try {
                 console.log('Attempting to empty cart...');
-                const data = await apiFetch(getApiUrl('/api/cart/empty.php'), {
-                    method: 'POST',
-                    credentials: 'same-origin'
+                // Use correct API endpoint through index.php
+                const response = await fetch(getApiUrl('/api/index.php?request=cart/clear'), {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' }
                 });
+                const data = await response.json();
                 console.log('Empty cart response:', data);
-                if (data.success) {
+                
+                if (data.success || response.ok) {
                     // Clear any cached data
                     currentCartProductIds = '';
                     
                     // Trigger cart update event
                     localStorage.setItem('cartUpdated', Date.now().toString());
                     document.dispatchEvent(new Event('cartUpdated'));
+                    
+                    // Broadcast to other tabs
+                    window.dispatchEvent(new StorageEvent('storage', {
+                        key: 'cartUpdated',
+                        newValue: Date.now().toString()
+                    }));
                     
                     // Wait a bit then reload to ensure DB is updated
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -653,6 +693,33 @@
                 console.error('Error emptying cart:', error);
                 alert('Error emptying cart: ' + error.message);
             }
+        }
+        
+        // Show error notification
+        function showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'error-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background-color: #f44336 !important;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10001;
+                font-size: 14px;
+                font-weight: 500;
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3500);
         }
         
         // Load product recommendations
