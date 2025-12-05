@@ -24,10 +24,13 @@ try {
             [$user_id]
         );
         
+        error_log("Cart emptied for user_id: $user_id");
+        
         echo json_encode([
             'success' => true,
             'message' => 'Cart emptied successfully',
-            'cart_count' => 0
+            'cart_count' => 0,
+            'user_id' => $user_id
         ]);
         exit;
     }
@@ -35,15 +38,22 @@ try {
     // Guest user - empty database cart using session_id
     $session_id = session_id();
     
+    error_log("Emptying cart for session_id: $session_id");
+    
     $result = $db->query(
         "DELETE FROM cart WHERE session_id = ?",
         [$session_id]
     );
     
+    // Verify cart is empty
+    $count = $db->fetchOne("SELECT COUNT(*) as count FROM cart WHERE session_id = ?", [$session_id]);
+    error_log("After delete, remaining items: " . $count['count']);
+    
     echo json_encode([
         'success' => true,
         'message' => 'Cart emptied successfully',
-        'cart_count' => 0
+        'cart_count' => 0,
+        'session_id' => $session_id
     ]);
     
 } catch (Exception $e) {

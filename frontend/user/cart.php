@@ -614,6 +614,7 @@
             if (!confirmed) return;
             
             try {
+                console.log('Attempting to empty cart...');
                 const data = await apiFetch(getApiUrl('/api/cart/empty.php'), {
                     method: 'POST',
                     credentials: 'same-origin'
@@ -631,9 +632,11 @@
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     // Force full page reload to ensure clean slate
+                    console.log('Reloading page...');
                     window.location.reload();
                 } else {
                     alert('Failed to empty cart: ' + (data.message || 'Unknown error'));
+                    console.error('Empty cart failed:', data);
                 }
             } catch (error) {
                 console.error('Error emptying cart:', error);
