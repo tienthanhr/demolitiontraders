@@ -171,7 +171,7 @@ class Database {
      */
     public function fetchOne($sql, $params = []) {
         $stmt = $this->query($sql, $params);
-        return $stmt->fetch();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
     /**
@@ -179,7 +179,7 @@ class Database {
      */
     public function fetchAll($sql, $params = []) {
         $stmt = $this->query($sql, $params);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     /**
