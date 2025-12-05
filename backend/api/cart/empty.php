@@ -15,7 +15,7 @@ require_once '../../config/database.php';
 try {
     $db = Database::getInstance();
     
-    if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
         // Logged in user - empty database cart
         $user_id = $_SESSION['user_id'];
         
@@ -40,14 +40,24 @@ try {
     
     error_log("Emptying cart for session_id: $session_id");
     
+    // Delete using session_id
     $result = $db->query(
         "DELETE FROM cart WHERE session_id = ?",
         [$session_id]
     );
     
+    // Also delete items with NULL or 0 user_id as fallback
+    $result2 = $db->query(
+        "DELETE FROM cart WHERE (user_id IS NULL OR user_id = 0) AND session_id = ?",
+        [$session_id]
+    );
+    
     // Verify cart is empty
-    $count = $db->fetchOne("SELECT COUNT(*) as count FROM cart WHERE session_id = ?", [$session_id]);
-    error_log("After delete, remaining items: " . $count['count']);
+    $count = $db->fetchOne(
+        "SELECT COUNT(*) as count FROM cart WHERE session_id = ? OR (user_id IS NULL OR user_id = 0)",
+        [$session_id]
+    );
+    error_log("After delete, remaining items: " . ($count ? $count['count'] : 0));
     
     echo json_encode([
         'success' => true,
