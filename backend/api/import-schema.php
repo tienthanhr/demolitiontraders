@@ -12,14 +12,27 @@ try {
     $db = Database::getInstance();
     $connection = $db->getConnection();
     
-    // Use the clean PostgreSQL schema file
-    $sqlFile = __DIR__ . '/../../schema-for-migration.sql';
+    // Try multiple possible locations for the schema file
+    $possiblePaths = [
+        __DIR__ . '/../../database/schema-postgresql.sql',
+        __DIR__ . '/../../schema-postgresql.sql',
+        __DIR__ . '/../../../database/schema-postgresql.sql',
+        '/var/www/html/database/schema-postgresql.sql',
+    ];
     
-    if (!file_exists($sqlFile)) {
-        throw new Exception("Schema file not found: $sqlFile");
+    $sqlFile = null;
+    foreach ($possiblePaths as $path) {
+        if (file_exists($path)) {
+            $sqlFile = $path;
+            break;
+        }
     }
     
-    echo "Reading PostgreSQL schema file...\n";
+    if (!$sqlFile || !file_exists($sqlFile)) {
+        throw new Exception("Schema file not found in any of these locations:\n" . implode("\n", $possiblePaths));
+    }
+    
+    echo "Reading PostgreSQL schema file from: $sqlFile\n";
     $sqlContent = file_get_contents($sqlFile);
     
     if (!$sqlContent) {
