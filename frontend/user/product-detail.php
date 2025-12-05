@@ -454,28 +454,10 @@ function displayProduct(product, cartQty = 0) {
                         localStorage.setItem('cartUpdated', Date.now());
                         document.dispatchEvent(new Event('cartUpdated'));
                         
-                        // Reload product display to update buttons if stock is now 0
-                        const currentStock = parseInt(document.querySelector('.product-stock .in-stock')?.textContent.match(/\d+/)?.[0] || 0);
-                        const newStock = currentStock - quantity;
-                        
-                        if (newStock <= 0) {
-                            // Reload entire product to show "Go to Cart" button
+                        // Always reload product to get updated stock and display correct button
+                        setTimeout(() => {
                             loadProductWithCart(productId);
-                        } else {
-                            // Just update stock display
-                            const stockElem = document.querySelector('.product-stock .in-stock');
-                            if (stockElem) {
-                                stockElem.innerHTML = `<i class="fas fa-check-circle"></i> In Stock (${newStock} available)`;
-                                // Update max quantity in input
-                                const qtyInput = document.getElementById('quantity');
-                                if (qtyInput) {
-                                    qtyInput.max = newStock;
-                                    if (parseInt(qtyInput.value) > newStock) {
-                                        qtyInput.value = newStock;
-                                    }
-                                }
-                            }
-                        }
+                        }, 500);
                     } else {
                         // Check for out of stock or already in cart error
                         const msg = (data.message || data.error || '').toLowerCase();
