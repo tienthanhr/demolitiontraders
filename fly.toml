@@ -1,0 +1,38 @@
+# Fly.io Configuration for Demolition Traders
+app = "demolitiontraders"
+primary_region = "sin"  # Singapore
+
+[build]
+  image = "demolitiontraders:latest"
+
+[env]
+  APP_ENV = "production"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 1024
+    soft_limit = 512
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[[mounts]]
+  source = "session_storage"
+  destination = "/var/lib/php/sessions"
+
+[checks]
+  [checks.alive]
+    type = "http"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/backend/api/health.php"
