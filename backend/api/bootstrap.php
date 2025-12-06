@@ -23,7 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
-    require_once __DIR__ . '/../core/bootstrap.php';
+    ini_set('session.save_path', '/tmp');
+    ini_set('session.cookie_samesite', 'Lax');
+require_once __DIR__ . '/../core/bootstrap.php';
 }
 
 // Include database

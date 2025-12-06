@@ -2,11 +2,10 @@
 /**
  * Admin Update User Role API
  */
-require_once '../../api/bootstrap.php'; // Ensures session is started securely
+require_once '../../core/bootstrap.php'; // Ensures session is started securely
 require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
 
 header('Content-Type: application/json');
-
 try {
     $data = json_decode(file_get_contents('php://input'), true);
     

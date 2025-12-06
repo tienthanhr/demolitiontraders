@@ -1,72 +1,51 @@
 <?php
 /**
  * Reset Password API
- * Resets user password using token
  */
+require_once __DIR__ . '/../../core/bootstrap.php';
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../../config/database.php';
 
 try {
     $data = json_decode(file_get_contents('php://input'), true);
-    
     if (empty($data['token']) || empty($data['password'])) {
-        throw new Exception('Token and password are required');
+        throw new Exception('Token and new password are required.');
     }
-    
-    $token = trim($data['token']);
-    $password = $data['password'];
-    
-    // Validate password strength
-    if (strlen($password) < 8) {
-        throw new Exception('Password must be at least 8 characters');
-    }
-    
+
     $db = Database::getInstance();
     
-    // Verify token
-    $resetToken = $db->fetchOne(
-        "SELECT * FROM password_reset_tokens 
-         WHERE token = :token 
-         AND used = 0 
-         AND expires_at > NOW()",
-        ['token' => $token]
-    );
-    
-    if (!$resetToken) {
-        throw new Exception('Invalid or expired reset token');
+    // Find the token in the database
+    $tokenData = $db->fetchOne("SELECT * FROM password_reset_tokens WHERE token = :token", ['token' => $data['token']]);
+
+    if (!$tokenData || new DateTime() > new DateTime($tokenData['expires_at'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid or expired token.']);
+        exit;
     }
     
-    // Update user password
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    
-    $db->update(
-        'users',
-        ['password' => $hashedPassword],
-        'id = :id',
-        ['id' => $resetToken['user_id']]
-    );
-    
-    // Mark token as used
-    $db->update(
-        'password_reset_tokens',
-        ['used' => 1],
-        'id = :id',
-        ['id' => $resetToken['id']]
-    );
-    
+    // Validate password strength
+    if (strlen($data['password']) < 8) {
+        throw new Exception('Password must be at least 8 characters.');
+    }
+
+    // Update the user's password
+    $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+    $db->update('users', ['password' => $hashedPassword], 'id = :id', ['id' => $tokenData['user_id']]);
+
+    // Delete the used token
+    $db->delete('password_reset_tokens', 'id = :id', ['id' => $tokenData['id']]);
+
     echo json_encode([
         'success' => true,
         'message' => 'Password has been reset successfully. You can now login with your new password.'
     ]);
-    
+
 } catch (Exception $e) {
-    http_response_code(400);
+    error_log("Reset Password Error: " . $e->getMessage());
+    http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => 'An unexpected error occurred.'
     ]);
 }

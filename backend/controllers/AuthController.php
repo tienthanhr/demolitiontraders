@@ -36,6 +36,11 @@ class AuthController {
             ['id' => $user['id']]
         );
         
+        // Regenerate session ID to prevent session fixation
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
         // Set session variables (session already started in API index.php)
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];

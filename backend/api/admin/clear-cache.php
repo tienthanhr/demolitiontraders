@@ -2,11 +2,10 @@
 /**
  * Clear Cache API
  */
-require_once '../../api/bootstrap.php'; // Ensures session is started securely
+require_once '../../core/bootstrap.php'; // Ensures session is started securely
 require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
 
 header('Content-Type: application/json');
-
 try {
     // Get cache directory path
     $cacheDir = dirname(__DIR__, 3) . '/cache';

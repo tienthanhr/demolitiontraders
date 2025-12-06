@@ -44,8 +44,8 @@
         // Add ngrok skip header
         options.headers['ngrok-skip-browser-warning'] = 'true';
         
-        // Add credentials for CORS
-        options.credentials = options.credentials || 'same-origin';
+        // Add credentials for CORS - use 'include' to always send cookies
+        options.credentials = options.credentials || 'include';
         
         // Add Content-Type if not set and has body
         if (options.body && !options.headers['Content-Type']) {
