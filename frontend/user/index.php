@@ -324,7 +324,7 @@
 </style>
 </head>
 <body>
-    <?php include '../components/header.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
     
     <?php
     function is_mobile_device() {
@@ -443,8 +443,8 @@
     </div>
 </section>
 
-    <?php include '../components/footer.php'; ?>
-<?php include '../components/toast-notification.php'; ?>
+    <?php include __DIR__ . '/../components/footer.php'; ?>
+    <?php include __DIR__ . '/../components/toast-notification.php'; ?>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/min/tiny-slider.js"></script>
     <script>
