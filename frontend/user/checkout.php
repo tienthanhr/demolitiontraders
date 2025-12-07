@@ -9,6 +9,8 @@
     
     <!-- Load API Helper -->
     <script src="assets/js/api-helper.js?v=1"></script>
+    <!-- Address lookup helper (verify or manual) -->
+    <script src="assets/js/address-lookup.js?v=1"></script>
     <script>const BASE_PATH = '<?php echo BASE_PATH; ?>';</script>
     
     <link rel="stylesheet" href="assets/css/new-style.css?v=6">
@@ -633,15 +635,25 @@
                                 <option value="new">+ Enter new address</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group">
+
+                        <div class="form-group address-verify" id="billing-verify-wrapper">
                             <label>Street Address <span class="required">*</span></label>
-                            <input type="text" name="billing_address" placeholder="House number and street name" required>
+                            <div class="lookup-row combined">
+                                <input type="text" id="billing_address" name="billing_address" placeholder="Start typing your address" autocomplete="off" required>
+                                <button type="button" class="btn btn-secondary btn-hidden" id="billing-address-verify-btn">Verify</button>
+                            </div>
+                            <div class="address-helper-text">Type to search and select a suggestion, or keep your manual entry.</div>
+                            <div class="address-status muted" id="billing-address-status"></div>
+                            <div class="address-suggestions" id="billing-address-suggestions"></div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>City <span class="required">*</span></label>
                                 <input type="text" name="billing_city" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Region</label>
+                                <input type="text" name="billing_region" placeholder="e.g., Waikato">
                             </div>
                             <div class="form-group">
                                 <label>Postcode <span class="required">*</span></label>
@@ -715,14 +727,24 @@
                             Same as billing address
                         </label>
                         <div id="shipping-fields">
-                            <div class="form-group">
+                            <div class="form-group address-verify" id="shipping-lookup-block">
                                 <label>Street Address <span class="required">*</span></label>
-                                <input type="text" name="shipping_address" id="shipping_address">
+                                <div class="lookup-row combined">
+                                    <input type="text" name="shipping_address" id="shipping_address" autocomplete="off">
+                                    <button type="button" class="btn btn-secondary btn-hidden" id="shipping-address-verify-btn">Verify</button>
+                                </div>
+                                <div class="address-helper-text">Type to search or keep your manual entry.</div>
+                                <div class="address-status muted" id="shipping-address-status"></div>
+                                <div class="address-suggestions" id="shipping-address-suggestions"></div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>City <span class="required">*</span></label>
                                     <input type="text" name="shipping_city" id="shipping_city">
+                                </div>
+                                <div class="form-group">
+                                    <label>Region</label>
+                                    <input type="text" name="shipping_region" id="shipping_region" placeholder="e.g., Waikato">
                                 </div>
                                 <div class="form-group">
                                     <label>Postcode <span class="required">*</span></label>
@@ -1008,24 +1030,88 @@
                     cashOption.style.display = 'block';
                 }
             }
+
+            // Init address lookup for billing & shipping
+            initAddressLookup({
+                lookupInput: '#billing_address',
+                trigger: '#billing-address-verify-btn',
+                suggestions: '#billing-address-suggestions',
+                status: '#billing-address-status',
+                fields: {
+                    address: '#billing_address',
+                    city: 'input[name="billing_city"]',
+                    postcode: 'input[name="billing_postcode"]',
+                    region: 'input[name="billing_region"]'
+                }
+            });
+
+            initAddressLookup({
+                lookupInput: '#shipping_address',
+                trigger: '#shipping-address-verify-btn',
+                suggestions: '#shipping-address-suggestions',
+                status: '#shipping-address-status',
+                fields: {
+                    address: '#shipping_address',
+                    city: '#shipping_city',
+                    postcode: '#shipping_postcode',
+                    region: '#shipping_region'
+                }
+            });
+
+            // Keep shipping fields/lookup aligned with the checkbox state
+            toggleShipping();
+
+            // Keep shipping in sync in real time when "same as billing" is checked
+            const billingFields = [
+                'input[name="billing_address"]',
+                'input[name="billing_city"]',
+                'input[name="billing_postcode"]',
+                'input[name="billing_region"]'
+            ];
+            const syncShipping = () => {
+                const checked = document.getElementById('same-as-billing').checked;
+                if (!checked) return;
+                document.getElementById('shipping_address').value = document.querySelector('input[name="billing_address"]').value;
+                document.getElementById('shipping_city').value = document.querySelector('input[name="billing_city"]').value;
+                document.getElementById('shipping_postcode').value = document.querySelector('input[name="billing_postcode"]').value;
+                const billingRegion = document.querySelector('input[name="billing_region"]');
+                const shippingRegion = document.getElementById('shipping_region');
+                if (billingRegion && shippingRegion) {
+                    shippingRegion.value = billingRegion.value;
+                }
+            };
+            billingFields.forEach(sel => {
+                const el = document.querySelector(sel);
+                if (el) el.addEventListener('input', syncShipping);
+            });
+            const sameCheckbox = document.getElementById('same-as-billing');
+            if (sameCheckbox) sameCheckbox.addEventListener('change', syncShipping);
         });
         
         // Toggle shipping fields (same as billing)
         function toggleShipping() {
             const checked = document.getElementById('same-as-billing').checked;
             const shippingFields = document.querySelectorAll('#shipping-fields input');
+            const shippingLookup = document.getElementById('shipping-lookup-block');
             
             if (checked) {
                 // Copy billing address to shipping
                 document.getElementById('shipping_address').value = document.querySelector('input[name="billing_address"]').value;
                 document.getElementById('shipping_city').value = document.querySelector('input[name="billing_city"]').value;
+                const billingRegion = document.querySelector('input[name="billing_region"]');
+                const shippingRegion = document.getElementById('shipping_region');
+                if (billingRegion && shippingRegion) {
+                    shippingRegion.value = billingRegion.value;
+                }
                 document.getElementById('shipping_postcode').value = document.querySelector('input[name="billing_postcode"]').value;
                 
                 // Disable fields
                 shippingFields.forEach(field => field.disabled = true);
+                if (shippingLookup) shippingLookup.style.display = 'none';
             } else {
                 // Enable fields
                 shippingFields.forEach(field => field.disabled = false);
+                if (shippingLookup) shippingLookup.style.display = 'block';
             }
         }
         
@@ -1080,6 +1166,7 @@
                 phone: formData.get('billing_phone'),
                 address: formData.get('billing_address'),
                 city: formData.get('billing_city'),
+                region: formData.get('billing_region'),
                 postcode: formData.get('billing_postcode')
             };
             
@@ -1089,6 +1176,7 @@
                 last_name: formData.get('shipping_last_name'),
                 address: formData.get('shipping_address'),
                 city: formData.get('shipping_city'),
+                region: formData.get('shipping_region'),
                 postcode: formData.get('shipping_postcode')
             };
             
@@ -1121,7 +1209,7 @@
                 const response = await fetch(getApiUrl('/api/index.php?request=orders'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
+                    credentials: 'include',
                     body: JSON.stringify(orderData)
                 });
                 

@@ -7,6 +7,29 @@ class EmailService {
     private $config;
     private $mailer;
 
+    /**
+     * Decode address JSON that may have been HTML-escaped by escape_output()
+     */
+    private function decodeAddress($addressJson) {
+        if (is_array($addressJson)) {
+            return $addressJson;
+        }
+
+        if (!$addressJson) {
+            return [];
+        }
+
+        // First try normal decode
+        $decoded = json_decode($addressJson, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        // If the JSON was escaped (e.g. &quot;), decode HTML entities then try again
+        $decoded = json_decode(html_entity_decode($addressJson, ENT_QUOTES, 'UTF-8'), true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
     public function __construct() {
         $this->config = require __DIR__ . '/../config/email.php';
         // Initialize PHPMailer
@@ -64,7 +87,7 @@ class EmailService {
             return ['success' => false, 'error' => 'Email sending is disabled'];
         }
         try {
-            $billing = json_decode($order['billing_address'], true);
+            $billing = $this->decodeAddress($order['billing_address'] ?? null);
             $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Customer';
             $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)
@@ -107,7 +130,7 @@ class EmailService {
             return ['success' => false, 'error' => 'Email sending is disabled'];
         }
         try {
-            $billing = json_decode($order['billing_address'], true);
+            $billing = $this->decodeAddress($order['billing_address'] ?? null);
             $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Customer';
             $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)

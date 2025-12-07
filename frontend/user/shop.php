@@ -30,9 +30,12 @@
     <div class="shop-page">
         <div class="container">
             <!-- Filter Section (Full Width) -->
-            <div class="filter-box" style="padding: 32px 32px 24px 32px;">
-                <h2 class="filter-title">Filter</h2>
-                <div class="filter-row" style="gap: 32px; display: flex; flex-wrap: wrap; align-items: stretch;">
+            <div class="filter-box" id="filter-box" style="padding: 32px 32px 24px 32px;">
+                <div class="filter-header">
+                    <h2 class="filter-title" style="margin-bottom:0;">Filter</h2>
+                    <button id="filter-toggle" class="btn btn-secondary" type="button" aria-expanded="true" aria-controls="filter-content">Hide Filters</button>
+                </div>
+                <div id="filter-content" class="filter-row" style="gap: 32px; display: flex; flex-wrap: wrap; align-items: stretch;">
                     <div class="filter-group" style="min-width:180px; margin-bottom: 18px;">
                         <label for="category-select">Category</label>
                         <select id="category-select" name="category" class="filter-select" onchange="handleCategoryChange()" autocomplete="off">
@@ -41,16 +44,24 @@
                     </div>
                     <div id="dimension-row" style="display:flex; gap:24px; width:100%; max-width:700px; margin-bottom:0; display:none;">
                         <!-- Width Slider -->
-                        <div class="filter-group" id="measurements-group" style="min-width:180px; flex:1;">
-                            <label for="width-slider">Width (mm)</label>
+                        <div class="filter-group" id="measurements-group" style="min-width:180px; flex:1; gap:10px; display:flex; flex-direction:column;">
+                            <label for="width-slider" style="margin-bottom:0;">Width (mm)</label>
                             <div id="width-slider"></div>
-                            <span id="width-value">0 - 8000 mm</span>
+                            <div class="range-with-inputs" style="justify-content:flex-start;">
+                                <input type="number" id="width-min-input" min="0" max="8000" step="1" aria-label="Min width" placeholder="Min">
+                                <input type="number" id="width-max-input" min="0" max="8000" step="1" aria-label="Max width" placeholder="Max">
+                            </div>
+                            <span id="width-value" class="range-value">0 - 8000 mm</span>
                         </div>
                         <!-- Height Slider -->
-                        <div class="filter-group" id="height-group" style="min-width:180px; flex:1;">
-                            <label for="height-slider" style="margin-top:10px;">Height (mm)</label>
+                        <div class="filter-group" id="height-group" style="min-width:180px; flex:1; gap:10px; display:flex; flex-direction:column;">
+                            <label for="height-slider" style="margin-bottom:0;">Height (mm)</label>
                             <div id="height-slider"></div>
-                            <span id="height-value">0 - 8000 mm</span>
+                            <div class="range-with-inputs" style="justify-content:flex-start;">
+                                <input type="number" id="height-min-input" min="0" max="8000" step="1" aria-label="Min height" placeholder="Min">
+                                <input type="number" id="height-max-input" min="0" max="8000" step="1" aria-label="Max height" placeholder="Max">
+                            </div>
+                            <span id="height-value" class="range-value">0 - 8000 mm</span>
                         </div>
                     </div>
                     <div class="filter-group" id="measurements-group" style="display: none; min-width:260px;">
@@ -76,13 +87,15 @@
                         </select>
                     </div>
                     <!-- Price Slider below width/height -->
-                    <div class="filter-group" style="min-width:220px; max-width:400px; margin-bottom: 18px; width:100%; display:flex; flex-direction:column; justify-content:flex-end;">
-                        <label for="price-slider" style="margin-bottom:4px;">Price Range ($NZD)</label>
-                        <div style="display:flex; flex-direction:column; justify-content:flex-end;">
-                            <div id="price-slider"></div>
-                            <div style="text-align:center; margin-top:8px;">
-                                <span id="price-value">0 - 10,000</span>
-                            </div>
+                    <div class="filter-group" style="min-width:220px; max-width:400px; margin-bottom: 18px; width:100%; display:flex; flex-direction:column; justify-content:flex-end; gap:10px;">
+                        <label for="price-slider" style="margin-bottom:0;">Price Range ($NZD)</label>
+                        <div id="price-slider"></div>
+                        <div class="range-with-inputs" style="justify-content:flex-start;">
+                            <input type="number" id="price-min-input" min="0" max="10000" step="1" aria-label="Min price" placeholder="Min">
+                            <input type="number" id="price-max-input" min="0" max="10000" step="1" aria-label="Max price" placeholder="Max">
+                        </div>
+                        <div style="text-align:center;">
+                            <span id="price-value" class="range-value">0 - 10,000</span>
                         </div>
                     </div>
                     
@@ -167,12 +180,54 @@
     #price-slider {
         height: 8px;
         margin-top: 8px;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
     }
     #width-value, #height-value, #price-value {
         font-size: 14px;
         margin-top: 0;
         margin-bottom: 8px;
+    }
+    .range-value {
+        display: none;
+    }
+    .range-with-inputs {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .range-with-inputs input[type=number] {
+        width: 90px;
+        padding: 8px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+    .range-with-inputs input[type=number]:focus {
+        outline: 2px solid #2f3192;
+        border-color: #2f3192;
+    }
+    .range-with-inputs #width-slider,
+    .range-with-inputs #height-slider,
+    .range-with-inputs #price-slider {
+        flex: 1;
+        min-width: 140px;
+    }
+    @media (max-width: 768px) {
+        .range-with-inputs {
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .range-with-inputs input[type=number] {
+            width: 78px;
+            padding: 6px;
+            font-size: 12px;
+        }
+        .filter-box, .shop-page, .filter-group label, .filter-group input, .filter-group select {
+            font-size: 13px;
+        }
+        #page-title, .breadcrumb {
+            font-size: 16px;
+        }
     }
     /* Hide spinner arrows for pagination input */
     .pagination input[type=number]::-webkit-inner-spin-button, 
@@ -183,10 +238,55 @@
     .pagination input[type=number] {
         -moz-appearance: textfield;
     }
+
+    /* Filter toggle layout */
+    .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    #filter-toggle {
+        padding: 10px 14px;
+        height: auto;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .filter-collapsed #filter-content {
+        display: none !important;
+    }
+    .filter-collapsed #filter-toggle {
+        background: #2f3192;
+        color: #fff;
+    }
+    @media (max-width: 768px) {
+        #filter-toggle {
+            width: auto;
+            font-size: 13px;
+            padding: 9px 12px;
+        }
+        .filter-header {
+            align-items: flex-start;
+        }
+    }
     </style>
     <script>
         let currentPage = 1;
         let cartItems = [];
+
+        // Toggle filter visibility
+        function toggleFilterPanel() {
+            const filterBox = document.getElementById('filter-box');
+            const filterContent = document.getElementById('filter-content');
+            const toggleBtn = document.getElementById('filter-toggle');
+            if (!filterBox || !filterContent || !toggleBtn) return;
+
+            const isCollapsed = filterBox.classList.toggle('filter-collapsed');
+            const expanded = !isCollapsed;
+            toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            toggleBtn.textContent = expanded ? 'Hide Filters' : 'Show Filters';
+        }
         
         // Update breadcrumb based on selected category
         function updateBreadcrumb() {
@@ -437,6 +537,9 @@
                         const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
                         const recycledBadge = product.condition_type === 'recycled' ? '<span class="badge badge-recycled">RECYCLED</span>' : '';
                         const outOfStockBadge = product.stock_quantity === 0 ? '<span class="badge badge-out-of-stock">Out of Stock</span>' : '';
+                        const badgesBlock = [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).length
+                            ? '<div class="product-badges">' + [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).join('') + '</div>'
+                            : '';
                         
                         // Check if product is in cart
                         const isInCart = cartItems.includes(product.id);
@@ -455,8 +558,8 @@
                         return '<div class="product-card">' +
                             '<a href="' + BASE_PATH + 'product-detail.php?id=' + product.id + '">' +
                                 '<div class="product-image">' +
+                                    badgesBlock +
                                     '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +
-                                    newBadge + recycledBadge + outOfStockBadge +
                                 '</div>' +
                                 '<div class="product-info">' +
                                     '<h3 class="product-name">' + escapedName + '</h3>' +
@@ -632,7 +735,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'same-origin',
+                    credentials: 'include', // send cookies for auth-protected wishlist/cart actions
                     body: JSON.stringify({
                         product_id: productId,
                         quantity: 1
@@ -665,6 +768,11 @@
             if (window.nativeFetch) {
                 window.fetch = window.nativeFetch;
             }
+
+            const filterToggleBtn = document.getElementById('filter-toggle');
+            if (filterToggleBtn) {
+                filterToggleBtn.addEventListener('click', toggleFilterPanel);
+            }
             
             document.getElementById('keywords-input').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
@@ -672,56 +780,104 @@
                     applyFilters();
                 }
             });
-                        // Init noUiSlider for price
-                        window.priceSlider = noUiSlider.create(document.getElementById('price-slider'), {
-                            start: [0, 10000],
-                            connect: true,
-                            step: 10,
-                            range: { min: 0, max: 10000 },
-                            tooltips: [false, false],
-                            format: {
-                                to: v => Math.round(v),
-                                from: v => Number(v)
-                            }
-                        });
-                        priceSlider.on('update', function(values) {
-                            document.getElementById('price-value').textContent = values[0] + ' - ' + values[1];
-                        });
-                        priceSlider.on('change', applyFilters);
 
-                        // Init noUiSlider for width
-                        window.widthSlider = noUiSlider.create(document.getElementById('width-slider'), {
-                            start: [0, 8000],
-                            connect: true,
-                            step: 10,
-                            range: { min: 0, max: 8000 },
-                            tooltips: [false, false],
-                            format: {
-                                to: v => Math.round(v),
-                                from: v => Number(v)
-                            }
-                        });
-                        widthSlider.on('update', function(values) {
-                            document.getElementById('width-value').textContent = values[0] + ' - ' + values[1] + ' mm';
-                        });
-                        widthSlider.on('change', applyFilters);
+            const priceMinInput = document.getElementById('price-min-input');
+            const priceMaxInput = document.getElementById('price-max-input');
+            const widthMinInput = document.getElementById('width-min-input');
+            const widthMaxInput = document.getElementById('width-max-input');
+            const heightMinInput = document.getElementById('height-min-input');
+            const heightMaxInput = document.getElementById('height-max-input');
 
-                        // Init noUiSlider for height
-                        window.heightSlider = noUiSlider.create(document.getElementById('height-slider'), {
-                            start: [0, 8000],
-                            connect: true,
-                            step: 10,
-                            range: { min: 0, max: 8000 },
-                            tooltips: [false, false],
-                            format: {
-                                to: v => Math.round(v),
-                                from: v => Number(v)
-                            }
-                        });
-                        heightSlider.on('update', function(values) {
-                            document.getElementById('height-value').textContent = values[0] + ' - ' + values[1] + ' mm';
-                        });
-                        heightSlider.on('change', applyFilters);
+            const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+            const syncSliderFromInputs = (slider, minEl, maxEl, minDefault, maxDefault) => {
+                if (!slider || !minEl || !maxEl) return;
+                const minVal = clamp(Number(minEl.value || minDefault), minDefault, maxDefault);
+                const maxVal = clamp(Number(maxEl.value || maxDefault), minDefault, maxDefault);
+                const ordered = [Math.min(minVal, maxVal), Math.max(minVal, maxVal)];
+                slider.set(ordered);
+            };
+
+            const syncInputsFromSlider = (slider, minEl, maxEl, unitSuffix, valueEl) => {
+                if (!slider || !minEl || !maxEl) return;
+                const vals = slider.get().map(v => Math.round(Number(v)));
+                minEl.value = vals[0];
+                maxEl.value = vals[1];
+                if (valueEl) {
+                    valueEl.textContent = unitSuffix ? `${vals[0]} - ${vals[1]} ${unitSuffix}` : `${vals[0]} - ${vals[1]}`;
+                }
+            };
+
+            // Init noUiSlider for price
+            window.priceSlider = noUiSlider.create(document.getElementById('price-slider'), {
+                start: [0, 10000],
+                connect: true,
+                step: 10,
+                range: { min: 0, max: 10000 },
+                tooltips: [false, false],
+                format: {
+                    to: v => Math.round(v),
+                    from: v => Number(v)
+                }
+            });
+            priceSlider.on('update', function(values) {
+                document.getElementById('price-value').textContent = values[0] + ' - ' + values[1];
+                syncInputsFromSlider(priceSlider, priceMinInput, priceMaxInput, '', document.getElementById('price-value'));
+            });
+            priceSlider.on('change', applyFilters);
+            if (priceMinInput && priceMaxInput) {
+                priceMinInput.value = 0;
+                priceMaxInput.value = 10000;
+                priceMinInput.addEventListener('change', () => { syncSliderFromInputs(priceSlider, priceMinInput, priceMaxInput, 0, 10000); applyFilters(); });
+                priceMaxInput.addEventListener('change', () => { syncSliderFromInputs(priceSlider, priceMinInput, priceMaxInput, 0, 10000); applyFilters(); });
+            }
+
+            // Init noUiSlider for width
+            window.widthSlider = noUiSlider.create(document.getElementById('width-slider'), {
+                start: [0, 8000],
+                connect: true,
+                step: 10,
+                range: { min: 0, max: 8000 },
+                tooltips: [false, false],
+                format: {
+                    to: v => Math.round(v),
+                    from: v => Number(v)
+                }
+            });
+            widthSlider.on('update', function(values) {
+                document.getElementById('width-value').textContent = values[0] + ' - ' + values[1] + ' mm';
+                syncInputsFromSlider(widthSlider, widthMinInput, widthMaxInput, 'mm', document.getElementById('width-value'));
+            });
+            widthSlider.on('change', applyFilters);
+            if (widthMinInput && widthMaxInput) {
+                widthMinInput.value = 0;
+                widthMaxInput.value = 8000;
+                widthMinInput.addEventListener('change', () => { syncSliderFromInputs(widthSlider, widthMinInput, widthMaxInput, 0, 8000); applyFilters(); });
+                widthMaxInput.addEventListener('change', () => { syncSliderFromInputs(widthSlider, widthMinInput, widthMaxInput, 0, 8000); applyFilters(); });
+            }
+
+            // Init noUiSlider for height
+            window.heightSlider = noUiSlider.create(document.getElementById('height-slider'), {
+                start: [0, 8000],
+                connect: true,
+                step: 10,
+                range: { min: 0, max: 8000 },
+                tooltips: [false, false],
+                format: {
+                    to: v => Math.round(v),
+                    from: v => Number(v)
+                }
+            });
+            heightSlider.on('update', function(values) {
+                document.getElementById('height-value').textContent = values[0] + ' - ' + values[1] + ' mm';
+                syncInputsFromSlider(heightSlider, heightMinInput, heightMaxInput, 'mm', document.getElementById('height-value'));
+            });
+            heightSlider.on('change', applyFilters);
+            if (heightMinInput && heightMaxInput) {
+                heightMinInput.value = 0;
+                heightMaxInput.value = 8000;
+                heightMinInput.addEventListener('change', () => { syncSliderFromInputs(heightSlider, heightMinInput, heightMaxInput, 0, 8000); applyFilters(); });
+                heightMaxInput.addEventListener('change', () => { syncSliderFromInputs(heightSlider, heightMinInput, heightMaxInput, 0, 8000); applyFilters(); });
+            }
             // Add condition filter listeners
             document.querySelectorAll('input[name="condition"]').forEach(input => {
                 input.addEventListener('change', applyFilters);

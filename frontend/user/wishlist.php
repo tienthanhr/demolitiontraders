@@ -52,8 +52,8 @@
         async function loadWishlist() {
             try {
                 const [wishlistRes, cartRes] = await Promise.all([
-                    fetch(getApiUrl('/api/wishlist/list.php')),
-                    fetch(getApiUrl('/api/cart/get.php'))
+                    fetch(getApiUrl('/api/wishlist/list.php'), { credentials: 'include' }),
+                    fetch(getApiUrl('/api/cart/get.php'), { credentials: 'include' })
                 ]);
                 
                 if (!wishlistRes.ok || !cartRes.ok) {
@@ -148,12 +148,14 @@
         
         // Remove from wishlist
         async function removeFromWishlist(productId) {
-            if (!confirm('Remove this item from your wishlist?')) return;
+            const confirmed = await showConfirm('Remove this item from your wishlist?', 'Remove Item', true);
+            if (!confirmed) return;
             try {
                 const response = await fetch(getApiUrl('/api/wishlist/remove.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId })
+                    body: JSON.stringify({ product_id: productId }),
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -170,7 +172,7 @@
         // Update wishlist count on header
         async function updateWishlistCount() {
             try {
-                const response = await fetch(getApiUrl('/api/wishlist/list.php'));
+                const response = await fetch(getApiUrl('/api/wishlist/list.php'), { credentials: 'include' });
                 const data = await response.json();
                 const count = data.wishlist ? data.wishlist.length : 0;
                 const el = document.getElementById('wishlist-count');
@@ -182,11 +184,13 @@
         
         // Clear wishlist
         async function clearWishlist() {
-            if (!confirm('Are you sure you want to clear your entire wishlist?')) return;
+            const confirmed = await showConfirm('Are you sure you want to clear your entire wishlist?', 'Clear Wishlist', true);
+            if (!confirmed) return;
             try {
                 const response = await fetch(getApiUrl('/api/wishlist/empty.php'), {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -208,7 +212,8 @@
                 const response = await fetch(getApiUrl('/api/cart/add.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId, quantity: 1 })
+                    body: JSON.stringify({ product_id: productId, quantity: 1 }),
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 if (data.success) {

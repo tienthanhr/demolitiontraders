@@ -4,20 +4,20 @@ require_once __DIR__ . '/../components/date-helper.php';
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.save_path', '/tmp');
     session_start();
 }
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ' . BASE_PATH . 'login.php?redirect=order-detail.php');
-    exit;
-}
-
-// Get order ID from URL
+// Get order ID from URL early so we can preserve it in redirects
 $order_id = $_GET['id'] ?? null;
 if (!$order_id || !is_numeric($order_id)) {
     header('Location: profile.php');
+    exit;
+}
+
+// Check if user is logged in; if not, redirect back with the order id preserved
+if (!isset($_SESSION['user_id'])) {
+    $redirect = 'order-detail.php?id=' . urlencode($order_id);
+    header('Location: ' . BASE_PATH . 'login.php?redirect=' . $redirect);
     exit;
 }
 

@@ -55,6 +55,68 @@ try {
     $_SESSION['last_name'] = $user['last_name'];
     $_SESSION['is_admin'] = ($user['role'] === 'admin');
 
+    // Merge guest cart (session-based) into user cart after login
+    $sessionId = session_id();
+    $guestCartItems = $db->fetchAll(
+        "SELECT product_id, quantity FROM cart WHERE session_id = :sid",
+        ['sid' => $sessionId]
+    );
+
+    foreach ($guestCartItems as $item) {
+        $productId = $item['product_id'];
+        $guestQty = (int)$item['quantity'];
+
+        // Check current stock
+        $stock = $db->fetchOne(
+            "SELECT stock_quantity FROM products WHERE id = :pid",
+            ['pid' => $productId]
+        );
+        if (!$stock) {
+            continue; // product no longer exists
+        }
+
+        // Check if user already has this product in cart
+        $existing = $db->fetchOne(
+            "SELECT id, quantity FROM cart WHERE user_id = :uid AND product_id = :pid",
+            ['uid' => $user['id'], 'pid' => $productId]
+        );
+
+        if ($existing) {
+            $newQty = min((int)$stock['stock_quantity'], (int)$existing['quantity'] + $guestQty);
+            $db->query(
+                "UPDATE cart SET quantity = :qty WHERE id = :id",
+                ['qty' => $newQty, 'id' => $existing['id']]
+            );
+        } else {
+            $newQty = min((int)$stock['stock_quantity'], $guestQty);
+            $db->query(
+                "UPDATE cart SET user_id = :uid, session_id = NULL, quantity = :qty WHERE session_id = :sid AND product_id = :pid",
+                ['uid' => $user['id'], 'qty' => $newQty, 'sid' => $sessionId, 'pid' => $productId]
+            );
+            // If no row was updated (race), insert
+            if ($db->rowCount() === 0) {
+                $db->query(
+                    "INSERT INTO cart (user_id, product_id, quantity, created_at) VALUES (:uid, :pid, :qty, NOW())",
+                    ['uid' => $user['id'], 'pid' => $productId, 'qty' => $newQty]
+                );
+            }
+        }
+    }
+
+    // Clean up guest cart rows
+    $db->query("DELETE FROM cart WHERE session_id = :sid", ['sid' => $sessionId]);
+
+    // Merge guest wishlist (session) into user wishlist
+    if (!empty($_SESSION['wishlist']) && is_array($_SESSION['wishlist'])) {
+        foreach ($_SESSION['wishlist'] as $pid) {
+            $db->query(
+                "INSERT IGNORE INTO wishlist (user_id, product_id) VALUES (:uid, :pid)",
+                ['uid' => $user['id'], 'pid' => $pid]
+            );
+        }
+        unset($_SESSION['wishlist']);
+    }
+
     unset($user['password']);
 
     echo json_encode([

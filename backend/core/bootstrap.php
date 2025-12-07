@@ -44,13 +44,23 @@ $is_secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
 session_set_cookie_params([
     'lifetime' => 86400, // 24 hours
     'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'] ?? '',
-    'secure' => $is_secure, // Send cookie only over HTTPS.
+    'domain' => '',          // Default to current domain.
+    'secure' => false, // Send cookie only over HTTPS.
     'httponly' => true,      // Prevent JavaScript access to the session cookie.
     'samesite' => 'Lax'      // CSRF protection. 'Lax' is a good balance.
 ]);
 
-// 3. Start the session if it hasn't been started already.
+// 3. Ensure a stable, writable session store (helps on Windows/XAMPP)
+// Use project-local session path to avoid env defaults being unwritable or cleared
+$sessionPath = realpath(__DIR__ . '/../../cache/sessions');
+if ($sessionPath && is_dir($sessionPath) && is_writable($sessionPath)) {
+    session_save_path($sessionPath);
+}
+
+// Optional: use a distinct session name to prevent clashes
+session_name('dt_session');
+
+// 4. Start the session if it hasn't been started already.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

@@ -408,7 +408,7 @@
             
             try {
                 const response = await fetch(getApiUrl('/api/cart/get.php'), {
-                    credentials: 'same-origin'
+                    credentials: 'include'
                 });
                 
                 console.log('Cart response status:', response.status, response.ok);
@@ -573,7 +573,7 @@
                 const response = await fetch(getApiUrl('/api/index.php?request=cart/remove/' + productId), {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin'
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -611,7 +611,7 @@
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId, quantity: newQty }),
-                    credentials: 'same-origin'
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -659,7 +659,7 @@
                 // Use correct API endpoint through index.php
                 const response = await fetch(getApiUrl('/api/index.php?request=cart/clear'), {
                     method: 'DELETE',
-                    credentials: 'same-origin',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' }
                 });
                 const data = await response.json();

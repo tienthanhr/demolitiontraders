@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sell to Us - Demolition Traders</title>
     <base href="<?php echo FRONTEND_PATH; ?>">
+    <script src="assets/js/address-lookup.js?v=1"></script>
     <link rel="stylesheet" href="assets/css/new-style.css?v=4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -262,7 +263,16 @@
                         <div class="form-row" id="pickup_fields" style="display: none;">
                             <div class="form-group">
                                 <label><i class="fa-solid fa-location-dot"></i> Pick Up Address</label>
-                                <input type="text" name="location" id="pickup_address" placeholder="Enter full address for pickup">
+                                <div class="address-verify" id="pickup-lookup-block">
+                                    <label style="display:block; margin-bottom:5px; font-weight:600;">Pickup Address</label>
+                                    <div class="lookup-row combined">
+                                            <input type="text" name="location" id="pickup_address" placeholder="Start typing pickup address" autocomplete="off">
+                                            <button type="button" class="btn btn-secondary btn-hidden" id="pickup-address-verify-btn">Verify</button>
+                                    </div>
+                                    <div class="address-helper-text">Type to search or keep manual entry.</div>
+                                    <div class="address-status muted" id="pickup-address-status"></div>
+                                    <div class="address-suggestions" id="pickup-address-suggestions"></div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label><i class="fa-solid fa-calendar-days"></i> Preferred Pick Up Date</label>
@@ -443,6 +453,17 @@
                     }
                 });
             }
+
+            // Pickup address lookup
+            initAddressLookup({
+                lookupInput: '#pickup_address',
+                trigger: '#pickup-address-verify-btn',
+                suggestions: '#pickup-address-suggestions',
+                status: '#pickup-address-status',
+                fields: {
+                    address: '#pickup_address'
+                }
+            });
         });
         
         // Set up date input to show DD/MM/YYYY format hint

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../components/date-helper.php';
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.save_path', '/tmp');
+    // Use default PHP session save path (the hardcoded /tmp was breaking on Windows)
     session_start();
 }
 
@@ -48,6 +48,7 @@ $orders = $db->fetchAll(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account - Demolition Traders</title>
     <base href="<?php echo FRONTEND_PATH; ?>">
+    <script src="assets/js/address-lookup.js?v=1"></script>
     <link rel="stylesheet" href="assets/css/new-style.css?v=6">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -361,19 +362,29 @@ $orders = $db->fetchAll(
                 <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
                     <h2 style="margin: 0 0 20px 0;">${isEdit ? 'Edit' : 'Add'} Address</h2>
                     <form id="address-form" onsubmit="return false;">
-                        <div style="margin-bottom: 15px;">
+                        <div style="margin-bottom: 15px;" class="address-verify">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Address *</label>
-                            <input type="text" name="address" value="${address?.address || ''}" required placeholder="e.g., 123 Main Street" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;" onkeydown="if(event.key==='Enter') event.preventDefault();">
+                            <div class="lookup-row combined">
+                                <input id="profile-address-line" type="text" name="address" value="${address?.address || ''}" required placeholder="Start typing your address" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;" onkeydown="if(event.key==='Enter') event.preventDefault();" autocomplete="off">
+                                <button type="button" class="btn btn-secondary btn-hidden" id="profile-address-verify-btn">Verify</button>
+                            </div>
+                            <div class="address-helper-text">Type to search and pick a suggestion or keep manual entry.</div>
+                            <div class="address-status muted" id="profile-address-status"></div>
+                            <div class="address-suggestions" id="profile-address-suggestions"></div>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600;">City *</label>
-                                <input type="text" name="city" value="${address?.city || ''}" required placeholder="e.g., Hamilton" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;" onkeydown="if(event.key==='Enter') event.preventDefault();">
+                                <input id="profile-address-city" type="text" name="city" value="${address?.city || ''}" required placeholder="e.g., Hamilton" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;" onkeydown="if(event.key==='Enter') event.preventDefault();">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Region</label>
+                                <input id="profile-address-region" type="text" name="state" value="${address?.state || ''}" placeholder="e.g., Waikato" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;" onkeydown="if(event.key==='Enter') event.preventDefault();">
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600;">Postcode *</label>
-                                <input type="text" name="postcode" value="${address?.postcode || ''}" required placeholder="e.g., 3216" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;" onkeydown="if(event.key==='Enter') event.preventDefault();">
+                                <input id="profile-address-postcode" type="text" name="postcode" value="${address?.postcode || ''}" required placeholder="e.g., 3216" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;" onkeydown="if(event.key==='Enter') event.preventDefault();">
                             </div>
                         </div>
                         
@@ -466,6 +477,20 @@ $orders = $db->fetchAll(
                         }
                     });
                 }
+
+                // Address lookup (verify or manual)
+                initAddressLookup({
+                    lookupInput: '#profile-address-line',
+                    trigger: '#profile-address-verify-btn',
+                    suggestions: '#profile-address-suggestions',
+                    status: '#profile-address-status',
+                    fields: {
+                        address: '#profile-address-line',
+                        city: '#profile-address-city',
+                        postcode: '#profile-address-postcode',
+                        region: '#profile-address-region'
+                    }
+                });
             }, 100);
             
             // Append modal to DOM AFTER setting up the setTimeout

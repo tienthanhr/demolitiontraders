@@ -3,7 +3,6 @@
  * Based on original website design
  */
 
-/* Variables */
 :root {
     --primary-color: #2f3192;
     --secondary-color: #ffca0d;
@@ -1009,6 +1008,22 @@ p.small.center {
     border-radius: 3px;
 }
 
+.product-badges {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 2;
+}
+
+.product-badges .badge {
+    position: static;
+    margin: 0;
+    display: inline-block;
+}
+
 .badge-new {
     background: var(--secondary-color);
     color: var(--text-color);
@@ -1017,6 +1032,11 @@ p.small.center {
 .badge-recycled {
     background: #4caf50;
     color: white;
+}
+
+.badge-out-of-stock {
+    background: #dc3545;
+    color: #fff;
 }
 
 .product-info {
@@ -1407,9 +1427,41 @@ p.small.center {
 }
 
 @media (max-width: 768px) {
-    /* Hide top bar on mobile */
+    /* Keep top bar on mobile but stack neatly */
     .header-top {
+        display: block;
+        padding: 10px 0;
+    }
+    .header-top .container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 0 16px;
+    }
+    .header-top-left,
+    .header-top-right {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 12px;
+        row-gap: 4px;
+        font-size: 12px;
+        line-height: 1.2;
+    }
+    /* Hide the HOME label on mobile to declutter */
+    .header-top-left a:first-child {
         display: none;
+    }
+    .header-top-left a {
+        padding: 2px 0;
+    }
+    .header-top-left a,
+    .header-top-right a {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .header-top-right {
+        justify-content: flex-start;
     }
     
     html, body {
@@ -1859,6 +1911,11 @@ p.small.center {
         font-size: 11px;
         margin-left: 3px;
     }
+
+    /* Keep the yellow bar layout for mobile instead of floating icons */
+    .header-top-right {
+        display: none !important; /* Hide login/logout/wishlist/cart in top bar on mobile (already in bottom bar) */
+    }
     
     /* Footer responsive */
     .footer-content {
@@ -2124,6 +2181,112 @@ p.small.center {
 
 .form-group input[type="checkbox"] {
     margin-right: 8px;
+}
+
+/* Address verification helper */
+.address-verify {
+    border: 1px dashed #d5d5d5;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fafafa;
+    margin-bottom: 14px;
+}
+
+.address-verify .verify-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2f3192;
+}
+
+.address-verify .lookup-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.address-verify .lookup-row.combined input[type="text"] {
+    flex: 1;
+}
+
+.address-verify .btn-hidden {
+    display: none;
+}
+
+.address-verify input[type="text"] {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.address-verify .link-btn {
+    background: none;
+    border: none;
+    color: #2f3192;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.address-helper-text {
+    font-size: 12px;
+    color: #777;
+    margin: 6px 0;
+}
+
+.address-status {
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.address-status.success { color: #198754; }
+.address-status.info { color: #0d6efd; }
+.address-status.warning { color: #d98c00; }
+.address-status.error { color: #c0392b; }
+.address-status.muted { color: #777; }
+
+.address-suggestions {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.address-suggestion {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    border-bottom: 1px solid #f1f1f1;
+    cursor: pointer;
+}
+
+.address-suggestion:last-child {
+    border-bottom: none;
+}
+
+.address-suggestion:hover {
+    background: #f4f6ff;
+}
+
+.address-suggestion .address-main {
+    display: block;
+    font-size: 13px;
+    color: #222;
+    margin-bottom: 3px;
+}
+
+.address-suggestion .address-meta {
+    font-size: 12px;
+    color: #666;
 }
 
 /* Info Boxes */
@@ -3592,8 +3755,7 @@ p.small.center {
     }
 }
 
- 
- /* Related Products - You May Also Like */
+/* Related Products - You May Also Like */
 .related-products-section {
     margin-top: 60px;
     padding-top: 40px;
@@ -3662,6 +3824,7 @@ p.small.center {
     height: 40px;
     overflow: hidden;
     display: -webkit-box;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }

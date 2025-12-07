@@ -22,6 +22,69 @@ try {
              ORDER BY c.id DESC",
             [$user_id]
         );
+
+        // If user cart empty but there are session cart rows, merge them into the user cart
+        if (count($items) === 0) {
+            $session_id = session_id();
+            $guestItems = $db->fetchAll(
+                "SELECT product_id, quantity FROM cart WHERE session_id = ?",
+                [$session_id]
+            );
+
+            foreach ($guestItems as $gItem) {
+                $pid = $gItem['product_id'];
+                $gQty = (int)$gItem['quantity'];
+
+                // Check stock
+                $stock = $db->fetchOne(
+                    "SELECT stock_quantity FROM products WHERE id = ?",
+                    [$pid]
+                );
+                if (!$stock) {
+                    continue;
+                }
+
+                // Check if already exists for user
+                $existing = $db->fetchOne(
+                    "SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?",
+                    [$user_id, $pid]
+                );
+
+                $allowedQty = min((int)$stock['stock_quantity'], $gQty + (int)($existing['quantity'] ?? 0));
+
+                if ($existing) {
+                    $db->query(
+                        "UPDATE cart SET quantity = ? WHERE id = ?",
+                        [$allowedQty, $existing['id']]
+                    );
+                } else {
+                    $db->query(
+                        "INSERT INTO cart (user_id, product_id, quantity, created_at) VALUES (?, ?, ?, NOW())",
+                        [$user_id, $pid, $allowedQty]
+                    );
+                }
+            }
+
+            // Clean up session cart rows after merge
+            if (!empty($guestItems)) {
+                $db->query("DELETE FROM cart WHERE session_id = ?", [$session_id]);
+            }
+
+            // Re-fetch items for user after merge
+            $items = $db->fetchAll(
+                "SELECT c.product_id, c.quantity, p.name, p.price, p.stock_quantity,
+                        cat.name as category_name,
+                        COALESCE(MIN(pi.image_url), 'assets/images/logo.png') as image
+                 FROM cart c
+                 JOIN products p ON c.product_id = p.id
+                 LEFT JOIN categories cat ON p.category_id = cat.id
+                 LEFT JOIN product_images pi ON p.id = pi.product_id
+                 WHERE c.user_id = ?
+                 GROUP BY c.product_id, c.quantity, p.name, p.price, p.stock_quantity, cat.name
+                 ORDER BY c.id DESC",
+                [$user_id]
+            );
+        }
         
         // Calculate summary
         $subtotal = 0;

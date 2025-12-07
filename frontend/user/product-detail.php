@@ -326,7 +326,7 @@ function displayProduct(product, cartQty = 0) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ product_id: productId, quantity: quantity }),
-                credentials: 'same-origin'
+                credentials: 'include'
             })
             .then(response => response.text())
             .then(text => {
@@ -409,7 +409,7 @@ function displayProduct(product, cartQty = 0) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
-                credentials: 'same-origin'
+                credentials: 'include'
             })
             .then(response => {
                 console.log('Response status:', response.status);
@@ -517,7 +517,8 @@ function displayProduct(product, cartQty = 0) {
                 fetch(getApiUrl('/api/wishlist/remove.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId })
+                    body: JSON.stringify({ product_id: productId }),
+                    credentials: 'include'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -544,7 +545,8 @@ function displayProduct(product, cartQty = 0) {
                 fetch(getApiUrl('/api/wishlist/add.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId })
+                    body: JSON.stringify({ product_id: productId }),
+                    credentials: 'include'
                 })
                 .then(response => {
                     console.log('Response status:', response.status);

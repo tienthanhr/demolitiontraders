@@ -256,7 +256,7 @@
                 try {
                     const cart = JSON.parse(localCart);
                     if (cart && Object.keys(cart).length > 0) {
-                        await fetch(getApiUrl('/api/cart/sync.php'), {
+                        await fetch(getApiUrl('/api/index.php?request=cart/sync'), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ cart })
