@@ -69,11 +69,6 @@ class Database {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ];
             
-            // Add MySQL specific option only for MySQL
-            if (strpos($dsn, 'mysql:') === 0) {
-                $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci";
-            }
-            
             $this->connection = new PDO($dsn, $username, $password, $options);
             
         } catch (PDOException $e) {
