@@ -1,7 +1,16 @@
 FROM php:8.2-apache
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
 # Enable required PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql gd zip
 
 # Enable Apache modules and allow .htaccess overrides
 RUN a2enmod rewrite \
