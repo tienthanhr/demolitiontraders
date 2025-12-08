@@ -89,6 +89,58 @@ class EmailService {
     }
     
     /**
+     * Send email via Brevo API (HTTP) to bypass SMTP blocks
+     */
+    private function sendViaBrevoApi($toEmail, $toName, $subject, $htmlContent, $attachments = []) {
+        $apiKey = $this->config['brevo_api_key'] ?? null;
+        if (!$apiKey) {
+            return false;
+        }
+
+        $url = 'https://api.brevo.com/v3/smtp/email';
+        $data = [
+            'sender' => ['name' => $this->config['from_name'], 'email' => $this->config['from_email']],
+            'to' => [['email' => $toEmail, 'name' => $toName]],
+            'subject' => $subject,
+            'htmlContent' => $htmlContent
+        ];
+        
+        // Handle attachments
+        if (!empty($attachments)) {
+            $data['attachment'] = [];
+            foreach ($attachments as $path => $name) {
+                if (file_exists($path)) {
+                    $content = base64_encode(file_get_contents($path));
+                    $data['attachment'][] = ['content' => $content, 'name' => $name];
+                }
+            }
+        }
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'accept: application/json',
+            'api-key: ' . $apiKey,
+            'content-type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            return true;
+        }
+        
+        error_log("Brevo API Error ($httpCode): " . $response . " Curl Error: " . $curlError);
+        throw new Exception("Brevo API failed with status $httpCode");
+    }
+
+    /**
      * Send Tax Invoice email
      */
     public function sendTaxInvoice($order, $customerEmail) {
@@ -101,23 +153,37 @@ class EmailService {
             $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $invoiceHtml = $this->generateTaxInvoiceHTML($order, $billing);
-            $this->mailer->clearAddresses();
-            $this->mailer->addAddress($toEmail, $customerName);
-            $this->mailer->Subject = "Tax Invoice - Order #{$order['order_number']}";
-            $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
-            
-            // Try to generate PDF and attach, but don't fail if PDF generation fails
+            $subject = "Tax Invoice - Order #{$order['order_number']}";
+            $body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
+
+            // Try to generate PDF
+            $pdfPath = null;
             try {
                 $pdfPath = generate_invoice_pdf_html($invoiceHtml, 'invoice');
+            } catch (Exception $pdfEx) {
+                error_log("Warning: PDF generation failed for order #{$order['order_number']}: " . $pdfEx->getMessage());
+            }
+
+            // Check if we should use Brevo API
+            if (!empty($this->config['brevo_api_key'])) {
+                $attachments = [];
+                if ($pdfPath && file_exists($pdfPath)) {
+                    $attachments[$pdfPath] = 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf';
+                }
+                $this->sendViaBrevoApi($toEmail, $customerName, $subject, $body, $attachments);
+            } else {
+                // Use SMTP (PHPMailer)
+                $this->mailer->clearAddresses();
+                $this->mailer->addAddress($toEmail, $customerName);
+                $this->mailer->Subject = $subject;
+                $this->mailer->Body = $body;
+                
                 if ($pdfPath && file_exists($pdfPath)) {
                     $this->mailer->addAttachment($pdfPath, 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf');
                 }
-            } catch (Exception $pdfEx) {
-                error_log("Warning: PDF generation failed for order #{$order['order_number']}: " . $pdfEx->getMessage());
-                // Continue without PDF attachment - email will still send
+                
+                $this->mailer->send();
             }
-            
-            $this->mailer->send();
             
             // Clean up if PDF was created
             if (isset($pdfPath) && $pdfPath && file_exists($pdfPath)) {

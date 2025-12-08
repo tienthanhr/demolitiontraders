@@ -59,6 +59,9 @@ return [
     'dev_mode' => getenv('APP_ENV') === 'development',
     'dev_email' => $_ENV['SMTP_USER'] ?? 'test@example.com',
     
+    // Brevo API Key (Alternative to SMTP)
+    'brevo_api_key' => $_ENV['BREVO_API_KEY'] ?? null,
+    
     // Enable/Disable Email Sending
     'enabled' => true,
 ];
