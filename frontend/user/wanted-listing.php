@@ -26,28 +26,14 @@
             <div class="two-column-layout">
                 <div class="content-main">
                     <h2>Can't Find What You're Looking For?</h2>
-                    <p>At Demolition Traders, we're constantly receiving new stock from demolition sites across New Zealand. If you can't find what you need in our current inventory, let us know and we'll keep an eye out for it.</p>
-                    
+                    <p>At Demolition Traders, we understand that sometimes the perfect item isn't available in our current stock. That's why we offer a Wanted Listing service to help you find those hard-to-get pieces for your renovation or restoration projects.</p>                   
                     <h3>How It Works</h3>
                     <ol class="numbered-list">
                         <li>Fill out the form with details of what you're looking for</li>
                         <li>We'll check our incoming stock and contact you when we have a match</li>
                         <li>Come visit our yard to view and purchase the items</li>
                     </ol>
-                    
-                    <div class="info-box-yellow">
-                        <h4>Popular Wanted Items</h4>
-                        <ul>
-                            <li>Rimu flooring and timber</li>
-                            <li>Kauri weatherboards and beams</li>
-                            <li>Cast iron baths and basins</li>
-                            <li>Villa doors and windows</li>
-                            <li>Ornate architraves and skirtings</li>
-                            <li>Stained glass windows</li>
-                            <li>Kitchen cabinets</li>
-                        </ul>
-                    </div>
-                    
+                                        
                     <h3>Submit Your Wanted Item</h3>
                     <form class="contact-form" id="wanted-form">
                         <div class="form-row">

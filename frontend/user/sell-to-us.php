@@ -184,32 +184,17 @@
                         <div class="icon-box">
                             <i class="fa-solid fa-door-open"></i>
                             <h4>Doors & Windows</h4>
-                            <p>Interior, exterior, sliding doors, French doors, aluminium and wooden windows</p>
+                            <p>Good condition aluminium and wooden doors and windows</p>
                         </div>
                         <div class="icon-box">
                             <i class="fa-solid fa-tree"></i>
                             <h4>Native Timber</h4>
-                            <p>Rimu, kauri, matai, and other native timber in any form</p>
-                        </div>
-                        <div class="icon-box">
-                            <i class="fa-solid fa-bath"></i>
-                            <h4>Bathroom Items</h4>
-                            <p>Baths, vanities, toilets, hand basins, and bathroom fittings</p>
+                            <p>Rimu, Kauri, Matai, weatherboard and other native timber in any form</p>
                         </div>
                         <div class="icon-box">
                             <i class="fa-solid fa-kitchen-set"></i>
-                            <h4>Kitchen Cabinets</h4>
-                            <p>Complete kitchens or individual cabinets in good condition</p>
-                        </div>
-                        <div class="icon-box">
-                            <i class="fa-solid fa-house"></i>
-                            <h4>Roofing Iron</h4>
-                            <p>Corrugated iron, long-run, and other roofing materials</p>
-                        </div>
-                        <div class="icon-box">
-                            <i class="fa-solid fa-boxes-stacked"></i>
-                            <h4>Building Materials</h4>
-                            <p>Weatherboards, plywood, bricks, and more</p>
+                            <h4>Kitchens</h4>
+                            <p>Complete kitchens in good condition</p>
                         </div>
                     </div>
                     
