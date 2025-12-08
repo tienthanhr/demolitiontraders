@@ -1,11 +1,6 @@
 <?php
 require_once 'config.php';
 
-ini_set('session.save_path', '/tmp');
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 // If already logged in as admin, redirect to dashboard
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || 
            ($_SESSION['user_role'] ?? '') === 'admin' || 

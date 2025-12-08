@@ -448,6 +448,8 @@ async function loadOrders() {
         const status = document.getElementById('filter-status').value;
         let url = getApiUrl('/api/index.php?request=orders');
         if (status) url += `&status=${status}`;
+        // Add timestamp to prevent caching
+        url += `&_t=${new Date().getTime()}`;
 
         console.log('Fetching orders from:', url);
         const response = await fetch(url);

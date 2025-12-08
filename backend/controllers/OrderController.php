@@ -64,6 +64,7 @@ class OrderController {
         error_log("OrderController::index - Params: " . json_encode($params));
         
         $orders = $this->db->fetchAll($sql, $params);
+        error_log("OrderController::index - Found " . count($orders) . " orders");
         
         // Get order items for each order
         foreach ($orders as &$order) {
