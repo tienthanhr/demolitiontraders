@@ -73,13 +73,15 @@ try {
     // Store wanted listing in database
     $wantedListingId = $db->insert('wanted_listings', [
         'user_id' => $userId,
-        'contact_name' => $name,
+        'name' => $name,
         'email' => $email,
         'phone' => $phone,
         'category' => $category,
-        'description' => $description,
-        'item_name' => $itemName,
-        'status' => 'active'
+        'description' => $description . ($itemName ? "\nItem Name: $itemName" : ""),
+        'quantity' => $quantity,
+        'notify_enabled' => $notify ? 1 : 0,
+        'status' => 'active',
+        'created_at' => date('Y-m-d H:i:s')
     ]);
     
     // If user is logged in, try to find matching products and add to wishlist
