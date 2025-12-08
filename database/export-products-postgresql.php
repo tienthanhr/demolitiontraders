@@ -4,8 +4,14 @@
  * Run: php database/export-products-postgresql.php > database/products-data.sql
  */
 
-// MySQL connection (localhost)
-$mysqli = new mysqli('localhost', 'root', '', 'demolitiontraders');
+// MySQL connection (env-aware, falls back to local defaults)
+$mysqlHost = getenv('DB_HOST') ?: 'localhost';
+$mysqlUser = getenv('DB_USER') ?: 'root';
+$mysqlPass = getenv('DB_PASS') ?: '';
+$mysqlName = getenv('DB_NAME') ?: 'demolitiontraders';
+$mysqlPort = getenv('DB_PORT') ?: 3306;
+
+$mysqli = new mysqli($mysqlHost, $mysqlUser, $mysqlPass, $mysqlName, (int)$mysqlPort);
 if ($mysqli->connect_error) {
     die("Connection failed: " . $mysqli->connect_error);
 }

@@ -3,12 +3,18 @@
  * Simple direct import from MySQL to PostgreSQL
  */
 
-// Source: MySQL localhost
-$mysql = new mysqli('localhost', 'root', '', 'demolitiontraders');
+// Source: MySQL (env-aware with localhost defaults)
+$mysqlHost = getenv('DB_HOST') ?: 'localhost';
+$mysqlUser = getenv('DB_USER') ?: 'root';
+$mysqlPass = getenv('DB_PASS') ?: '';
+$mysqlName = getenv('DB_NAME') ?: 'demolitiontraders';
+$mysqlPort = getenv('DB_PORT') ?: 3306;
+
+$mysql = new mysqli($mysqlHost, $mysqlUser, $mysqlPass, $mysqlName, (int)$mysqlPort);
 $mysql->set_charset('utf8mb4');
 
-// Target: Render PostgreSQL
-$pgConn = "host=dpg-d4n486a4d50c73f5ksng-a.oregon-postgres.render.com port=5432 dbname=demolitiontraders user=demolition_user password=y0XviqttYTB1D18x0IVrKtJZP6Ck4Hz6 sslmode=require";
+// Target: PostgreSQL (can override with DATABASE_URL or PG_CONN)
+$pgConn = getenv('DATABASE_URL') ?: getenv('PG_CONN') ?: "host=dpg-d4n486a4d50c73f5ksng-a.oregon-postgres.render.com port=5432 dbname=demolitiontraders user=demolition_user password=y0XviqttYTB1D18x0IVrKtJZP6Ck4Hz6 sslmode=require";
 $pg = pg_connect($pgConn);
 
 if (!$pg) {
