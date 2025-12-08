@@ -4,10 +4,7 @@
  * Include this at the top of all admin pages
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.save_path', '/tmp');
-    session_start();
-}
+require_once __DIR__ . '/../config.php';
 
 // Check if user is admin
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || 
@@ -15,12 +12,9 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin' ||
            ($_SESSION['is_admin'] ?? false) === true;
 
 if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    require_once __DIR__ . '/../config.php';
     header('Location: ' . BASE_PATH . 'admin-login');
     exit;
 }
-
-require_once __DIR__ . '/../config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
