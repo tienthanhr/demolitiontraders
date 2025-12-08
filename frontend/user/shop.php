@@ -42,6 +42,12 @@
                             <option value="">All Categories</option>
                         </select>
                     </div>
+                    <div class="filter-group" id="subcategory-group" style="display:none; min-width:180px; margin-bottom: 18px;">
+                        <label for="subcategory-select">Sub Category</label>
+                        <select id="subcategory-select" name="subcategory" class="filter-select" onchange="handleSubCategoryChange()" autocomplete="off">
+                            <option value="">All Sub Categories</option>
+                        </select>
+                    </div>
                     <div id="dimension-row" style="display:flex; gap:24px; width:100%; max-width:700px; margin-bottom:0; display:none;">
                         <!-- Width Slider -->
                         <div class="filter-group" id="measurements-group" style="min-width:180px; flex:1; gap:10px; display:flex; flex-direction:column;">
@@ -319,6 +325,8 @@
             }
         }
         
+        let allCategories = [];
+
         // Load categories
         async function loadCategories() {
             try {
@@ -326,14 +334,13 @@
                 
                 console.log('Categories response:', data);
                 
-                const categories = data.data || data;
+                allCategories = data.data || data;
                 
-                // Populate category dropdown
+                // Populate category dropdown (Main Categories only)
                 const categorySelect = document.getElementById('category-select');
-                if (Array.isArray(categories)) {
-                    // Group categories
-                    const mainCategories = categories.filter(c => !c.parent_id || c.parent_id == 0);
-                    const subCategories = categories.filter(c => c.parent_id && c.parent_id != 0);
+                if (Array.isArray(allCategories)) {
+                    // Filter main categories
+                    const mainCategories = allCategories.filter(c => !c.parent_id || c.parent_id == 0);
                     
                     // Sort main categories
                     mainCategories.sort((a, b) => (a.display_order || 0) - (b.display_order || 0) || a.name.localeCompare(b.name));
@@ -341,51 +348,34 @@
                     let html = '<option value="">All Categories</option>';
                     
                     mainCategories.forEach(main => {
-                        const children = subCategories.filter(c => c.parent_id == main.id);
-                        
-                        if (children.length > 0) {
-                            // Sort children
-                            children.sort((a, b) => (a.display_order || 0) - (b.display_order || 0) || a.name.localeCompare(b.name));
-                            
-                            html += `<optgroup label="${main.name}">`;
-                            // Add main category as an option too, in case products are directly assigned to it
-                            html += `<option value="${main.id}" data-slug="${main.slug}">All ${main.name}</option>`;
-                            
-                            children.forEach(child => {
-                                html += `<option value="${child.id}" data-slug="${child.slug}">${child.name}</option>`;
-                            });
-                            html += `</optgroup>`;
-                        } else {
-                            // No children, just add as option
-                            html += `<option value="${main.id}" data-slug="${main.slug}">${main.name}</option>`;
-                        }
+                        html += `<option value="${main.id}" data-slug="${main.slug}">${main.name}</option>`;
                     });
-                    
-                    // Handle orphans (sub-categories whose parent is missing)
-                    const orphans = subCategories.filter(sub => !mainCategories.find(main => main.id == sub.parent_id));
-                    if (orphans.length > 0) {
-                        html += `<optgroup label="Other">`;
-                        orphans.forEach(orphan => {
-                            html += `<option value="${orphan.id}" data-slug="${orphan.slug}">${orphan.name}</option>`;
-                        });
-                        html += `</optgroup>`;
-                    }
 
                     categorySelect.innerHTML = html;
                     
-                    // Check if there's a category parameter in the URL
+                    // Check URL params
                     const urlParams = new URLSearchParams(window.location.search);
-                    const categorySlug = urlParams.get('category');
+                    const categoryId = urlParams.get('category');
                     const searchKeyword = urlParams.get('search');
                     
-                    if (categorySlug) {
-                        // Find option by slug and select it
-                        const options = categorySelect.querySelectorAll('option');
-                        for (let option of options) {
-                            if (option.getAttribute('data-slug') === categorySlug) {
-                                categorySelect.value = option.value;
-                                handleCategoryChange();
-                                break;
+                    if (categoryId) {
+                        // Find if it's a main or sub category
+                        const cat = allCategories.find(c => c.id == categoryId);
+                        if (cat) {
+                            if (!cat.parent_id || cat.parent_id == 0) {
+                                // It's a main category
+                                categorySelect.value = cat.id;
+                                handleCategoryChange(); 
+                            } else {
+                                // It's a sub category
+                                categorySelect.value = cat.parent_id;
+                                handleCategoryChange(); // This will populate sub-select
+                                // Now select the sub category
+                                const subSelect = document.getElementById('subcategory-select');
+                                if (subSelect) {
+                                    subSelect.value = cat.id;
+                                    handleSubCategoryChange(); // Trigger sub-category logic
+                                }
                             }
                         }
                     }
@@ -397,7 +387,7 @@
                         }
                     }
                 } else {
-                    console.error('Categories not an array:', categories);
+                    console.error('Categories not an array:', allCategories);
                 }
                 
             } catch (error) {
@@ -406,51 +396,108 @@
         }
         
         // Handle category change
-       function handleCategoryChange() {
-    const categorySelect = document.getElementById('category-select');
-    const selectedValue = categorySelect.value;
-    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-    const selectedText = selectedOption.text.toLowerCase();
-    const parentLabel = selectedOption.parentElement.tagName === 'OPTGROUP' ? selectedOption.parentElement.label.toLowerCase() : '';
-    
-    // Hide all dynamic filter groups
-    document.getElementById('treatment-group').style.display = 'none';
-    document.getElementById('thickness-group').style.display = 'none';
-    document.getElementById('dimension-row').style.display = 'none';
-    
-    // Helper to check text match
-    const matches = (text) => text.includes('plywood') || text.includes('timber') || text.includes('wood');
-    const matchesDoor = (text) => text.includes('door') || text.includes('window') || text.includes('sliding door');
+        function handleCategoryChange() {
+            const categorySelect = document.getElementById('category-select');
+            const subCategoryGroup = document.getElementById('subcategory-group');
+            const subCategorySelect = document.getElementById('subcategory-select');
+            const selectedId = categorySelect.value;
+            
+            // Reset sub category
+            subCategorySelect.innerHTML = '<option value="">All Sub Categories</option>';
+            
+            if (!selectedId) {
+                subCategoryGroup.style.display = 'none';
+                updateUrlAndFilter('');
+                return;
+            }
 
-    // Show relevant filters based on category (check both option text and parent group label)
-    if (matches(selectedText) || matches(parentLabel)) {
-        document.getElementById('treatment-group').style.display = 'block';
-        document.getElementById('thickness-group').style.display = 'block';
-    }
-    if (matchesDoor(selectedText) || matchesDoor(parentLabel)) {
-        document.getElementById('dimension-row').style.display = 'flex';
-    }
-
-    // Nếu chọn All Categories thì remove param category khỏi URL
-    const url = new URL(window.location.href);
-    url.searchParams.delete('category');
-    // Nếu có search thì giữ lại, không thì về shop.php
-    const searchVal = document.getElementById('keywords-input')?.value || '';
-    if (selectedValue === '') {
-        if (searchVal) {
-            url.search = 'search=' + encodeURIComponent(searchVal);
-        } else {
-            window.location.href = BASE_PATH + 'shop.php';
-            return;
+            // Find sub categories
+            const subCats = allCategories.filter(c => c.parent_id == selectedId);
+            subCats.sort((a, b) => (a.display_order || 0) - (b.display_order || 0) || a.name.localeCompare(b.name));
+            
+            if (subCats.length > 0) {
+                subCats.forEach(sub => {
+                    subCategorySelect.innerHTML += `<option value="${sub.id}" data-slug="${sub.slug}">${sub.name}</option>`;
+                });
+                subCategoryGroup.style.display = 'block';
+            } else {
+                subCategoryGroup.style.display = 'none';
+            }
+            
+            // Update filters based on main category
+            updateDynamicFilters(selectedId);
+            
+            // Update URL with Main Category ID (initially)
+            updateUrlAndFilter(selectedId);
         }
-    } else {
-        url.searchParams.set('category', selectedValue);
-        if (searchVal) url.searchParams.set('search', searchVal);
-    }
-    window.history.replaceState({}, '', url.pathname + url.search);
-    updateBreadcrumb();
-    applyFilters();
-}
+
+        // Handle sub-category change
+        function handleSubCategoryChange() {
+            const categorySelect = document.getElementById('category-select');
+            const subCategorySelect = document.getElementById('subcategory-select');
+            const mainId = categorySelect.value;
+            const subId = subCategorySelect.value;
+            
+            // Update filters based on sub category (or main if sub is empty)
+            updateDynamicFilters(subId || mainId);
+            
+            updateUrlAndFilter(subId || mainId);
+        }
+
+        function updateDynamicFilters(catId) {
+            // Hide all dynamic filter groups
+            document.getElementById('treatment-group').style.display = 'none';
+            document.getElementById('thickness-group').style.display = 'none';
+            document.getElementById('dimension-row').style.display = 'none';
+
+            if (!catId) return;
+
+            const cat = allCategories.find(c => c.id == catId);
+            if (!cat) return;
+            
+            const name = cat.name.toLowerCase();
+            
+            // Also check parent name if this is a sub-category
+            let parentName = '';
+            if (cat.parent_id && cat.parent_id != 0) {
+                const parent = allCategories.find(c => c.id == cat.parent_id);
+                if (parent) parentName = parent.name.toLowerCase();
+            }
+
+            const matches = (text) => text.includes('plywood') || text.includes('timber') || text.includes('wood');
+            const matchesDoor = (text) => text.includes('door') || text.includes('window') || text.includes('sliding door');
+
+            if (matches(name) || matches(parentName)) {
+                document.getElementById('treatment-group').style.display = 'block';
+                document.getElementById('thickness-group').style.display = 'block';
+            }
+            if (matchesDoor(name) || matchesDoor(parentName)) {
+                document.getElementById('dimension-row').style.display = 'flex';
+            }
+        }
+
+        function updateUrlAndFilter(catId) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('category');
+            
+            const searchVal = document.getElementById('keywords-input')?.value || '';
+            
+            if (!catId) {
+                if (searchVal) {
+                    url.search = 'search=' + encodeURIComponent(searchVal);
+                } else {
+                    window.location.href = BASE_PATH + 'shop.php';
+                    return;
+                }
+            } else {
+                url.searchParams.set('category', catId);
+                if (searchVal) url.searchParams.set('search', searchVal);
+            }
+            
+            window.history.replaceState({}, '', url.pathname + url.search);
+            updateBreadcrumb();
+            applyFilters();
+        }
         
         // Load provducts
         async function loadProducts() {

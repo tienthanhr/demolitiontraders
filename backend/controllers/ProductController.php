@@ -56,11 +56,33 @@ class ProductController {
         // Category filter
         if (!empty($params['category'])) {
             if (is_numeric($params['category'])) {
-                $where[] = 'p.category_id = :category_id';
-                $queryParams['category_id'] = $params['category'];
-                $cat = $this->db->fetchOne("SELECT slug FROM categories WHERE id = :id", ['id' => $params['category']]);
+                $catId = $params['category'];
+                
+                // Check if this category has children (sub-categories)
+                $children = $this->db->fetchAll("SELECT id FROM categories WHERE parent_id = :id", ['id' => $catId]);
+                
+                if (!empty($children)) {
+                    // If it has children, include products from parent AND all children
+                    $ids = array_column($children, 'id');
+                    $ids[] = $catId; // Include parent too
+                    
+                    $placeholders = [];
+                    foreach ($ids as $k => $id) {
+                        $key = "cat_filter_" . $k;
+                        $placeholders[] = ":" . $key;
+                        $queryParams[$key] = $id;
+                    }
+                    $where[] = 'p.category_id IN (' . implode(',', $placeholders) . ')';
+                } else {
+                    // No children, just filter by this ID
+                    $where[] = 'p.category_id = :category_id';
+                    $queryParams['category_id'] = $catId;
+                }
+
+                // Check for plywood for specific filters
+                $cat = $this->db->fetchOne("SELECT slug FROM categories WHERE id = :id", ['id' => $catId]);
                 if ($cat && $cat['slug'] === 'plywood') {
-                    $plywoodCategoryId = $params['category'];
+                    $plywoodCategoryId = $catId;
                 }
             } else {
                 $categorySql = "SELECT id, slug FROM categories WHERE slug = :category_slug";
