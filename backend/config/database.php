@@ -194,7 +194,12 @@ class Database {
             return ':' . $col;
         }, $columns);
 
-        $sql = "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ") RETURNING id";
+        $sql = "INSERT INTO $table (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
+        
+        // Only add RETURNING id for PostgreSQL
+        if ($this->isPostgreSQL()) {
+            $sql .= " RETURNING id";
+        }
 
         // Prepare params - convert to string except null
         $params = [];
@@ -204,33 +209,33 @@ class Database {
 
         // Validate counts match
         if (count($columns) !== count($params) || count($columns) !== count($placeholders)) {
-            $this->log("[INSERT][ERROR] MISMATCH: columns=" . count($columns) . ", placeholders=" . count($placeholders) . ", params=" . count($params));
+            // $this->log("[INSERT][ERROR] MISMATCH: columns=" . count($columns) . ", placeholders=" . count($placeholders) . ", params=" . count($params));
+            error_log("[INSERT][ERROR] MISMATCH in table $table");
             return false;
         }
 
         try {
             $result = $this->query($sql, $params);
-            $row = $result->fetch(PDO::FETCH_ASSOC);
-            $insertId = $row['id'] ?? null;
             
-            // If RETURNING didn't work, try lastInsertId with sequence name
-            if (!$insertId) {
-                try {
-                    $insertId = $this->connection->lastInsertId("{$table}_id_seq");
-                    if (!$insertId) {
-                        $this->log("[INSERT][WARNING] Could not get ID from RETURNING or lastInsertId");
+            if ($this->isPostgreSQL()) {
+                $row = $result->fetch(PDO::FETCH_ASSOC);
+                $insertId = $row['id'] ?? null;
+                
+                // If RETURNING didn't work, try lastInsertId with sequence name
+                if (!$insertId) {
+                    try {
+                        $insertId = $this->connection->lastInsertId("{$table}_id_seq");
+                    } catch (Exception $e) {
+                        // Ignore sequence error
                     }
-                } catch (Exception $e) {
-                    $this->log("[INSERT][WARNING] Could not get lastInsertId: " . $e->getMessage());
                 }
+            } else {
+                // MySQL
+                $insertId = $this->connection->lastInsertId();
             }
             
-            if (!$insertId) {
-                throw new Exception("Failed to get insert ID for table $table");
-            }
-            
-            $this->log("[INSERT][SUCCESS] Table: $table, ID: $insertId");
             return $insertId;
+
         } catch (PDOException $e) {
             $this->log("[INSERT][ERROR] " . $e->getMessage() . "\nSQL: $sql\nParams: " . json_encode($params));
             throw $e; // Re-throw exception instead of returning false
