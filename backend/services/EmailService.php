@@ -66,6 +66,15 @@ class EmailService {
             $this->mailer->Timeout    = 10;
             $this->mailer->SMTPDebug  = 0;
             
+            // Fix for SSL certificate issues in some environments
+            $this->mailer->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+            
             // From
             $this->mailer->setFrom($this->config['from_email'], $this->config['from_name']);
             $this->mailer->addReplyTo($this->config['reply_to'], $this->config['from_name']);
