@@ -9,7 +9,9 @@ $tests = [
     ['host' => 'google.com', 'port' => 443, 'name' => 'Google HTTPS (443)'],
     ['host' => 'smtp.gmail.com', 'port' => 587, 'name' => 'Gmail SMTP (587)'],
     ['host' => 'smtp.gmail.com', 'port' => 465, 'name' => 'Gmail SMTP (465)'],
-    ['host' => 'smtp.office365.com', 'port' => 587, 'name' => 'Office365 SMTP (587)'],
+    ['host' => 'smtp.sendgrid.net', 'port' => 2525, 'name' => 'SendGrid SMTP (2525)'],
+    ['host' => 'smtp-relay.brevo.com', 'port' => 587, 'name' => 'Brevo SMTP (587)'],
+    ['host' => 'smtp.mailgun.org', 'port' => 2525, 'name' => 'Mailgun SMTP (2525)'],
 ];
 
 echo "Network Connectivity Test\n";
