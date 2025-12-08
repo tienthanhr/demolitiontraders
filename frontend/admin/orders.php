@@ -780,7 +780,13 @@ function renderOrders(orders) {
             let customerEmail = order.guest_email || '';
             
             try {
-                const billing = JSON.parse(order.billing_address || '{}');
+                let billing = order.billing_address;
+                if (typeof billing === 'string') {
+                    billing = JSON.parse(billing || '{}');
+                } else if (!billing) {
+                    billing = {};
+                }
+                
                 customerName = `${billing.first_name || ''} ${billing.last_name || ''}`.trim() || 'Guest';
                 customerEmail = billing.email || order.guest_email || '';
             } catch (e) {
@@ -875,13 +881,13 @@ async function viewOrder(id) {
         let shipping = {};
         
         try {
-            billing = JSON.parse(order.billing_address || '{}');
+            billing = typeof order.billing_address === 'string' ? JSON.parse(order.billing_address || '{}') : (order.billing_address || {});
         } catch (e) {
             console.error('Failed to parse billing address:', e);
         }
         
         try {
-            shipping = JSON.parse(order.shipping_address || '{}');
+            shipping = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address || '{}') : (order.shipping_address || {});
         } catch (e) {
             console.error('Failed to parse shipping address:', e);
         }

@@ -72,6 +72,14 @@ class OrderController {
                 "SELECT * FROM order_items WHERE order_id = :order_id",
                 ['order_id' => $order['id']]
             );
+            
+            // Decode JSON fields so they are returned as objects (and values sanitized individually)
+            if (isset($order['billing_address']) && is_string($order['billing_address'])) {
+                $order['billing_address'] = json_decode($order['billing_address'], true);
+            }
+            if (isset($order['shipping_address']) && is_string($order['shipping_address'])) {
+                $order['shipping_address'] = json_decode($order['shipping_address'], true);
+            }
         }
         
         return escape_output($orders);
@@ -109,6 +117,14 @@ class OrderController {
             "SELECT * FROM order_items WHERE order_id = :order_id",
             ['order_id' => $id]
         );
+        
+        // Decode JSON fields
+        if (isset($order['billing_address']) && is_string($order['billing_address'])) {
+            $order['billing_address'] = json_decode($order['billing_address'], true);
+        }
+        if (isset($order['shipping_address']) && is_string($order['shipping_address'])) {
+            $order['shipping_address'] = json_decode($order['shipping_address'], true);
+        }
         
         return escape_output($order);
     }

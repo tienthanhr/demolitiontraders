@@ -11,6 +11,9 @@ if (basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"])) {
     die('Access Denied');
 }
 
+// Set Timezone to New Zealand
+date_default_timezone_set('Pacific/Auckland');
+
 // --- Global Security Headers ---
 // Note: These headers are applied to all API responses.
 
