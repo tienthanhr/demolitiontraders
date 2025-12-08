@@ -282,22 +282,38 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label>Description *</label>
-                            <textarea name="description" rows="6" placeholder="Please describe the materials in detail, including approximate age, any special features, and current condition..." required></textarea>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1;">
+                                <label>Description <small class="text-muted">(Required if no photos)</small></label>
+                                <textarea name="description" id="description" rows="6" placeholder="Please describe the materials in detail, including approximate age, any special features, and current condition..."></textarea>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label><i class="fa-solid fa-camera"></i> Upload Photos <small class="text-muted">(Required if no description)</small></label>
+                                <input type="file" id="photo-upload" name="photos[]" multiple accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('photo-upload').click()">
+                                    <i class="fa-solid fa-upload"></i> Choose Photos
+                                </button>
+                                <small style="display: block; margin-top: 8px; color: #666;">
+                                    <i class="fa-solid fa-info-circle"></i> You can select up to 5 photos (JPG, PNG)
+                                </small>
+                                <div id="photo-preview" class="photo-preview-container"></div>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-camera"></i> Upload Photos</label>
-                            <input type="file" id="photo-upload" name="photos[]" multiple accept="image/*" style="display: none;">
-                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('photo-upload').click()">
-                                <i class="fa-solid fa-upload"></i> Choose Photos
-                            </button>
-                            <small style="display: block; margin-top: 8px; color: #666;">
-                                <i class="fa-solid fa-info-circle"></i> You can select up to 5 photos (JPG, PNG)
-                            </small>
-                            <div id="photo-preview" class="photo-preview-container"></div>
-                        </div>
+                        <script>
+                            // Require at least one of description or photo
+                            document.getElementById('sell-form').addEventListener('submit', function(e) {
+                                const desc = document.getElementById('description').value.trim();
+                                if (!desc && selectedFiles.length === 0) {
+                                    e.preventDefault();
+                                    if (typeof showToast === 'function') {
+                                        showToast('Please provide either a description or at least one photo.', 'warning');
+                                    } else {
+                                        alert('Please provide either a description or at least one photo.');
+                                    }
+                                    return false;
+                                }
+                            });
+                        </script>
                         
                         <button type="submit" class="btn btn-primary">Submit for Quote</button>
                     </form>
