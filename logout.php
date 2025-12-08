@@ -4,7 +4,9 @@
  * Logs out user and redirects to appropriate page
  */
 require_once __DIR__ . '/frontend/config.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Store user role before clearing session
 $wasAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') || 

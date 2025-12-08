@@ -4,6 +4,9 @@
  * Auto-detect base path for localhost vs production
  */
 
+// Initialize Session (Must match backend configuration)
+require_once __DIR__ . '/session_setup.php';
+
 // Detect if running on localhost
 $isLocalhost = (
     $_SERVER['SERVER_NAME'] === 'localhost' || 
