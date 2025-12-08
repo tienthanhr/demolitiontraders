@@ -11,11 +11,13 @@ header('Content-Type: text/plain');
 echo "Testing Database Connection...\n";
 echo "----------------------------\n";
 
-$host = getenv('DB_HOST');
-$dbname = getenv('DB_NAME');
-$user = getenv('DB_USER');
-$pass = getenv('DB_PASS');
-$port = getenv('DB_PORT');
+// Allow overriding via query parameters for quick testing
+// e.g. ?host=database.railway.internal&user=root&pass=...
+$host = $_GET['host'] ?? getenv('DB_HOST');
+$dbname = $_GET['dbname'] ?? getenv('DB_NAME');
+$user = $_GET['user'] ?? getenv('DB_USER');
+$pass = $_GET['pass'] ?? getenv('DB_PASS');
+$port = $_GET['port'] ?? getenv('DB_PORT');
 
 echo "Host: " . ($host ?: 'Not Set') . "\n";
 echo "Port: " . ($port ?: 'Not Set') . "\n";
@@ -26,7 +28,7 @@ echo "Pass: " . ($pass ? '******' : 'Not Set') . "\n";
 echo "----------------------------\n";
 
 if (!$host) {
-    die("ERROR: DB_HOST is not set in environment variables.\n");
+    die("ERROR: DB_HOST is not set in environment variables and not provided in query string.\n");
 }
 
 try {
