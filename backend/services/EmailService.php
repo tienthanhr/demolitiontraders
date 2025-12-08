@@ -820,25 +820,40 @@ HTML;
 </html>
 HTML;
             
-            $this->mailer->clearAddresses();
-            $this->mailer->clearAttachments();
-            $this->mailer->addAddress($adminEmail);
-            $this->mailer->addReplyTo($data['email'], $data['name']);
-            $this->mailer->Subject = "New Sell to Us Submission from {$data['name']}";
-            $this->mailer->Body = $html;
-            
-            // Attach photos if available
-            if (!empty($data['photos'])) {
-                $uploadsPath = __DIR__ . '/../../';
-                foreach ($data['photos'] as $photoPath) {
-                    $fullPath = $uploadsPath . $photoPath;
-                    if (file_exists($fullPath)) {
-                        $this->mailer->addAttachment($fullPath, basename($photoPath));
+            // Check if we should use Brevo API
+            if (!empty($this->config['brevo_api_key'])) {
+                $attachments = [];
+                if (!empty($data['photos'])) {
+                    $uploadsPath = __DIR__ . '/../../';
+                    foreach ($data['photos'] as $photoPath) {
+                        $fullPath = $uploadsPath . $photoPath;
+                        if (file_exists($fullPath)) {
+                            $attachments[$fullPath] = basename($photoPath);
+                        }
                     }
                 }
+                $this->sendViaBrevoApi($adminEmail, 'Admin', "New Sell to Us Submission from {$data['name']}", $html, $attachments);
+            } else {
+                $this->mailer->clearAddresses();
+                $this->mailer->clearAttachments();
+                $this->mailer->addAddress($adminEmail);
+                $this->mailer->addReplyTo($data['email'], $data['name']);
+                $this->mailer->Subject = "New Sell to Us Submission from {$data['name']}";
+                $this->mailer->Body = $html;
+                
+                // Attach photos if available
+                if (!empty($data['photos'])) {
+                    $uploadsPath = __DIR__ . '/../../';
+                    foreach ($data['photos'] as $photoPath) {
+                        $fullPath = $uploadsPath . $photoPath;
+                        if (file_exists($fullPath)) {
+                            $this->mailer->addAttachment($fullPath, basename($photoPath));
+                        }
+                    }
+                }
+                
+                $this->mailer->send();
             }
-            
-            $this->mailer->send();
             
             error_log("Sell to us email sent to admin");
             return ['success' => true, 'message' => 'Email sent successfully'];
@@ -934,12 +949,17 @@ HTML;
 </html>
 HTML;
             
-            $this->mailer->clearAddresses();
-            $this->mailer->addAddress($adminEmail);
-            $this->mailer->addReplyTo($data['email'], $data['name']);
-            $this->mailer->Subject = "New Wanted Listing: {$data['category']} - {$data['name']}";
-            $this->mailer->Body = $html;
-            $this->mailer->send();
+            // Check if we should use Brevo API
+            if (!empty($this->config['brevo_api_key'])) {
+                $this->sendViaBrevoApi($adminEmail, 'Admin', "New Wanted Listing: {$data['category']} - {$data['name']}", $html);
+            } else {
+                $this->mailer->clearAddresses();
+                $this->mailer->addAddress($adminEmail);
+                $this->mailer->addReplyTo($data['email'], $data['name']);
+                $this->mailer->Subject = "New Wanted Listing: {$data['category']} - {$data['name']}";
+                $this->mailer->Body = $html;
+                $this->mailer->send();
+            }
             
             error_log("Wanted listing email sent to admin");
             return ['success' => true, 'message' => 'Email sent successfully'];
