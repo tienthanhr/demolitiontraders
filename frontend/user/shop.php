@@ -331,8 +331,47 @@
                 // Populate category dropdown
                 const categorySelect = document.getElementById('category-select');
                 if (Array.isArray(categories)) {
-                    categorySelect.innerHTML = '<option value="">All Categories</option>' +
-                        categories.map(cat => '<option value="' + cat.id + '" data-slug="' + cat.slug + '">' + cat.name + '</option>').join('');
+                    // Group categories
+                    const mainCategories = categories.filter(c => !c.parent_id || c.parent_id == 0);
+                    const subCategories = categories.filter(c => c.parent_id && c.parent_id != 0);
+                    
+                    // Sort main categories
+                    mainCategories.sort((a, b) => (a.display_order || 0) - (b.display_order || 0) || a.name.localeCompare(b.name));
+                    
+                    let html = '<option value="">All Categories</option>';
+                    
+                    mainCategories.forEach(main => {
+                        const children = subCategories.filter(c => c.parent_id == main.id);
+                        
+                        if (children.length > 0) {
+                            // Sort children
+                            children.sort((a, b) => (a.display_order || 0) - (b.display_order || 0) || a.name.localeCompare(b.name));
+                            
+                            html += `<optgroup label="${main.name}">`;
+                            // Add main category as an option too, in case products are directly assigned to it
+                            html += `<option value="${main.id}" data-slug="${main.slug}">All ${main.name}</option>`;
+                            
+                            children.forEach(child => {
+                                html += `<option value="${child.id}" data-slug="${child.slug}">${child.name}</option>`;
+                            });
+                            html += `</optgroup>`;
+                        } else {
+                            // No children, just add as option
+                            html += `<option value="${main.id}" data-slug="${main.slug}">${main.name}</option>`;
+                        }
+                    });
+                    
+                    // Handle orphans (sub-categories whose parent is missing)
+                    const orphans = subCategories.filter(sub => !mainCategories.find(main => main.id == sub.parent_id));
+                    if (orphans.length > 0) {
+                        html += `<optgroup label="Other">`;
+                        orphans.forEach(orphan => {
+                            html += `<option value="${orphan.id}" data-slug="${orphan.slug}">${orphan.name}</option>`;
+                        });
+                        html += `</optgroup>`;
+                    }
+
+                    categorySelect.innerHTML = html;
                     
                     // Check if there's a category parameter in the URL
                     const urlParams = new URLSearchParams(window.location.search);
@@ -370,21 +409,25 @@
        function handleCategoryChange() {
     const categorySelect = document.getElementById('category-select');
     const selectedValue = categorySelect.value;
-    const selectedText = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase();
+    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+    const selectedText = selectedOption.text.toLowerCase();
+    const parentLabel = selectedOption.parentElement.tagName === 'OPTGROUP' ? selectedOption.parentElement.label.toLowerCase() : '';
+    
     // Hide all dynamic filter groups
     document.getElementById('treatment-group').style.display = 'none';
     document.getElementById('thickness-group').style.display = 'none';
     document.getElementById('dimension-row').style.display = 'none';
-    // Show relevant filters based on category
-    if (selectedText.includes('plywood') || selectedText.includes('timber') || selectedText.includes('wood')) {
+    
+    // Helper to check text match
+    const matches = (text) => text.includes('plywood') || text.includes('timber') || text.includes('wood');
+    const matchesDoor = (text) => text.includes('door') || text.includes('window') || text.includes('sliding door');
+
+    // Show relevant filters based on category (check both option text and parent group label)
+    if (matches(selectedText) || matches(parentLabel)) {
         document.getElementById('treatment-group').style.display = 'block';
         document.getElementById('thickness-group').style.display = 'block';
     }
-    if (
-        selectedText.includes('door') ||
-        selectedText.includes('window') ||
-        selectedText.includes('sliding door')
-    ) {
+    if (matchesDoor(selectedText) || matchesDoor(parentLabel)) {
         document.getElementById('dimension-row').style.display = 'flex';
     }
 
