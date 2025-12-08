@@ -60,6 +60,8 @@ class Database {
                 $password = getenv('DB_PASS') ?: '';
                 $port = getenv('DB_PORT') ?: '3306';
                 
+                error_log("Connecting to MySQL: host=$host, port=$port, db=$dbname, user=$username");
+
                 $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
             }
             
