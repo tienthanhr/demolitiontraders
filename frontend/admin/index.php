@@ -178,61 +178,108 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                 const mm = String(today.getMonth() + 1).padStart(2, '0');
                 const dd = String(today.getDate()).padStart(2, '0');
                 const todayStr = `${yyyy}-${mm}-${dd}`;
-                // Gọi API lấy orders hôm nay (giả sử backend hỗ trợ filter by date, nếu không sẽ filter ở FE)
+                
+                // Gọi API lấy orders
                 const res = await fetch(getApiUrl('/api/index.php?request=orders'));
                 const data = await res.json();
                 let orders = Array.isArray(data) ? data : (data.data || []);
+                
                 // Lọc đơn hàng có ngày tạo là hôm nay
                 orders = orders.filter(order => {
                     if (!order.created_at) return false;
+                    // Convert server time to local date string for comparison if needed, 
+                    // but simple string match is often enough if server time matches local
                     return order.created_at.startsWith(todayStr);
                 });
+                
                 // Sắp xếp mới nhất trước
                 orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                // Lấy 5 đơn gần nhất
-                const topOrders = orders.slice(0, 5);
+                
+                // Lấy 10 đơn gần nhất
+                const topOrders = orders.slice(0, 10);
+                
                 if (topOrders.length === 0) {
-                    contentDiv.innerHTML = `<div style='text-align:center;color:#888;font-size:16px;padding:30px;'>No recent orders today.</div>`;
+                    contentDiv.innerHTML = `<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No orders received today.</p></div>`;
                 } else {
                     contentDiv.innerHTML = `
-                        <table style='width:100%;border-collapse:collapse;'>
-                            <thead style='background:#f8f9fa;'>
-                                <tr>
-                                    <th style='padding:8px 6px;text-align:left;'>Order #</th>
-                                    <th style='padding:8px 6px;text-align:left;'>Customer</th>
-                                    <th style='padding:8px 6px;text-align:right;'>Total</th>
-                                    <th style='padding:8px 6px;text-align:left;'>Status</th>
-                                    <th style='padding:8px 6px;text-align:left;'>Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${topOrders.map(order => {
-                                    let billing = {};
-                                    try { billing = JSON.parse(order.billing_address || '{}'); } catch(e){}
-                                    const customer = `${billing.first_name || ''} ${billing.last_name || ''}`.trim() || 'Guest';
-                                    const total = order.total_amount ? `$${parseFloat(order.total_amount).toFixed(2)}` : '-';
-                                    const status = order.status ? order.status.toUpperCase() : 'PENDING';
-                                    const time = order.created_at ? new Date(order.created_at).toLocaleTimeString() : '';
-                                    return `<tr>
-                                        <td style='padding:8px 6px;'><strong>#${order.id}</strong></td>
-                                        <td style='padding:8px 6px;'>${customer}</td>
-                                        <td style='padding:8px 6px;text-align:right;'>${total}</td>
-                                        <td style='padding:8px 6px;'>${status}</td>
-                                        <td style='padding:8px 6px;'>${time}</td>
-                                    </tr>`;
-                                }).join('')}
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="activity-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${topOrders.map(order => {
+                                        // Handle billing address (can be object or string)
+                                        let billing = order.billing_address;
+                                        if (typeof billing === 'string') {
+                                            try { billing = JSON.parse(billing); } catch(e) { billing = {}; }
+                                        }
+                                        billing = billing || {};
+                                        
+                                        // Get customer name
+                                        let customerName = `${billing.first_name || ''} ${billing.last_name || ''}`.trim();
+                                        
+                                        // Fallback to shipping if billing name empty
+                                        if (!customerName) {
+                                            let shipping = order.shipping_address;
+                                            if (typeof shipping === 'string') {
+                                                try { shipping = JSON.parse(shipping); } catch(e) { shipping = {}; }
+                                            }
+                                            shipping = shipping || {};
+                                            customerName = `${shipping.first_name || ''} ${shipping.last_name || ''}`.trim();
+                                        }
+                                        
+                                        // Fallback to email
+                                        if (!customerName) {
+                                            customerName = order.guest_email || billing.email || 'Guest';
+                                        }
+                                        
+                                        const total = order.total_amount ? `$${parseFloat(order.total_amount).toFixed(2)}` : '-';
+                                        const status = order.status ? order.status.toUpperCase() : 'PENDING';
+                                        const statusClass = getStatusClass(status);
+                                        const time = order.created_at ? new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                                        const itemCount = order.items ? order.items.length : 0;
+                                        
+                                        return `<tr>
+                                            <td><span class="order-id">#${order.order_number || order.id}</span></td>
+                                            <td>
+                                                <div class="customer-name">${customerName}</div>
+                                                <div class="customer-email">${order.guest_email || billing.email || ''}</div>
+                                            </td>
+                                            <td>${itemCount} item${itemCount !== 1 ? 's' : ''}</td>
+                                            <td class="amount">${total}</td>
+                                            <td><span class="status-badge ${statusClass}">${status}</span></td>
+                                            <td class="time">${time}</td>
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
                     `;
                 }
                 loadingDiv.style.display = 'none';
-                contentDiv.style.display = '';
+                contentDiv.style.display = 'block';
             } catch (error) {
                 loadingDiv.style.display = 'none';
-                contentDiv.style.display = '';
-                contentDiv.innerHTML = `<div style='text-align:center;color:#c00;font-size:16px;padding:30px;'>Error loading recent activity.</div>`;
+                contentDiv.style.display = 'block';
+                contentDiv.innerHTML = `<div class="error-state">Error loading recent activity.</div>`;
                 console.error('Error loading recent activity:', error);
             }
+        }
+        
+        function getStatusClass(status) {
+            status = status.toLowerCase();
+            if (status === 'completed' || status === 'shipped' || status === 'paid') return 'status-success';
+            if (status === 'pending' || status === 'processing') return 'status-warning';
+            if (status === 'cancelled' || status === 'refunded') return 'status-danger';
+            return 'status-secondary';
         }
 
         // Initialize
