@@ -473,6 +473,9 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
         $uploadedImages = [];
         $order = 0;
         
+        // Check if product already has a primary image
+        $hasPrimary = $this->db->fetchOne("SELECT id FROM product_images WHERE product_id = :id AND is_primary = 1", ['id' => $productId]);
+        
         if (!isset($files['tmp_name']) || !is_array($files['tmp_name'])) {
             $this->logDebug('[IMAGE UPLOAD ERROR]', ['error' => 'Invalid files array']);
             return $uploadedImages;
@@ -551,13 +554,18 @@ if (isset($params['is_featured']) || isset($params['featured'])) {
                 // Set proper permissions
                 chmod($fullPath, 0644);
                 
+                // Determine if this image should be primary
+                $setPrimary = ($isPrimary && $order === 0) || (!$hasPrimary && $order === 0);
+                
                 // Insert to database
                 $insertId = $this->db->insert('product_images', [
                     'product_id' => $productId,
                     'image_url' => $dbPath,
-                    'is_primary' => ($isPrimary && $order === 0) ? 1 : 0,
+                    'is_primary' => $setPrimary ? 1 : 0,
                     'display_order' => $order
                 ]);
+                
+                if ($setPrimary) $hasPrimary = true;
                 
                 if ($insertId) {
                     $uploadedImages[] = $dbPath;
