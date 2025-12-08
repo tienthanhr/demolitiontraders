@@ -699,6 +699,17 @@ HTML;
     }
     
     /**
+     * Send Sell to Us Email to Admin (Alias for sendSellToUsEmail)
+     */
+    public function sendSellToUsSubmissionEmail($data, $submissionId = null) {
+        // Add submission ID to data if provided
+        if ($submissionId) {
+            $data['submission_id'] = $submissionId;
+        }
+        return $this->sendSellToUsEmail($data);
+    }
+
+    /**
      * Send Sell to Us Email to Admin
      */
     public function sendSellToUsEmail($data) {
