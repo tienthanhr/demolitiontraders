@@ -14,9 +14,7 @@ try {
     $query = "SELECT * FROM contact_submissions 
               ORDER BY created_at DESC";
     
-    $stmt = $db->prepare($query);
-    $stmt->execute();
-    $contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $contacts = $db->fetchAll($query);
     
     echo json_encode([
         'success' => true,

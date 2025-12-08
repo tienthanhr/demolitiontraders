@@ -17,9 +17,7 @@ try {
     
     $db = Database::getInstance();
     
-    $query = "DELETE FROM contact_submissions WHERE id = :id";
-    $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $data['id']]);
+    $db->delete('contact_submissions', 'id = :id', ['id' => $data['id']]);
     
     echo json_encode([
         'success' => true,

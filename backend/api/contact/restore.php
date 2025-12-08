@@ -16,9 +16,7 @@ try {
     
     $db = Database::getInstance();
     
-    $query = "UPDATE contact_submissions SET status = 'new' WHERE id = :id";
-    $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $data['id']]);
+    $db->update('contact_submissions', ['status' => 'new'], 'id = :id', ['id' => $data['id']]);
     
     echo json_encode(['success' => true, 'message' => 'Message restored']);
     

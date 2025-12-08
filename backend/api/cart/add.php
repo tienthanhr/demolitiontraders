@@ -78,8 +78,8 @@ try {
         } else {
             // Insert new
             $db->query(
-                "INSERT INTO cart (user_id, product_id, quantity, created_at) VALUES (?, ?, ?, NOW())",
-                [$user_id, $product_id, $quantity]
+                "INSERT INTO cart (user_id, product_id, quantity, created_at) VALUES (?, ?, ?, ?)",
+                [$user_id, $product_id, $quantity, date('Y-m-d H:i:s')]
             );
         }
         
@@ -145,8 +145,8 @@ try {
     } else {
         error_log("Guest cart - Inserting new item");
         $db->query(
-            "INSERT INTO cart (session_id, product_id, quantity, created_at) VALUES (?, ?, ?, NOW())",
-            [$session_id, $product_id, $quantity]
+            "INSERT INTO cart (session_id, product_id, quantity, created_at) VALUES (?, ?, ?, ?)",
+            [$session_id, $product_id, $quantity, date('Y-m-d H:i:s')]
         );
         error_log("Guest cart - Insert complete");
     }

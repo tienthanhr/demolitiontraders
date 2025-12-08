@@ -71,13 +71,16 @@ try {
     $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
     
     // Store wanted listing in database
-    $stmt = $db->prepare("
-        INSERT INTO wanted_listings 
-        (user_id, contact_name, email, phone, category, description, item_name, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
-    ");
-    $stmt->execute([$userId, $name, $email, $phone, $category, $description, $itemName]);
-    $wantedListingId = $db->lastInsertId();
+    $wantedListingId = $db->insert('wanted_listings', [
+        'user_id' => $userId,
+        'contact_name' => $name,
+        'email' => $email,
+        'phone' => $phone,
+        'category' => $category,
+        'description' => $description,
+        'item_name' => $itemName,
+        'status' => 'active'
+    ]);
     
     // If user is logged in, try to find matching products and add to wishlist
     $matchedProducts = [];
@@ -98,19 +101,15 @@ try {
         
         if (!empty($searchConditions)) {
             $searchQuery .= implode(' OR ', $searchConditions) . ") LIMIT 10";
-            $stmt = $db->prepare($searchQuery);
-            $stmt->execute($searchParams);
-            $matchedProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $matchedProducts = $db->fetchAll($searchQuery, $searchParams);
             
             // Add matched products to wishlist
             if (!empty($matchedProducts)) {
-                $wishlistStmt = $db->prepare("
-                    INSERT IGNORE INTO wishlist (user_id, product_id, created_at)
-                    VALUES (?, ?, NOW())
-                ");
+                $wishlistSql = "INSERT IGNORE INTO wishlist (user_id, product_id, created_at) VALUES (?, ?, ?)";
+                $now = date('Y-m-d H:i:s');
                 
                 foreach ($matchedProducts as $product) {
-                    $wishlistStmt->execute([$userId, $product['id']]);
+                    $db->query($wishlistSql, [$userId, $product['id'], $now]);
                 }
             }
         }

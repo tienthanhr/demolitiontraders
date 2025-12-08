@@ -221,7 +221,8 @@ class OrderController {
                 'total_amount' => $total,
                 'billing_address' => json_encode($data['billing_address']),
                 'shipping_address' => json_encode($data['shipping_address']),
-                'customer_notes' => $data['notes'] ?? null
+                'customer_notes' => $data['notes'] ?? null,
+                'created_at' => date('Y-m-d H:i:s')
             ]);
             
             if (!$orderId) {
@@ -247,7 +248,8 @@ class OrderController {
                     'unit_price' => $item['price'], // This is GST-inclusive price
                     'subtotal' => $itemSubtotal, // Excl GST
                     'tax_amount' => $itemTax, // GST amount
-                    'total' => $itemTotalInclGST // Incl GST (same as unit_price * quantity)
+                    'total' => $itemTotalInclGST, // Incl GST (same as unit_price * quantity)
+                    'created_at' => date('Y-m-d H:i:s')
                 ]);
                 
                 // Update product stock

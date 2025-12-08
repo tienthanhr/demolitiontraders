@@ -17,19 +17,13 @@ try {
     
     $db = Database::getInstance();
     
-    $query = "UPDATE wanted_listings SET 
-              status = :status,
-              notes = :notes,
-              notify_enabled = :notify_enabled
-              WHERE id = :id";
+    $updateData = [
+        'status' => $data['status'] ?? 'active',
+        'notes' => $data['notes'] ?? '',
+        'notify_enabled' => isset($data['notify_enabled']) ? (int)$data['notify_enabled'] : 1
+    ];
     
-    $stmt = $db->prepare($query);
-    $stmt->execute([
-        ':id' => $data['id'],
-        ':status' => $data['status'] ?? 'active',
-        ':notes' => $data['notes'] ?? '',
-        ':notify_enabled' => isset($data['notify_enabled']) ? (int)$data['notify_enabled'] : 1
-    ]);
+    $db->update('wanted_listings', $updateData, 'id = :id', ['id' => $data['id']]);
     
     echo json_encode([
         'success' => true,

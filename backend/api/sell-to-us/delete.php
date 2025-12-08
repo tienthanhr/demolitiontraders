@@ -21,9 +21,7 @@ try {
     $db = Database::getInstance();
     
     // Get submission first to delete photos
-    $stmt = $db->prepare("SELECT photos FROM sell_to_us_submissions WHERE id = :id");
-    $stmt->execute(['id' => $data['id']]);
-    $submission = $stmt->fetch(PDO::FETCH_ASSOC);
+    $submission = $db->fetchOne("SELECT photos FROM sell_to_us_submissions WHERE id = :id", ['id' => $data['id']]);
     
     if (!$submission) {
         http_response_code(404);
@@ -45,8 +43,7 @@ try {
     }
     
     // Delete submission
-    $stmt = $db->prepare("DELETE FROM sell_to_us_submissions WHERE id = :id");
-    $result = $stmt->execute(['id' => $data['id']]);
+    $result = $db->delete('sell_to_us_submissions', 'id = :id', ['id' => $data['id']]);
     
     if ($result) {
         echo json_encode([

@@ -13,28 +13,22 @@ try {
     
     // Get all wanted listings first
     $query = "SELECT * FROM wanted_listings ORDER BY created_at DESC";
-    $stmt = $db->prepare($query);
-    $stmt->execute();
-    $listings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $listings = $db->fetchAll($query);
     
     // Enrich with username and match count
     foreach ($listings as &$listing) {
         // Get user name if user_id exists
         if ($listing['user_id']) {
-            $userQuery = "SELECT first_name, last_name FROM users WHERE id = ?";
-            $userStmt = $db->prepare($userQuery);
-            $userStmt->execute([$listing['user_id']]);
-            $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+            $userQuery = "SELECT first_name, last_name FROM users WHERE id = :id";
+            $user = $db->fetchOne($userQuery, ['id' => $listing['user_id']]);
             $listing['username'] = $user ? trim($user['first_name'] . ' ' . $user['last_name']) : null;
         } else {
             $listing['username'] = null;
         }
         
         // Get match count
-        $matchQuery = "SELECT COUNT(*) as count FROM wanted_listing_matches WHERE wanted_listing_id = ?";
-        $matchStmt = $db->prepare($matchQuery);
-        $matchStmt->execute([$listing['id']]);
-        $matchResult = $matchStmt->fetch(PDO::FETCH_ASSOC);
+        $matchQuery = "SELECT COUNT(*) as count FROM wanted_listing_matches WHERE wanted_listing_id = :id";
+        $matchResult = $db->fetchOne($matchQuery, ['id' => $listing['id']]);
         $listing['match_count'] = $matchResult['count'];
     }
     

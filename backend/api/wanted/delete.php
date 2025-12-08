@@ -18,9 +18,7 @@ try {
     $db = Database::getInstance();
     
     // Delete listing (matches will be cascade deleted)
-    $query = "DELETE FROM wanted_listings WHERE id = :id";
-    $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $data['id']]);
+    $db->delete('wanted_listings', 'id = :id', ['id' => $data['id']]);
     
     echo json_encode([
         'success' => true,

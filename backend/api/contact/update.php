@@ -17,15 +17,11 @@ try {
     
     $db = Database::getInstance();
     
-    $query = "UPDATE contact_submissions SET 
-              status = :status
-              WHERE id = :id";
+    $updateData = [
+        'status' => $data['status'] ?? 'new'
+    ];
     
-    $stmt = $db->prepare($query);
-    $stmt->execute([
-        ':id' => $data['id'],
-        ':status' => $data['status'] ?? 'new'
-    ]);
+    $db->update('contact_submissions', $updateData, 'id = :id', ['id' => $data['id']]);
     
     echo json_encode([
         'success' => true,

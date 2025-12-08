@@ -19,8 +19,7 @@ try {
     
     $deleteNote = "Deleted by admin " . $_SESSION['user_id'] . " at " . date('Y-m-d H:i:s');
     $query = "UPDATE wanted_listings SET notes = CONCAT(COALESCE(notes, ''), '\n[DELETED] ', :note), status = 'cancelled' WHERE id = :id";
-    $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $data['id'], ':note' => $deleteNote]);
+    $db->query($query, [':id' => $data['id'], ':note' => $deleteNote]);
     
     echo json_encode(['success' => true, 'message' => 'Listing marked as deleted']);
     

@@ -25,8 +25,7 @@ try {
               WHERE id IN ($placeholders)";
     
     $params = array_merge([$deleteNote], $data['ids']);
-    $stmt = $db->prepare($query);
-    $stmt->execute($params);
+    $stmt = $db->query($query, $params);
     
     echo json_encode(['success' => true, 'message' => count($data['ids']) . ' listings marked as deleted', 'count' => $stmt->rowCount()]);
     

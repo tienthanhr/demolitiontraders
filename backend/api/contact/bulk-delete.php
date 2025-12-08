@@ -14,13 +14,12 @@ try {
         throw new Exception('IDs array is required');
     }
     
-    $db = Database::getInstance()->getConnection();
+    $db = Database::getInstance();
     
     $placeholders = str_repeat('?,', count($data['ids']) - 1) . '?';
     $query = "UPDATE contact_submissions SET status = 'resolved' WHERE id IN ($placeholders)";
     
-    $stmt = $db->prepare($query);
-    $stmt->execute($data['ids']);
+    $stmt = $db->query($query, $data['ids']);
     
     echo json_encode(['success' => true, 'message' => count($data['ids']) . ' messages archived', 'count' => $stmt->rowCount()]);
     

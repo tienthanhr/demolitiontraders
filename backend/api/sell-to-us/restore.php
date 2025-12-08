@@ -22,8 +22,7 @@ try {
               SET notes = REPLACE(notes, SUBSTRING(notes, LOCATE('[DELETED]', notes), LOCATE('\\n', notes, LOCATE('[DELETED]', notes)) - LOCATE('[DELETED]', notes) + 1), ''),
                   status = 'new'
               WHERE id = :id";
-    $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $data['id']]);
+    $db->query($query, [':id' => $data['id']]);
     
     echo json_encode([
         'success' => true,

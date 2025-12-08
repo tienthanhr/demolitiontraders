@@ -16,10 +16,7 @@ try {
     
     $db = Database::getInstance();
     
-    $deleteNote = "Deleted by admin " . $_SESSION['user_id'] . " at " . date('Y-m-d H:i:s');
-    $query = "UPDATE contact_submissions SET status = 'resolved' WHERE id = :id";
-    $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $data['id']]);
+    $db->update('contact_submissions', ['status' => 'resolved'], 'id = :id', ['id' => $data['id']]);
     
     echo json_encode(['success' => true, 'message' => 'Message archived']);
     

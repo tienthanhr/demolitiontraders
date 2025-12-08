@@ -18,10 +18,7 @@ try {
     $db = Database::getInstance();
     
     // Get the submission before deleting to store in notes
-    $query = "SELECT * FROM sell_to_us_submissions WHERE id = :id";
-    $stmt = $db->prepare($query);
-    $stmt->execute([':id' => $data['id']]);
-    $submission = $stmt->fetch(PDO::FETCH_ASSOC);
+    $submission = $db->fetchOne("SELECT * FROM sell_to_us_submissions WHERE id = :id", [':id' => $data['id']]);
     
     if (!$submission) {
         throw new Exception('Submission not found');
@@ -30,8 +27,8 @@ try {
     // Store deletion info in admin notes before deleting
     $deleteNote = "Deleted by admin " . $_SESSION['user_id'] . " at " . date('Y-m-d H:i:s');
     $updateQuery = "UPDATE sell_to_us_submissions SET notes = CONCAT(COALESCE(notes, ''), '\n[DELETED] ', :note), status = 'declined' WHERE id = :id";
-    $updateStmt = $db->prepare($updateQuery);
-    $updateStmt->execute([
+    
+    $db->query($updateQuery, [
         ':id' => $data['id'],
         ':note' => $deleteNote
     ]);
