@@ -49,7 +49,7 @@ return [
     'smtp_password' => $_ENV['SMTP_PASS'] ?? '',
     
     // From Email
-    'from_email' => $_ENV['SMTP_FROM'] ?? $_ENV['SMTP_USER'] ?? 'noreply@demolitiontraders.co.nz',
+    'from_email' => $_ENV['SMTP_FROM'] ?? $_ENV['SMTP_USER'] ?? 'nguyenthanh123426@gmail.com',
     'from_name' => $_ENV['SMTP_FROM_NAME'] ?? 'Demolition Traders',
     
     // Reply To

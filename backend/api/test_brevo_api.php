@@ -21,7 +21,7 @@ echo "<p>Sending to: <strong>$toEmail</strong></p>";
 
 $url = 'https://api.brevo.com/v3/smtp/email';
 $data = [
-    'sender' => ['name' => 'Demolition Traders Test', 'email' => 'no-reply@demolitiontraders.co.nz'],
+    'sender' => ['name' => 'Demolition Traders Test', 'email' => 'nguyenthanh123426@gmail.com'],
     'to' => [['email' => $toEmail, 'name' => 'Test User']],
     'subject' => 'Test Email via Brevo API (HTTP)',
     'htmlContent' => '<html><body><h1>It Works!</h1><p>This email was sent via Brevo API over HTTP, bypassing SMTP port blocks.</p></body></html>'
