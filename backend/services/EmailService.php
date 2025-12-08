@@ -682,12 +682,17 @@ HTML;
 </html>
 HTML;
             
-            $this->mailer->clearAddresses();
-            $this->mailer->addAddress($adminEmail);
-            $this->mailer->addReplyTo($data['email'], $data['name']);
-            $this->mailer->Subject = "New Contact Form: {$data['subject']}";
-            $this->mailer->Body = $html;
-            $this->mailer->send();
+            // Check if we should use Brevo API
+            if (!empty($this->config['brevo_api_key'])) {
+                $this->sendViaBrevoApi($adminEmail, 'Admin', "New Contact Form: {$data['subject']}", $html);
+            } else {
+                $this->mailer->clearAddresses();
+                $this->mailer->addAddress($adminEmail);
+                $this->mailer->addReplyTo($data['email'], $data['name']);
+                $this->mailer->Subject = "New Contact Form: {$data['subject']}";
+                $this->mailer->Body = $html;
+                $this->mailer->send();
+            }
             
             error_log("Contact form email sent to admin");
             return ['success' => true, 'message' => 'Email sent successfully'];
