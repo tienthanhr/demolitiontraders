@@ -29,8 +29,11 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
-# Copy Caddyfile to default location
+# Copy Caddyfile
 COPY Caddyfile /etc/caddy/Caddyfile
+
+# Copy custom PHP-FPM config to ensure it listens on 127.0.0.1:9000
+COPY www.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Copy startup script
 COPY start.sh /usr/local/bin/start.sh

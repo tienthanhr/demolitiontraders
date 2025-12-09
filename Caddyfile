@@ -1,4 +1,6 @@
 {
+    # Enable debug logs
+    debug
     # Disable automatic HTTPS because Railway handles SSL termination
     auto_https off
     # Disable the admin API to prevent conflicts
