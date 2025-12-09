@@ -235,8 +235,14 @@ try {
                     $emailService = new EmailService();
                     $order = $controller->show($id);
 
-                    // Get customer email
-                    $billing = json_decode($order['billing_address'], true);
+                    // Get customer email (handle string or already-decoded array)
+                    $billing = $order['billing_address'];
+                    if (is_string($billing)) {
+                        $billing = json_decode($billing, true) ?? [];
+                    }
+                    if (!is_array($billing)) {
+                        $billing = [];
+                    }
                     $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
 
                     if (!$customerEmail) {
@@ -269,8 +275,14 @@ try {
                     require_once __DIR__ . '/../services/EmailService.php';
                     $emailService = new EmailService();
                     $order = $controller->show($id);
-                    // Get customer email
-                    $billing = json_decode($order['billing_address'], true);
+                    // Get customer email (handle string or already-decoded array)
+                    $billing = $order['billing_address'];
+                    if (is_string($billing)) {
+                        $billing = json_decode($billing, true) ?? [];
+                    }
+                    if (!is_array($billing)) {
+                        $billing = [];
+                    }
                     $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
                     if (!$customerEmail) {
                         sendError('No customer email found', 400);
