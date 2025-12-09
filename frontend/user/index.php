@@ -1,3 +1,14 @@
+<?php
+// Debug log để kiểm tra giá trị $_SERVER và session
+file_put_contents(__DIR__ . '/debug.log',
+    date('Y-m-d H:i:s') . "\n" .
+    print_r([
+        '_SERVER' => $_SERVER,
+        '_SESSION' => isset($_SESSION) ? $_SESSION : null
+    ], true) . "\n\n",
+    FILE_APPEND
+);
+?>
 <?php require_once __DIR__ . '/../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
