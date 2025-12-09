@@ -3,5 +3,5 @@
 :
 
 root * ./frontend/user
-frankenphp
+php_fastcgi unix//var/run/php/php-fpm.sock
 file_server
