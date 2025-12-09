@@ -122,8 +122,17 @@ function buildCategoryTree(categories) {
         if (orderA !== orderB) return orderA - orderB;
         return (a.name || '').localeCompare(b.name || '');
     });
-    // Build tree structure (no children for header)
-    return mainCategories.map(cat => ({ ...cat, children: [] }));
+    // Build tree structure with children
+    return mainCategories.map(cat => {
+        const children = categories.filter(sub => sub.parent_id == cat.id && String(sub.is_active ?? '1') !== '0')
+            .sort((a, b) => {
+                const orderA = Number(a.display_order) || 0;
+                const orderB = Number(b.display_order) || 0;
+                if (orderA !== orderB) return orderA - orderB;
+                return (a.name || '').localeCompare(b.name || '');
+            });
+        return { ...cat, children };
+    });
 }
 
 /**
@@ -133,15 +142,17 @@ function renderDesktopMenu(tree, container) {
     // Get base path for links from <base> tag
     const basePath = getBasePath();
     
-    const buildList = (items) => {
+    const buildList = (items, parentId = null) => {
         return items.map(item => {
-            const url = `${basePath}shop.php?category=${item.id}`;
+            const url = parentId 
+                ? `${basePath}shop.php?category=${parentId}&subcategory=${item.id}`
+                : `${basePath}shop.php?category=${item.id}`;
             const hasChildren = item.children && item.children.length > 0;
             if (hasChildren) {
                 return `
                     <li class="has-dropdown">
                         <a href="${url}" class="nav-parent nav-clickable">${escapeHtml(item.name)}</a>
-                        <ul class="dropdown">${buildList(item.children)}</ul>
+                        <ul class="dropdown">${buildList(item.children, item.id)}</ul>
                     </li>
                 `;
             }
@@ -159,15 +170,17 @@ function renderMobileMenu(tree, container) {
     // Get base path for links from <base> tag
     const basePath = getBasePath();
     
-    const buildList = (items) => {
+    const buildList = (items, parentId = null) => {
         return items.map(item => {
-            const url = `${basePath}shop.php?category=${item.id}`;
+            const url = parentId 
+                ? `${basePath}shop.php?category=${parentId}&subcategory=${item.id}`
+                : `${basePath}shop.php?category=${item.id}`;
             const hasChildren = item.children && item.children.length > 0;
             if (hasChildren) {
                 return `
                     <li class="mobile-nav-item has-dropdown">
                         <a href="${url}" class="mobile-nav-link">${escapeHtml(item.name)}</a>
-                        <ul class="mobile-nav-submenu">${buildList(item.children)}</ul>
+                        <ul class="mobile-nav-submenu">${buildList(item.children, item.id)}</ul>
                     </li>
                 `;
             }

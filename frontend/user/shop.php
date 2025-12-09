@@ -377,11 +377,26 @@
                     // Check URL params
                     const urlParams = new URLSearchParams(window.location.search);
                     const categoryId = urlParams.get('category');
+                    const subCategoryId = urlParams.get('subcategory');
                     const searchKeyword = urlParams.get('search');
                     
-                    if (categoryId) {
+                    if (subCategoryId) {
+                        // If subcategory is specified, find its parent and set both
+                        const subCat = allCategories.find(c => c.id == subCategoryId || c.slug == subCategoryId);
+                        if (subCat && subCat.parent_id) {
+                            categorySelect.value = subCat.parent_id;
+                            handleCategoryChange(); // This will populate sub-select
+                            
+                            // Now select the sub category
+                            const subSelect = document.getElementById('subcategory-select');
+                            if (subSelect) {
+                                subSelect.value = subCat.id;
+                                handleSubCategoryChange(); 
+                            }
+                        }
+                    } else if (categoryId) {
                         // Find if it's a main or sub category
-                        const cat = allCategories.find(c => c.id == categoryId);
+                        const cat = allCategories.find(c => c.id == categoryId || c.slug == categoryId);
                         if (cat) {
                             // Check if it is a main category (no parent and is active)
                             const isMain = (!cat.parent_id || cat.parent_id == 0 || cat.parent_id === null);
