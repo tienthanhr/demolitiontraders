@@ -1964,48 +1964,48 @@ function filterOrdersByPeriod(orders, period, customDate = null) {
     const now = new Date();
     return orders.filter(order => {
         const orderDate = new Date(order.created_at || order.order_date);
-                
-                switch(period) {
-                    case 'today':
-                        return orderDate.toDateString() === now.toDateString();
-                    
-                    case 'yesterday':
-                        const yesterday = new Date(now);
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        return orderDate.toDateString() === yesterday.toDateString();
-                    
-                    case 'this_week':
-                        const weekStart = new Date(now);
-                        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-                        weekStart.setHours(0, 0, 0, 0);
-                        return orderDate >= weekStart && orderDate <= now;
-                    
-                    case 'this_month':
-                        return orderDate.getMonth() === now.getMonth() && 
-                               orderDate.getFullYear() === now.getFullYear();
-                    
-                    case 'this_year':
-                        return orderDate.getFullYear() === now.getFullYear();
-                    
-                    case 'custom':
-                        if (customDate) {
-                            if (typeof customDate === 'object' && customDate.from && customDate.to) {
-                                // Date range
-                                const fromDate = new Date(customDate.from);
-                                const toDate = new Date(customDate.to);
-                                fromDate.setHours(0, 0, 0, 0);
-                                toDate.setHours(23, 59, 59, 999);
-                                return orderDate >= fromDate && orderDate <= toDate;
-                            } else {
-                                // Single date (backward compatibility)
-                                const targetDate = new Date(customDate);
-                                return orderDate.toDateString() === targetDate.toDateString();
-                            }
-                        }
-                        return true;
-                    
-                default:
-                    return true;
+        
+        switch(period) {
+            case 'today':
+                return orderDate.toDateString() === now.toDateString();
+            
+            case 'yesterday':
+                const yesterday = new Date(now);
+                yesterday.setDate(yesterday.getDate() - 1);
+                return orderDate.toDateString() === yesterday.toDateString();
+            
+            case 'this_week':
+                const weekStart = new Date(now);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                weekStart.setHours(0, 0, 0, 0);
+                return orderDate >= weekStart && orderDate <= now;
+            
+            case 'this_month':
+                return orderDate.getMonth() === now.getMonth() && 
+                       orderDate.getFullYear() === now.getFullYear();
+            
+            case 'this_year':
+                return orderDate.getFullYear() === now.getFullYear();
+            
+            case 'custom':
+                if (customDate) {
+                    if (typeof customDate === 'object' && customDate.from && customDate.to) {
+                        // Date range
+                        const fromDate = new Date(customDate.from);
+                        const toDate = new Date(customDate.to);
+                        fromDate.setHours(0, 0, 0, 0);
+                        toDate.setHours(23, 59, 59, 999);
+                        return orderDate >= fromDate && orderDate <= toDate;
+                    } else {
+                        // Single date (backward compatibility)
+                        const targetDate = new Date(customDate);
+                        return orderDate.toDateString() === targetDate.toDateString();
+                    }
+                }
+                return true;
+            
+        default:
+            return true;
         }
     });
 }
