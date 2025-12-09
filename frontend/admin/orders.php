@@ -1791,11 +1791,15 @@ async function sendReceipt(id) {
             }
         } else {
             try {
-                const error = await response.json();
-                alert('Error sending receipt: ' + (error.error || 'Unknown error'));
-            } catch (jsonError) {
                 const text = await response.text();
-                alert('Error sending receipt: ' + (text || 'Unknown error'));
+                try {
+                    const error = JSON.parse(text);
+                    alert('Error sending receipt: ' + (error.error || 'Unknown error'));
+                } catch (jsonError) {
+                    alert('Error sending receipt: ' + (text || 'Unknown error'));
+                }
+            } catch (textError) {
+                alert('Error sending receipt: Unable to read response');
             }
         }
     } catch (error) {
@@ -1842,12 +1846,17 @@ async function sendTaxInvoice(id) {
             }
         } else {
             try {
-                const error = await response.json();
-                alert('Error sending tax invoice: ' + (error.error || 'Unknown error'));
-            } catch (jsonError) {
                 const text = await response.text();
-                alert('Error sending tax invoice: ' + (text || 'Unknown error'));
+                try {
+                    const error = JSON.parse(text);
+                    alert('Error sending tax invoice: ' + (error.error || 'Unknown error'));
+                } catch (jsonError) {
+                    alert('Error sending tax invoice: ' + (text || 'Unknown error'));
+                }
+            } catch (textError) {
+                alert('Error sending tax invoice: Unable to read response');
             }
+        }
         }
     } catch (error) {
         alert('Error: ' + error.message);

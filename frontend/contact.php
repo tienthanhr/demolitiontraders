@@ -166,7 +166,15 @@
                     body: JSON.stringify(data)
                 });
                 
-                const result = await response.json();
+                let result;
+                try {
+                    const responseText = await response.text();
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse response:', parseError);
+                    showToast('Server returned invalid response. Please try again.', 'error');
+                    return;
+                }
                 
                 if (response.ok && result.success) {
                     showToast('Thank you for your message! We\'ll get back to you soon.', 'success');
