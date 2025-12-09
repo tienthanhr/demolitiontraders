@@ -5,12 +5,14 @@
     admin off
 }
 
-# Listen on the port provided by Railway
 :{$PORT} {
-    # Set the root to the current directory
+    # Set root to project root
     root * .
 
-    # Basic security: block access to hidden files and sensitive directories
+    # Health check endpoint (bypasses PHP)
+    respond /health "OK" 200
+
+    # Basic security
     @blocked {
         path */.*
         path /backend/config/*
@@ -20,69 +22,74 @@
         path /Dockerfile
         path /Caddyfile
         path /apache-config.conf
+        path /start.sh
+        path /.git/*
     }
     respond @blocked 403
 
-    # --- PHP Configuration ---
-    # Pass PHP requests to the local FPM socket
-    php_fastcgi unix//var/run/php/php-fpm.sock {
-        # Trust Railway's X-Forwarded-Proto header
-        env HTTPS on
-        env HTTP_X_FORWARDED_PROTO https
-        env X-Forwarded-Proto https
-    }
-
     # --- Static Assets ---
-    # Serve assets from frontend/assets
     handle_path /assets/* {
         root * ./frontend/assets
         file_server
     }
 
-    # Serve components (prevent PHP download)
     handle_path /components/* {
         root * ./frontend/components
-        # If it's a PHP file, execute it (though components usually shouldn't be accessed directly)
-        php_fastcgi unix//var/run/php/php-fpm.sock
         file_server
     }
 
     # --- Backend API ---
-    # Route /api/... to backend/api/index.php
     handle_path /api/* {
         rewrite * /backend/api/index.php?request={path}&{query}
-        php_fastcgi unix//var/run/php/php-fpm.sock
+        php_fastcgi 127.0.0.1:9000 {
+             env HTTPS on
+             env HTTP_X_FORWARDED_PROTO https
+             env X-Forwarded-Proto https
+        }
     }
 
-    # --- Frontend Routing ---
-
-    # 1. Admin Login
-    rewrite /admin-login /frontend/admin-login.php
-
-    # 2. Admin Panel
+    # --- Admin Panel ---
     handle_path /admin/* {
-        # Try to find the file in frontend/admin/
-        # If /admin/products is requested, {path} is /products
-        # check frontend/admin/products, frontend/admin/products.php, then fallback to index
         try_files /frontend/admin{path} /frontend/admin{path}.php /frontend/admin/index.php
-        php_fastcgi unix//var/run/php/php-fpm.sock
+        php_fastcgi 127.0.0.1:9000 {
+             env HTTPS on
+             env HTTP_X_FORWARDED_PROTO https
+             env X-Forwarded-Proto https
+        }
     }
 
-    # 3. User Pages
-    # Map root / to user index
-    rewrite / /frontend/user/index.php
-
-    # Map top-level .php files to frontend/user/ (e.g. /shop.php -> /frontend/user/shop.php)
-    # This regex captures the page name (e.g. "shop" from "/shop.php")
-    @user_pages {
-        path_regexp user_page ^/([^/]+)\.php$
+    # --- Admin Login ---
+    handle /admin-login {
+        rewrite * /frontend/admin-login.php
+        php_fastcgi 127.0.0.1:9000 {
+             env HTTPS on
+             env HTTP_X_FORWARDED_PROTO https
+             env X-Forwarded-Proto https
+        }
     }
-    rewrite @user_pages /frontend/user/{re.user_page.1}.php
 
-    # Allow direct access to logout.php (in root)
-    # No rewrite needed as root is "."
+    # --- Main Site (User) ---
+    handle {
+        # Rewrite root to user index
+        rewrite / /frontend/user/index.php
 
-    # --- Fallback ---
-    # Serve static files if they exist, otherwise try PHP
-    file_server
+        # Rewrite top-level PHP files to frontend/user/
+        @user_pages {
+            path_regexp user_page ^/([^/]+)\.php$
+        }
+        rewrite @user_pages /frontend/user/{re.user_page.1}.php
+
+        # PHP handler
+        @php {
+            path *.php
+        }
+        php_fastcgi @php 127.0.0.1:9000 {
+             env HTTPS on
+             env HTTP_X_FORWARDED_PROTO https
+             env X-Forwarded-Proto https
+        }
+
+        # Fallback to static files
+        file_server
+    }
 }
