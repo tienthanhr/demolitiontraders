@@ -1475,7 +1475,16 @@
                     })
                 });
                 
-                const result = await response.json();
+                let result;
+                try {
+                    const responseText = await response.text();
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse response:', parseError);
+                    hideLoading();
+                    alert('Server returned invalid response. Please try again.');
+                    return;
+                }
                 hideLoading();
                 
                 if (result.success) {
@@ -1526,8 +1535,14 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: email })
                     });
-                    
-                    const result = await response.json();
+                    let result;
+                    try {
+                        const responseText = await response.text();
+                        result = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error('Failed to parse response:', parseError);
+                        return;
+                    }
                     console.log('Email check response:', result);
                     
                     if (result.exists) {
@@ -1564,7 +1579,14 @@
                     throw new Error('Failed to check user status');
                 }
                 
-                const result = await response.json();
+                let result;
+                try {
+                    const responseText = await response.text();
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse response:', parseError);
+                    throw new Error('Failed to check user status');
+                }
                 
                 if (result.success && result.user) {
                     // User is logged in
@@ -1579,7 +1601,14 @@
                     // Load and show saved addresses
                     const addressResponse = await fetch(getApiUrl('/api/user/addresses.php'));
                     if (addressResponse.ok) {
-                        const addressResult = await addressResponse.json();
+                        let addressResult;
+                        try {
+                            const addressResponseText = await addressResponse.text();
+                            addressResult = JSON.parse(addressResponseText);
+                        } catch (parseError) {
+                            console.error('Failed to parse address response:', parseError);
+                            return;
+                        }
                         
                         if (addressResult.success && addressResult.addresses && addressResult.addresses.length > 0) {
                             // Store addresses globally
@@ -2097,7 +2126,14 @@
     async function loadOpeningHours() {
         try {
             const response = await fetch(getApiUrl('/api/opening-hours.php'));
-            const data = await response.json();
+            let data;
+            try {
+                const responseText = await response.text();
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse opening hours response:', parseError);
+                return;
+            }
             const element = document.getElementById('opening-hours-checkout');
             
             if (data.weekday_text && data.weekday_text.length > 0) {

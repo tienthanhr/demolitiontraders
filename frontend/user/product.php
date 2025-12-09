@@ -49,7 +49,8 @@
         async function loadProduct(id) {
             try {
                 const response = await fetch('/demolitiontraders/api/products/' + id);
-                const product = await response.json();
+                const responseText = await response.text();
+                const product = JSON.parse(responseText);
                 if (product.error) {
                     throw new Error(product.error);
                 }
@@ -232,8 +233,11 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ product_id: productId, quantity: quantity })
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(response => response.text())
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    if (data.success || data.cart) {
                 if (data.success || data.cart) {
                     // Trigger cart update event
                     localStorage.setItem('cartUpdated', Date.now());
@@ -258,8 +262,11 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ product_id: productId, quantity: quantity })
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(response => response.text())
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    if (data.success || data.cart) {
                 if (data.success || data.cart) {
                     alert('Product added to cart!');
                     updateCartCount();

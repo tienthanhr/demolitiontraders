@@ -575,7 +575,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
                 });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 if (data.success) {
                     // Trigger cart update event for other tabs/pages
                     localStorage.setItem('cartUpdated', Date.now());
@@ -613,7 +614,8 @@
                     body: JSON.stringify({ product_id: productId, quantity: newQty }),
                     credentials: 'include'
                 });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 if (data.success) {
                     // Trigger cart update event
                     localStorage.setItem('cartUpdated', Date.now());
@@ -662,7 +664,8 @@
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' }
                 });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 console.log('Empty cart response:', data);
                 
                 if (data.success || response.ok) {
@@ -729,7 +732,8 @@
                 
                 // Fetch a large number of products to always have recommendations
                 const response = await fetch(getApiUrl('/api/index.php?request=products&per_page=300'));
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 
                 let products = data.data || data.products || [];
                 console.log('Fetched', products.length, 'total products from API');
@@ -805,7 +809,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product_id: productId, quantity: 1 })
                 });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 
                 if (data.success) {
                     // Hide the card with animation

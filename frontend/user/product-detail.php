@@ -274,8 +274,17 @@ function displayProduct(product, cartQty = 0) {
         // Check wishlist status
         function checkWishlistStatus(productId) {
             fetch(getApiUrl('/api/wishlist/get.php'))
-                .then(response => response.json())
-                .then(data => {
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success && data.wishlist.includes(productId.toString())) {
+                            const button = document.querySelector('.btn-wishlist');
+                            const icon = button.querySelector('i');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            button.classList.add('active');
+                            isInWishlist = true;
                     if (data.success && data.wishlist.includes(productId.toString())) {
                         const button = document.querySelector('.btn-wishlist');
                         const icon = button.querySelector('i');
@@ -520,8 +529,11 @@ function displayProduct(product, cartQty = 0) {
                     body: JSON.stringify({ product_id: productId }),
                     credentials: 'include'
                 })
-                .then(response => response.json())
-                .then(data => {
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success) {
                     if (data.success) {
                         icon.classList.remove('fas');
                         icon.classList.add('far');
@@ -570,7 +582,8 @@ function displayProduct(product, cartQty = 0) {
                             async function updateWishlistCount() {
                                 try {
                                     const response = await fetch(getApiUrl('/api/wishlist/get.php'));
-                                    const data = await response.json();
+                                    const responseText = await response.text();
+                                    const data = JSON.parse(responseText);
                                     const count = data.wishlist ? data.wishlist.length : 0;
                                     const el = document.getElementById('wishlist-count');
                                     if (el) el.textContent = count;

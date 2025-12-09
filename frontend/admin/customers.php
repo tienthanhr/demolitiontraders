@@ -798,7 +798,8 @@ async function undoLastAction() {
                         body: JSON.stringify(payload)
                     });
                     
-                    const result = await response.json();
+                    const responseText = await response.text();
+                    const result = JSON.parse(responseText);
                     
                     if (result.success) {
                         successCount++;

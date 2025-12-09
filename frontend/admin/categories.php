@@ -189,7 +189,8 @@ async function loadCategories() {
 
     try {
         const response = await fetch(getApiUrl('/api/index.php?request=categories'));
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
         categoriesData = data.data || data;
 
         if (!categoriesData || categoriesData.length === 0) {
@@ -363,7 +364,8 @@ async function editCategory(id) {
     try {
         const apiPath = `/api/index.php?request=categories/${id}`;
         const response = await fetch(getApiUrl(apiPath));
-        const category = await response.json();
+        const responseText = await response.text();
+        const category = JSON.parse(responseText);
 
         document.getElementById('category-modal-title').textContent = 'Edit Category';
         document.getElementById('category-id').value = category.id;
@@ -413,7 +415,8 @@ async function saveCategory(event) {
             closeCategoryModal();
             loadCategories();
         } else {
-            const error = await response.json();
+            const responseText = await response.text();
+            const error = JSON.parse(responseText);
             alert('Error: ' + (error.error || 'Failed to save category'));
         }
     } catch (error) {

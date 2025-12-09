@@ -874,7 +874,8 @@ async function viewOrder(id) {
 
     try {
         const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
-        const order = await response.json();
+        const responseText = await response.text();
+        const order = JSON.parse(responseText);
 
         // Parse billing and shipping addresses
         let billing = {};
@@ -1017,7 +1018,8 @@ async function updateOrderStatus(id) {
     // Get current order status
     try {
         const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
-        const order = await response.json();
+        const responseText = await response.text();
+        const order = JSON.parse(responseText);
         document.getElementById('new-status').value = order.status;
     } catch (error) {
         console.error('Error fetching order:', error);
@@ -1117,7 +1119,8 @@ async function printOrder(id, status) {
     try {
         const apiPath = `/api/index.php?request=orders/${id}`;
         const response = await fetch(getApiUrl(apiPath));
-        const order = await response.json();
+        const responseText = await response.text();
+        const order = JSON.parse(responseText);
         
         // Parse addresses
         let billing = {};
@@ -1771,7 +1774,8 @@ async function sendReceipt(id) {
 
         if (response.ok) {
             try {
-                const result = await response.json();
+                const responseText = await response.text();
+                const result = JSON.parse(responseText);
                 
                 // Show success message
                 const successMsg = document.createElement('div');
@@ -1828,7 +1832,8 @@ async function sendTaxInvoice(id) {
 
         if (response.ok) {
             try {
-                const result = await response.json();
+                const responseText = await response.text();
+                const result = JSON.parse(responseText);
                 const successMsg = document.createElement('div');
                 successMsg.className = 'alert alert-success';
                 successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
@@ -1922,7 +1927,8 @@ async function updateRevenue(period, customDate = null) {
         let url = getApiUrl('/api/index.php?request=orders');
         
         const response = await fetch(url);
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
         
         // Handle both array and object with data property
         const allOrders = Array.isArray(data) ? data : (data.data || []);

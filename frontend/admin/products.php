@@ -376,7 +376,8 @@ async function loadProducts(page = 1) {
         }
 
         const response = await fetch(url);
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
 
         if (!data.data || data.data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">No products found</td></tr>';
@@ -592,7 +593,8 @@ async function applyBulkAction() {
                 try {
                     const apiPath = `/api/index.php?request=products/${productId}`;
                     const response = await fetch(getApiUrl(apiPath));
-                    const productData = await response.json();
+                    const responseText = await response.text();
+                    const productData = JSON.parse(responseText);
                     if (productData) {
                         originalStates.push({ 
                             id: productId, 
@@ -889,7 +891,8 @@ async function editProduct(id) {
     try {
         const apiPath = `/api/index.php?request=products/${id}`;
         const response = await fetch(getApiUrl(apiPath));
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
         
         // ✅ Handle both response formats
         const product = data.data || data;
@@ -975,7 +978,8 @@ async function saveProduct(event) {
             body: formData
         });
 
-        const result = await response.json();
+        const responseText = await response.text();
+        const result = JSON.parse(responseText);
         
         if (response.ok && result.success !== false) {
             alert(id ? 'Product updated successfully!' : 'Product created successfully!');
@@ -1019,7 +1023,8 @@ async function deleteProduct(id, name) {
             showUndoBar('delete', 1);
             loadProducts(currentPage);
         } else {
-            const error = await response.json();
+            const responseText = await response.text();
+            const error = JSON.parse(responseText);
             alert('Error deleting product: ' + (error.error || 'Unknown error'));
         }
     } catch (error) {
@@ -1031,7 +1036,8 @@ async function deleteProduct(id, name) {
 async function loadCategories() {
     try {
         const response = await fetch(getApiUrl('/api/index.php?request=categories'));
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
         const categories = data.data || data;
 
         const filterSelect = document.getElementById('filter-category');

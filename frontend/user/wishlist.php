@@ -157,7 +157,8 @@
                     body: JSON.stringify({ product_id: productId }),
                     credentials: 'include'
                 });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 if (data.success) {
                     loadWishlist();
                     updateWishlistCount();
@@ -173,7 +174,8 @@
         async function updateWishlistCount() {
             try {
                 const response = await fetch(getApiUrl('/api/wishlist/list.php'), { credentials: 'include' });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 const count = data.wishlist ? data.wishlist.length : 0;
                 const el = document.getElementById('wishlist-count');
                 if (el) el.textContent = count;
@@ -192,7 +194,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
                 });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 if (data.success) {
                     showEmptyWishlist();
                     updateWishlistCount();
@@ -215,7 +218,8 @@
                     body: JSON.stringify({ product_id: productId, quantity: 1 }),
                     credentials: 'include'
                 });
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 if (data.success) {
                     alert('Product added to cart!');
                     // Trigger cart update event for header and other pages

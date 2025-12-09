@@ -166,7 +166,8 @@
                     body: JSON.stringify(data)
                 });
                 
-                const result = await response.json();
+                const responseText = await response.text();
+                const result = JSON.parse(responseText);
                 
                 if (response.ok && result.success) {
                     showToast('Thank you for your message! We\'ll get back to you soon.', 'success');
@@ -187,7 +188,8 @@
         async function loadOpeningHours() {
             try {
                 const response = await fetch(getApiUrl('/api/opening-hours.php'));
-                const data = await response.json();
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
                 const element = document.getElementById('opening-hours-contact');
                 
                 if (data.weekday_text && data.weekday_text.length > 0) {

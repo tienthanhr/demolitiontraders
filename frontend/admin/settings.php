@@ -151,7 +151,8 @@ async function logoutConfirm() {
 async function loadOpeningHours() {
     try {
         const response = await fetch(getApiUrl('/api/opening-hours.php'));
-        const data = await response.json();
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
         
         const container = document.getElementById('opening-hours-display');
         
@@ -220,7 +221,8 @@ async function clearCache() {
             headers: { 'Content-Type': 'application/json' }
         });
         
-        const result = await response.json();
+        const responseText = await response.text();
+        const result = JSON.parse(responseText);
         
         if (result.success) {
             showSuccess(`Cache cleared successfully!\n${result.files_deleted} files deleted (${result.size_freed})`);
