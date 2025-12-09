@@ -150,7 +150,7 @@ class EmailService {
         try {
             $billing = $this->decodeAddress($order['billing_address'] ?? null);
             $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Customer';
-            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
+            $toEmail = $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $invoiceHtml = $this->generateTaxInvoiceHTML($order, $billing);
             $subject = "Tax Invoice - Order #{$order['order_number']}";
@@ -197,7 +197,7 @@ class EmailService {
         try {
             $billing = $this->decodeAddress($order['billing_address'] ?? null);
             $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Customer';
-            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
+            $toEmail = $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $receiptHtml = $this->generateReceiptHTML($order, $billing);
             $attachments = [];
