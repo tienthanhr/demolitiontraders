@@ -1,0 +1,13 @@
+project = "demolitiontraders"
+environment = "production"
+
+[service]
+name = "web"
+type = "docker"
+build = "."
+start = "sh start.sh"
+
+# Notes:
+# - This is a minimal Railway config to deploy using the repository Dockerfile and `start.sh`.
+# - If you prefer Railway to build differently (build args, multiple services, env vars),
+#   we can extend this file. For secrets, configure them in the Railway project UI.
