@@ -1800,9 +1800,9 @@ async function sendReceipt(id) {
                     // not JSON
                 }
                 if (errObj && (errObj.error || errObj.message)) {
-                    alert('Error sending receipt: ' + (errObj.error || errObj.message));
+                    alert('Error sending receipt (' + response.status + '): ' + (errObj.error || errObj.message));
                 } else {
-                    alert('Error sending receipt: ' + (raw || 'Unknown error'));
+                    alert('Error sending receipt (' + response.status + '): ' + (raw || 'Unknown error'));
                 }
             } catch (readError) {
                 alert('Error sending receipt: Unknown error');
@@ -1858,9 +1858,9 @@ async function sendTaxInvoice(id) {
                     errObj = JSON.parse(raw);
                 } catch (e) {}
                 if (errObj && (errObj.error || errObj.message)) {
-                    alert('Error sending tax invoice: ' + (errObj.error || errObj.message));
+                    alert('Error sending tax invoice (' + response.status + '): ' + (errObj.error || errObj.message));
                 } else {
-                    alert('Error sending tax invoice: ' + (raw || 'Unknown error'));
+                    alert('Error sending tax invoice (' + response.status + '): ' + (raw || 'Unknown error'));
                 }
             } catch (readError) {
                 alert('Error sending tax invoice: Unknown error');
