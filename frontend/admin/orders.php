@@ -1862,7 +1862,6 @@ async function sendTaxInvoice(id) {
                 alert('Error sending tax invoice: Unable to read response');
             }
         }
-        }
     } catch (error) {
         alert('Error: ' + error.message);
     }
