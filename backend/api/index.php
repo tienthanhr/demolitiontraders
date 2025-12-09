@@ -1,3 +1,4 @@
+error_log('API entrypoint loaded');
 <?php
 /**
  * Main API Router
