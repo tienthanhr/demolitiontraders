@@ -164,7 +164,7 @@ class EmailService {
                 error_log("Warning: PDF generation failed for order #{$order['order_number']}: " . $pdfEx->getMessage());
             }
 
-            // Check if we should use Brevo API
+            // Always use Brevo API if API key is set
             if (!empty($this->config['brevo_api_key'])) {
                 $attachments = [];
                 if ($pdfPath && file_exists($pdfPath)) {
@@ -172,17 +172,7 @@ class EmailService {
                 }
                 $this->sendViaBrevoApi($toEmail, $customerName, $subject, $body, $attachments);
             } else {
-                // Use SMTP (PHPMailer)
-                $this->mailer->clearAddresses();
-                $this->mailer->addAddress($toEmail, $customerName);
-                $this->mailer->Subject = $subject;
-                $this->mailer->Body = $body;
-                
-                if ($pdfPath && file_exists($pdfPath)) {
-                    $this->mailer->addAttachment($pdfPath, 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf');
-                }
-                
-                $this->mailer->send();
+                throw new Exception('Brevo API key missing, cannot send email');
             }
             
             // Clean up if PDF was created
@@ -210,17 +200,19 @@ class EmailService {
             $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $receiptHtml = $this->generateReceiptHTML($order, $billing);
-            $this->mailer->clearAddresses();
-            $this->mailer->addAddress($toEmail, $customerName);
-            $this->mailer->Subject = "Receipt - Order #{$order['order_number']}";
-            $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
-            // Generate PDF from HTML and attach
+            $attachments = [];
             $pdfPath = generate_invoice_pdf_html($receiptHtml, 'receipt');
-            $this->mailer->addAttachment($pdfPath, 'Receipt_Order_' . $order['order_number'] . '.pdf');
-            $this->mailer->send();
-            if (file_exists($pdfPath)) unlink($pdfPath);
-            error_log("Receipt sent to: $toEmail for order #{$order['order_number']}");
-            return ['success' => true, 'message' => 'Receipt sent successfully'];
+            if ($pdfPath && file_exists($pdfPath)) {
+                $attachments[$pdfPath] = 'Receipt_Order_' . $order['order_number'] . '.pdf';
+            }
+            if (!empty($this->config['brevo_api_key'])) {
+                $this->sendViaBrevoApi($toEmail, $customerName, "Receipt - Order #{$order['order_number']}", "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team", $attachments);
+                if (file_exists($pdfPath)) unlink($pdfPath);
+                error_log("Receipt sent to: $toEmail for order #{$order['order_number']}");
+                return ['success' => true, 'message' => 'Receipt sent successfully'];
+            } else {
+                throw new Exception('Brevo API key missing, cannot send email');
+            }
         } catch (Exception $e) {
             error_log("Failed to send Receipt: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
@@ -682,16 +674,11 @@ HTML;
 </html>
 HTML;
             
-            // Check if we should use Brevo API
+            // Always use Brevo API if API key is set
             if (!empty($this->config['brevo_api_key'])) {
                 $this->sendViaBrevoApi($adminEmail, 'Admin', "New Contact Form: {$data['subject']}", $html);
             } else {
-                $this->mailer->clearAddresses();
-                $this->mailer->addAddress($adminEmail);
-                $this->mailer->addReplyTo($data['email'], $data['name']);
-                $this->mailer->Subject = "New Contact Form: {$data['subject']}";
-                $this->mailer->Body = $html;
-                $this->mailer->send();
+                throw new Exception('Brevo API key missing, cannot send email');
             }
             
             error_log("Contact form email sent to admin");
@@ -825,7 +812,7 @@ HTML;
 </html>
 HTML;
             
-            // Check if we should use Brevo API
+            // Always use Brevo API if API key is set
             if (!empty($this->config['brevo_api_key'])) {
                 $attachments = [];
                 if (!empty($data['photos'])) {
@@ -839,25 +826,7 @@ HTML;
                 }
                 $this->sendViaBrevoApi($adminEmail, 'Admin', "New Sell to Us Submission from {$data['name']}", $html, $attachments);
             } else {
-                $this->mailer->clearAddresses();
-                $this->mailer->clearAttachments();
-                $this->mailer->addAddress($adminEmail);
-                $this->mailer->addReplyTo($data['email'], $data['name']);
-                $this->mailer->Subject = "New Sell to Us Submission from {$data['name']}";
-                $this->mailer->Body = $html;
-                
-                // Attach photos if available
-                if (!empty($data['photos'])) {
-                    $uploadsPath = __DIR__ . '/../../';
-                    foreach ($data['photos'] as $photoPath) {
-                        $fullPath = $uploadsPath . $photoPath;
-                        if (file_exists($fullPath)) {
-                            $this->mailer->addAttachment($fullPath, basename($photoPath));
-                        }
-                    }
-                }
-                
-                $this->mailer->send();
+                throw new Exception('Brevo API key missing, cannot send email');
             }
             
             error_log("Sell to us email sent to admin");
@@ -954,16 +923,11 @@ HTML;
 </html>
 HTML;
             
-            // Check if we should use Brevo API
+            // Always use Brevo API if API key is set
             if (!empty($this->config['brevo_api_key'])) {
                 $this->sendViaBrevoApi($adminEmail, 'Admin', "New Wanted Listing: {$data['category']} - {$data['name']}", $html);
             } else {
-                $this->mailer->clearAddresses();
-                $this->mailer->addAddress($adminEmail);
-                $this->mailer->addReplyTo($data['email'], $data['name']);
-                $this->mailer->Subject = "New Wanted Listing: {$data['category']} - {$data['name']}";
-                $this->mailer->Body = $html;
-                $this->mailer->send();
+                throw new Exception('Brevo API key missing, cannot send email');
             }
             
             error_log("Wanted listing email sent to admin");
@@ -1037,14 +1001,13 @@ HTML;
 </html>
 HTML;
             
-            $this->mailer->clearAddresses();
-            $this->mailer->addAddress($toEmail, $name);
-            $this->mailer->Subject = "Your Wanted Listing - Demolition Traders";
-            $this->mailer->Body = $html;
-            $this->mailer->send();
-            
-            error_log("Wanted listing confirmation sent to: $toEmail");
-            return ['success' => true, 'message' => 'Confirmation email sent'];
+            if (!empty($this->config['brevo_api_key'])) {
+                $this->sendViaBrevoApi($toEmail, $name, "Your Wanted Listing - Demolition Traders", $html);
+                error_log("Wanted listing confirmation sent to: $toEmail");
+                return ['success' => true, 'message' => 'Confirmation email sent'];
+            } else {
+                throw new Exception('Brevo API key missing, cannot send email');
+            }
             
         } catch (Exception $e) {
             error_log("Failed to send wanted listing confirmation: " . $e->getMessage());
