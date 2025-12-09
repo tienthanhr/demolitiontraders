@@ -230,27 +230,42 @@ try {
                 } elseif ($method === 'POST' && !$id) {
                     send_json_response($controller->create($input), 201);
                 } elseif ($method === 'POST' && $id && $action === 'send-receipt') {
-                    // Send receipt email
+                    // Send receipt email (with detailed logging on failure)
                     require_once __DIR__ . '/../services/EmailService.php';
                     $emailService = new EmailService();
                     $order = $controller->show($id);
-                    
+
                     // Get customer email
                     $billing = json_decode($order['billing_address'], true);
                     $customerEmail = $billing['email'] ?? $order['guest_email'] ?? null;
-                    
+
                     if (!$customerEmail) {
                         sendError('No customer email found', 400);
                     }
-                    
-                    $result = $emailService->sendReceipt($order, $customerEmail);
-                    if ($result['success']) {
+
+                    // Log intent to send
+                    error_log("Email: sending receipt for order {$id} to {$customerEmail}");
+
+                    $result = null;
+                    try {
+                        $result = $emailService->sendReceipt($order, $customerEmail);
+                    } catch (Throwable $e) {
+                        // Catch unexpected throwables from the service and log full trace
+                        error_log("EmailService sendReceipt threw: " . $e->getMessage());
+                        error_log("Stack trace: " . $e->getTraceAsString());
+                        sendError('Internal email error (see server logs)', 500);
+                    }
+
+                    if (is_array($result) && !empty($result['success'])) {
                         send_json_response($result);
                     } else {
-                        sendError($result['error'], 500);
+                        // Log returned error details for diagnosis
+                        error_log("EmailService sendReceipt failed for order {$id}: " . var_export($result, true));
+                        $errMsg = is_array($result) && isset($result['error']) ? $result['error'] : 'Unknown error';
+                        sendError($errMsg, 500);
                     }
                 } elseif ($method === 'POST' && $id && $action === 'send-tax-invoice') {
-                    // Send tax invoice email
+                    // Send tax invoice email (with detailed logging on failure)
                     require_once __DIR__ . '/../services/EmailService.php';
                     $emailService = new EmailService();
                     $order = $controller->show($id);
@@ -260,11 +275,26 @@ try {
                     if (!$customerEmail) {
                         sendError('No customer email found', 400);
                     }
-                    $result = $emailService->sendTaxInvoice($order, $customerEmail);
-                    if ($result['success']) {
+
+                    // Log intent to send
+                    error_log("Email: sending tax invoice for order {$id} to {$customerEmail}");
+
+                    $result = null;
+                    try {
+                        $result = $emailService->sendTaxInvoice($order, $customerEmail);
+                    } catch (Throwable $e) {
+                        error_log("EmailService sendTaxInvoice threw: " . $e->getMessage());
+                        error_log("Stack trace: " . $e->getTraceAsString());
+                        sendError('Internal email error (see server logs)', 500);
+                    }
+
+                    if (is_array($result) && !empty($result['success'])) {
                         send_json_response($result);
                     } else {
-                        sendError($result['error'], 500);
+                        // Log returned error details for diagnosis
+                        error_log("EmailService sendTaxInvoice failed for order {$id}: " . var_export($result, true));
+                        $errMsg = is_array($result) && isset($result['error']) ? $result['error'] : 'Unknown error';
+                        sendError($errMsg, 500);
                     }
                 } elseif ($method === 'PUT' && $id) {
                     send_json_response($controller->update($id, $input));
