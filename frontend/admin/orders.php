@@ -1790,12 +1790,22 @@ async function sendReceipt(id) {
                 setTimeout(() => successMsg.remove(), 3000);
             }
         } else {
+            // Read the response body safely using a clone so we can attempt JSON parse
             try {
-                const error = await response.json();
-                alert('Error sending receipt: ' + (error.error || 'Unknown error'));
-            } catch (jsonError) {
-                const text = await response.text();
-                alert('Error sending receipt: ' + (text || 'Unknown error'));
+                const raw = await response.clone().text();
+                let errObj = null;
+                try {
+                    errObj = JSON.parse(raw);
+                } catch (e) {
+                    // not JSON
+                }
+                if (errObj && (errObj.error || errObj.message)) {
+                    alert('Error sending receipt: ' + (errObj.error || errObj.message));
+                } else {
+                    alert('Error sending receipt: ' + (raw || 'Unknown error'));
+                }
+            } catch (readError) {
+                alert('Error sending receipt: Unknown error');
             }
         }
     } catch (error) {
@@ -1842,11 +1852,18 @@ async function sendTaxInvoice(id) {
             }
         } else {
             try {
-                const error = await response.json();
-                alert('Error sending tax invoice: ' + (error.error || 'Unknown error'));
-            } catch (jsonError) {
-                const text = await response.text();
-                alert('Error sending tax invoice: ' + (text || 'Unknown error'));
+                const raw = await response.clone().text();
+                let errObj = null;
+                try {
+                    errObj = JSON.parse(raw);
+                } catch (e) {}
+                if (errObj && (errObj.error || errObj.message)) {
+                    alert('Error sending tax invoice: ' + (errObj.error || errObj.message));
+                } else {
+                    alert('Error sending tax invoice: ' + (raw || 'Unknown error'));
+                }
+            } catch (readError) {
+                alert('Error sending tax invoice: Unknown error');
             }
         }
     } catch (error) {
