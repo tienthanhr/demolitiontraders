@@ -326,6 +326,13 @@
         }
         
         let allCategories = [];
+        // Only show these specific main categories in shop filter
+        // Order is determined by display_order from Admin Panel
+        const allowedMainNames = [
+            "Plywood", "Doors", "Windows", "Sliding Doors", "Timber", 
+            "Cladding", "Landscaping", "Roofing", "Kitchens", 
+            "Bathroom & Laundry", "General"
+        ];
 
         // Load categories
         async function loadCategories() {
@@ -339,11 +346,25 @@
                 // Populate category dropdown (Main Categories only)
                 const categorySelect = document.getElementById('category-select');
                 if (Array.isArray(allCategories)) {
-                    // Filter main categories
-                    const mainCategories = allCategories.filter(c => !c.parent_id || c.parent_id == 0);
+                    // Filter main categories: must be in allowedMainNames AND is_active = 1
+                    let mainCategories = allCategories.filter(c => {
+                        // Must be a root category (no parent)
+                        const isRoot = !c.parent_id || c.parent_id == 0 || c.parent_id === null;
+                        // Must be active
+                        const isActive = c.is_active === undefined || c.is_active === null || String(c.is_active) === '1';
+                        // Must be in the allowed list
+                        const isAllowed = allowedMainNames.some(name => name.toLowerCase() === (c.name || '').toLowerCase());
+                        return isRoot && isActive && isAllowed;
+                    });
                     
-                    // Sort main categories
-                    mainCategories.sort((a, b) => (a.display_order || 0) - (b.display_order || 0) || a.name.localeCompare(b.name));
+                    // Sort by display_order from Admin Panel
+                    mainCategories.sort((a, b) => {
+                        const orderA = Number(a.display_order) || 0;
+                        const orderB = Number(b.display_order) || 0;
+                        if (orderA !== orderB) return orderA - orderB;
+                        // Fallback to alphabetical
+                        return (a.name || '').localeCompare(b.name || '');
+                    });
                     
                     let html = '<option value="">All Categories</option>';
                     
@@ -362,19 +383,27 @@
                         // Find if it's a main or sub category
                         const cat = allCategories.find(c => c.id == categoryId);
                         if (cat) {
-                            if (!cat.parent_id || cat.parent_id == 0) {
+                            // Check if it is a main category (no parent and is active)
+                            const isMain = (!cat.parent_id || cat.parent_id == 0 || cat.parent_id === null);
+                            
+                            if (isMain) {
                                 // It's a main category
                                 categorySelect.value = cat.id;
                                 handleCategoryChange(); 
                             } else {
-                                // It's a sub category
-                                categorySelect.value = cat.parent_id;
-                                handleCategoryChange(); // This will populate sub-select
-                                // Now select the sub category
-                                const subSelect = document.getElementById('subcategory-select');
-                                if (subSelect) {
-                                    subSelect.value = cat.id;
-                                    handleSubCategoryChange(); // Trigger sub-category logic
+                                // It's a sub category - find its parent main category
+                                let parentId = cat.parent_id;
+                                
+                                if (parentId) {
+                                    categorySelect.value = parentId;
+                                    handleCategoryChange(); // This will populate sub-select
+                                    
+                                    // Now select the sub category
+                                    const subSelect = document.getElementById('subcategory-select');
+                                    if (subSelect) {
+                                        subSelect.value = cat.id;
+                                        handleSubCategoryChange(); 
+                                    }
                                 }
                             }
                         }
@@ -411,8 +440,20 @@
                 return;
             }
 
-            // Find sub categories
-            const subCats = allCategories.filter(c => c.parent_id == selectedId);
+            // Find the selected category object
+            const selectedCat = allCategories.find(c => c.id == selectedId);
+            const isGeneral = selectedCat && selectedCat.name.toLowerCase() === 'general';
+
+            let subCats = [];
+            
+            if (isGeneral) {
+                // If General is selected, show all its real children
+                subCats = allCategories.filter(c => c.parent_id == selectedId);
+            } else {
+                // Normal category: just show children
+                subCats = allCategories.filter(c => c.parent_id == selectedId);
+            }
+
             subCats.sort((a, b) => (a.display_order || 0) - (b.display_order || 0) || a.name.localeCompare(b.name));
             
             if (subCats.length > 0) {

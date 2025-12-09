@@ -59,11 +59,19 @@ class ProductController {
                 $catId = $params['category'];
                 
                 // Check if this category has children (sub-categories)
-                $children = $this->db->fetchAll("SELECT id FROM categories WHERE parent_id = :id", ['id' => $catId]);
+                $cat = $this->db->fetchOne("SELECT * FROM categories WHERE id = :id", ['id' => $catId]);
                 
+                $childrenIds = [];
+                
+                // Get all children of this category
+                $children = $this->db->fetchAll("SELECT id FROM categories WHERE parent_id = :id", ['id' => $catId]);
                 if (!empty($children)) {
-                    // If it has children, include products from parent AND all children
-                    $ids = array_column($children, 'id');
+                    $childrenIds = array_column($children, 'id');
+                }
+
+                if (!empty($childrenIds)) {
+                    // If it has children (or orphans), include products from parent AND all children
+                    $ids = array_unique($childrenIds);
                     $ids[] = $catId; // Include parent too
                     
                     $placeholders = [];
@@ -80,7 +88,6 @@ class ProductController {
                 }
 
                 // Check for plywood for specific filters
-                $cat = $this->db->fetchOne("SELECT slug FROM categories WHERE id = :id", ['id' => $catId]);
                 if ($cat && $cat['slug'] === 'plywood') {
                     $plywoodCategoryId = $catId;
                 }
