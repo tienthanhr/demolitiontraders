@@ -1,5 +1,5 @@
 :80
 
-root * C:\xampp\htdocs\demolitiontraders
+root * C:\xampp\htdocs\demolitiontraders\frontend\user
 php_fastcgi 127.0.0.1:9000
 file_server
