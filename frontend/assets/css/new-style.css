@@ -3725,6 +3725,95 @@ p.small.center {
     text-decoration: underline;
 }
 
+/* Prevent info-box content from overflowing container (product tabs, mobile) */
+.product-tabs .info-box,
+.tab-content .info-box {
+    /* allow text to wrap instead of forcing single line */
+    white-space: normal !important;
+    /* allow box to shrink on small screens */
+    flex-shrink: 1 !important;
+    /* break long words/URLs to avoid overflow */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Ensure the heading in info-box stays horizontal and doesn't break letters vertically */
+.product-tabs .info-box h4 {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    margin: 0 0 10px 0 !important;
+}
+
+.product-tabs .info-box h4 i {
+    flex-shrink: 0 !important;
+    margin-right: 6px !important;
+}
+
+/* Responsive adjustments for tabs/buttons on narrow screens */
+@media (max-width: 768px) {
+    .tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tab-button {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .product-tabs {
+        margin-top: 30px;
+        padding-top: 20px;
+    }
+
+    .product-tabs .info-box {
+        padding: 16px;
+    }
+}
+
+/* Mobile: simplify info-box layout to vertical stack to avoid narrow-column wrapping */
+@media (max-width: 600px) {
+    .product-tabs .info-box {
+        display: block !important;
+        padding: 14px 12px !important;
+        border-left-width: 6px !important;
+    }
+
+    .product-tabs .info-box h4 {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 10px !important;
+        white-space: normal !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+        margin-bottom: 12px !important;
+        font-size: 16px !important;
+    }
+
+    .product-tabs .info-box h4 i {
+        margin-right: 8px !important;
+        transform: none !important;
+    }
+
+    .product-tabs .info-box p {
+        margin-bottom: 10px !important;
+        color: #666 !important;
+    }
+
+    /* Ensure anchor text (email/phone) wraps correctly */
+    .product-tabs .info-box a {
+        display: inline-block !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+    }
+}
+
 .loading,
 .error {
     text-align: center;
