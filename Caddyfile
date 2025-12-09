@@ -6,5 +6,6 @@ root * ./frontend/user
 php_fastcgi unix//var/run/php/php-fpm.sock {
 	env HTTPS on
 	env HTTP_X_FORWARDED_PROTO https
+	env X-Forwarded-Proto https
 }
 file_server
