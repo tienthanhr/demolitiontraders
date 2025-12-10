@@ -15,6 +15,11 @@ if (session_status() === PHP_SESSION_NONE) {
     // 1. Force session to only use cookies
     ini_set('session.use_only_cookies', 1);
 
+    // 2. Set session save path for Railway
+    if (!$isLocalhost) {
+        ini_set('session.save_path', '/tmp');
+    }
+
     // 2. Set secure cookie parameters (Must match backend/core/bootstrap.php)
     $is_secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
     $domain = '';
