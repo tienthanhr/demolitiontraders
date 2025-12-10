@@ -1,4 +1,5 @@
 <?php
+error_log('[DemolitionTraders] api/index.php loaded, request=' . ($_GET['request'] ?? '') . ', action=' . ($_GET['action'] ?? ''));
 /**
  * Main API Router
  * Handles all API requests
@@ -38,9 +39,11 @@ if (isset($_GET['request']) && $_GET['request'] === 'health') {
     exit;
 }
 
+error_log('[DemolitionTraders] After health check, about to load bootstrap');
+
 // Initialize secure session and load configurations
 require_once __DIR__ . '/../core/bootstrap.php';
-require_once __DIR__ . '/../middleware/rate_limit.php'; // Apply rate limiting to all API requests
+// require_once __DIR__ . '/../middleware/rate_limit.php'; // Temporarily disabled for debugging
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../utils/security.php'; // Include for send_json_response
@@ -70,6 +73,8 @@ $path = explode('/', trim($request, '/'));
 $resource = $path[0] ?? '';
 $id = $path[1] ?? $_GET['id'] ?? null; // Also check query param
 $action = $path[2] ?? null;
+
+error_log('[DemolitionTraders] Parsed: method=' . $method . ', resource=' . $resource . ', id=' . ($id ?? 'null') . ', action=' . ($action ?? 'null'));
 
 // Get request body
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
@@ -260,7 +265,9 @@ try {
                     if (!$customerEmail) {
                         sendError('No customer email found', 400);
                     }
+                    error_log('[DemolitionTraders] About to call sendTaxInvoice');
                     $result = $emailService->sendTaxInvoice($order, $customerEmail);
+                    error_log('[DemolitionTraders] sendTaxInvoice returned: ' . print_r($result, true));
                     if ($result['success']) {
                         send_json_response($result);
                     } else {
