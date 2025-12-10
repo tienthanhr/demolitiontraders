@@ -67,7 +67,7 @@
             }
         });
 
-   async function loadProductWithCart(id) {
+        async function loadProductWithCart(id) {
     try {
         const [productRes, cartRes] = await Promise.all([
             fetch(getApiUrl('/api/index.php?request=products/') + id),
