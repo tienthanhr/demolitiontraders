@@ -46,6 +46,31 @@ class EmailService {
     }
     
     /**
+     * Try to send via PHPMailer with retries to handle transient network issues
+     * Returns array ['success' => bool, 'error' => string|null]
+     */
+    private function smtpSendWithRetries($maxAttempts = 3, $delaySeconds = 1) {
+        $attempt = 0;
+        $lastError = null;
+        while ($attempt < $maxAttempts) {
+            $attempt++;
+            try {
+                if ($this->mailer->send()) {
+                    return ['success' => true, 'error' => null, 'attempts' => $attempt];
+                }
+            } catch (Exception $e) {
+                $lastError = $e->getMessage();
+                error_log('[DemolitionTraders] smtpSendWithRetries attempt ' . $attempt . ' failed: ' . $lastError);
+            }
+            // Wait before retry (don't block too long)
+            if ($attempt < $maxAttempts) {
+                sleep($delaySeconds);
+            }
+        }
+        return ['success' => false, 'error' => $lastError, 'attempts' => $attempt];
+    }
+    
+    /**
      * Setup PHPMailer configuration
      */
     private function setupMailer() {
@@ -340,7 +365,12 @@ class EmailService {
                 }
                 
                 try {
-                    $sendResult = $this->mailer->send();
+                    $result = $this->smtpSendWithRetries(3, 1);
+                    $sendResult = $result['success'];
+                    $smtpErr = $result['error'] ?? null;
+                    if (!$sendResult) {
+                        error_log('[DemolitionTraders] sendTaxInvoice: smtp send failed after ' . ($result['attempts'] ?? 0) . ' attempts: ' . ($smtpErr ?? 'unknown'));
+                    }
                 } catch (Exception $mailEx) {
                     $sendResult = false;
                     $smtpErr = $mailEx->getMessage();
@@ -443,12 +473,17 @@ class EmailService {
             // Generate PDF from HTML and attach
             $pdfPath = generate_invoice_pdf_html($receiptHtml, 'receipt');
             $this->mailer->addAttachment($pdfPath, 'Receipt_Order_' . $order['order_number'] . '.pdf');
-            try {
-                $sendResult = $this->mailer->send();
-            } catch (Exception $mailEx) {
-                $sendResult = false;
-                $smtpErr = $mailEx->getMessage();
-            }
+                try {
+                    $result = $this->smtpSendWithRetries(3, 1);
+                    $sendResult = $result['success'];
+                    $smtpErr = $result['error'] ?? null;
+                    if (!$sendResult) {
+                        error_log('[DemolitionTraders] sendReceipt: smtp send failed after ' . ($result['attempts'] ?? 0) . ' attempts: ' . ($smtpErr ?? 'unknown'));
+                    }
+                } catch (Exception $mailEx) {
+                    $sendResult = false;
+                    $smtpErr = $mailEx->getMessage();
+                }
             if (file_exists($pdfPath)) unlink($pdfPath);
             // If SMTP failed and Brevo is configured, try Brevo as a fallback
             if ((empty($sendResult) || !empty($smtpErr)) && !empty($this->config['brevo_api_key'])) {
