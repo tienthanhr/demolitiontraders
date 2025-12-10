@@ -294,7 +294,7 @@ class OrderController {
                     try {
                         // Get complete order with items for email
                         $completeOrder = $this->show($orderId);
-                        $result = $emailService->sendTaxInvoice($completeOrder, $customerEmail);
+                            $result = $emailService->sendTaxInvoice($completeOrder, $customerEmail, false, $userId);
                         if (!empty($result['success'])) {
                             // Update order to record tax invoice was sent (prevents duplicate sends)
                             try {

@@ -139,17 +139,43 @@ class EmailService {
         curl_close($ch);
 
         if ($httpCode >= 200 && $httpCode < 300) {
-            return true;
+            return ['success' => true, 'http_code' => $httpCode, 'response' => $response];
         }
         
         error_log("Brevo API Error ($httpCode): " . $response . " Curl Error: " . $curlError);
-        throw new Exception("Brevo API failed with status $httpCode");
+        throw new Exception("Brevo API failed with status $httpCode: $response");
+    }
+
+    /**
+     * Log outgoing email to database for auditing
+     */
+    private function logEmail($payload) {
+        try {
+            require_once __DIR__ . '/../config/database.php';
+            $db = Database::getInstance();
+            // Insert fields mapping
+            $data = [
+                'order_id' => $payload['order_id'] ?? null,
+                'user_id' => $payload['user_id'] ?? null,
+                'type' => $payload['type'] ?? null,
+                'send_method' => $payload['send_method'] ?? null,
+                'to_email' => $payload['to_email'] ?? null,
+                'from_email' => $payload['from_email'] ?? ($this->config['smtp_username'] ?? null),
+                'subject' => $payload['subject'] ?? null,
+                'status' => $payload['status'] ?? null,
+                'error_message' => $payload['error_message'] ?? null,
+                'response' => $payload['response'] ?? null,
+            ];
+            $db->insert('email_logs', $data);
+        } catch (Exception $e) {
+            error_log('Failed to write email log: ' . $e->getMessage());
+        }
     }
 
     /**
      * Send Tax Invoice email
      */
-    public function sendTaxInvoice($order, $customerEmail, $forceSendToCustomer = false) {
+    public function sendTaxInvoice($order, $customerEmail, $forceSendToCustomer = false, $triggeredBy = null) {
         error_log('[DemolitionTraders] sendTaxInvoice called');
         if (!$this->config['enabled']) {
             return ['success' => false, 'error' => 'Email sending is disabled'];
@@ -183,7 +209,18 @@ class EmailService {
                 if ($pdfPath && file_exists($pdfPath)) {
                     $attachments[$pdfPath] = 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf';
                 }
-                $this->sendViaBrevoApi($toEmail, $customerName, $subject, $body, $attachments);
+                $result = $this->sendViaBrevoApi($toEmail, $customerName, $subject, $body, $attachments);
+                $this->logEmail([
+                    'order_id' => $order['id'] ?? null,
+                    'user_id' => $triggeredBy ?? null,
+                    'type' => 'tax_invoice',
+                    'send_method' => 'brevo',
+                    'to_email' => $toEmail,
+                    'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                    'subject' => $subject,
+                    'status' => !empty($result['success']) ? 'success' : 'failure',
+                    'response' => $result['response'] ?? null,
+                ]);
                 error_log('[DemolitionTraders] sendTaxInvoice: Brevo API call finished');
             } else {
                 error_log('[DemolitionTraders] sendTaxInvoice: using SMTP');
@@ -198,6 +235,16 @@ class EmailService {
                 }
                 
                 $this->mailer->send();
+                $this->logEmail([
+                    'order_id' => $order['id'] ?? null,
+                    'user_id' => $triggeredBy ?? null,
+                    'type' => 'tax_invoice',
+                    'send_method' => 'smtp',
+                    'to_email' => $toEmail,
+                    'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                    'subject' => $subject,
+                    'status' => 'success',
+                ]);
                 error_log('[DemolitionTraders] sendTaxInvoice: SMTP send finished');
             }
             
@@ -214,6 +261,18 @@ class EmailService {
             error_log("Exception Trace: " . print_r($e->getTraceAsString(), true));
             error_log("Order Data: " . print_r($order, true));
             error_log("Customer Email: " . print_r($customerEmail, true));
+            // Log failure
+            $this->logEmail([
+                'order_id' => $order['id'] ?? null,
+                'user_id' => $triggeredBy ?? null,
+                'type' => 'tax_invoice',
+                'send_method' => (!empty($this->config['brevo_api_key']) ? 'brevo' : 'smtp'),
+                'to_email' => $customerEmail,
+                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                'subject' => $subject ?? null,
+                'status' => 'failure',
+                'error_message' => $e->getMessage(),
+            ]);
             return ['success' => false, 'error' => $e->getMessage() ?: 'Unknown error'];
         }
     }
@@ -221,6 +280,7 @@ class EmailService {
      * Send Receipt email
      */
     public function sendReceipt($order, $customerEmail, $forceSendToCustomer = false) {
+    public function sendReceipt($order, $customerEmail, $forceSendToCustomer = false, $triggeredBy = null) {
         if (!$this->config['enabled']) {
             return ['success' => false, 'error' => 'Email sending is disabled'];
         }
@@ -239,6 +299,16 @@ class EmailService {
             $this->mailer->addAttachment($pdfPath, 'Receipt_Order_' . $order['order_number'] . '.pdf');
             $this->mailer->send();
             if (file_exists($pdfPath)) unlink($pdfPath);
+            $this->logEmail([
+                'order_id' => $order['id'] ?? null,
+                'user_id' => $triggeredBy ?? null,
+                'type' => 'receipt',
+                'send_method' => 'smtp',
+                'to_email' => $toEmail,
+                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                'subject' => "Receipt - Order #{$order['order_number']}",
+                'status' => 'success',
+            ]);
             error_log("Receipt sent to: $toEmail for order #{$order['order_number']}");
             return ['success' => true, 'message' => 'Receipt sent successfully'];
         } catch (Exception $e) {
@@ -246,6 +316,17 @@ class EmailService {
             error_log("Exception Trace: " . print_r($e->getTraceAsString(), true));
             error_log("Order Data: " . print_r($order, true));
             error_log("Customer Email: " . print_r($customerEmail, true));
+            $this->logEmail([
+                'order_id' => $order['id'] ?? null,
+                'user_id' => $triggeredBy ?? null,
+                'type' => 'receipt',
+                'send_method' => 'smtp',
+                'to_email' => $customerEmail,
+                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                'subject' => "Receipt - Order #{$order['order_number']}",
+                'status' => 'failure',
+                'error_message' => $e->getMessage(),
+            ]);
             return ['success' => false, 'error' => $e->getMessage() ?: 'Unknown error'];
         }
     }
@@ -630,10 +711,32 @@ HTML;
             
             $this->mailer->send();
             error_log("Email sent successfully to: $toEmail - Subject: $subject");
+            // Log it
+            $this->logEmail([
+                'order_id' => null,
+                'user_id' => null,
+                'type' => 'generic',
+                'send_method' => 'smtp',
+                'to_email' => $toEmail,
+                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                'subject' => $subject,
+                'status' => 'success',
+            ]);
             return true;
             
         } catch (Exception $e) {
             error_log("Failed to send email: " . $e->getMessage());
+            $this->logEmail([
+                'order_id' => null,
+                'user_id' => null,
+                'type' => 'generic',
+                'send_method' => 'smtp',
+                'to_email' => $to,
+                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                'subject' => $subject,
+                'status' => 'failure',
+                'error_message' => $e->getMessage(),
+            ]);
             return false;
         }
     }
@@ -707,7 +810,18 @@ HTML;
             
             // Check if we should use Brevo API
             if (!empty($this->config['brevo_api_key'])) {
-                $this->sendViaBrevoApi($adminEmail, 'Admin', "New Contact Form: {$data['subject']}", $html);
+                $result = $this->sendViaBrevoApi($adminEmail, 'Admin', "New Contact Form: {$data['subject']}", $html);
+                $this->logEmail([
+                    'order_id' => null,
+                    'user_id' => null,
+                    'type' => 'contact_form',
+                    'send_method' => 'brevo',
+                    'to_email' => $adminEmail,
+                    'from_email' => $data['email'] ?? null,
+                    'subject' => "New Contact Form: {$data['subject']}",
+                    'status' => !empty($result['success']) ? 'success' : 'failure',
+                    'response' => $result['response'] ?? null,
+                ]);
             } else {
                 $this->mailer->clearAddresses();
                 $this->mailer->addAddress($adminEmail);
@@ -715,6 +829,16 @@ HTML;
                 $this->mailer->Subject = "New Contact Form: {$data['subject']}";
                 $this->mailer->Body = $html;
                 $this->mailer->send();
+                $this->logEmail([
+                    'order_id' => null,
+                    'user_id' => null,
+                    'type' => 'contact_form',
+                    'send_method' => 'smtp',
+                    'to_email' => $adminEmail,
+                    'from_email' => $data['email'] ?? null,
+                    'subject' => "New Contact Form: {$data['subject']}",
+                    'status' => 'success',
+                ]);
             }
             
             error_log("Contact form email sent to admin");

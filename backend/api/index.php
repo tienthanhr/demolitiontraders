@@ -285,7 +285,8 @@ try {
                     }
 
                     // For admin-initiated sends, force send to the actual customer even when dev_mode is true
-                    $result = $emailService->sendReceipt($order, $customerEmail, true);
+                    $triggeredBy = $_SESSION['user_id'] ?? null;
+                    $result = $emailService->sendReceipt($order, $customerEmail, true, $triggeredBy);
                     if ($result['success']) {
                         // Update database to record a sent timestamp
                         try {
@@ -318,7 +319,8 @@ try {
                         send_json_response(['success' => true, 'message' => 'Tax invoice already sent', 'already_sent' => true, 'sent_at' => $order['tax_invoice_sent_at']]);
                     }
                     // For admin-initiated sends, bypass dev_mode so email goes to the actual customer
-                    $result = $emailService->sendTaxInvoice($order, $customerEmail, true);
+                    $triggeredBy = $_SESSION['user_id'] ?? null;
+                    $result = $emailService->sendTaxInvoice($order, $customerEmail, true, $triggeredBy);
                     error_log('[DemolitionTraders] sendTaxInvoice returned: ' . print_r($result, true));
                     if ($result['success']) {
                         // Update tax_invoice_sent_at
