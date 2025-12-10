@@ -43,8 +43,12 @@ error_log('[DemolitionTraders] After health check, about to load bootstrap');
 
 // Initialize secure session and load configurations
 require_once __DIR__ . '/../core/bootstrap.php';
+error_log('[DemolitionTraders] Bootstrap loaded');
+require_once __DIR__ . '/../middleware/rate_limit.php'; // Apply rate limiting to all API requests
+error_log('[DemolitionTraders] Rate limit loaded');
 // require_once __DIR__ . '/../middleware/rate_limit.php'; // Temporarily disabled for debugging
 require_once __DIR__ . '/../config/config.php';
+error_log('[DemolitionTraders] Config loaded');
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../utils/security.php'; // Include for send_json_response
 
