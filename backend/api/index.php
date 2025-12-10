@@ -130,6 +130,9 @@ try {
                 if ($method === 'GET' && (($id === 'revenue') || ($action === 'revenue' && !$id))) {
                     // admin-only revenue totals for a specific period or custom range
                     try {
+                        // Log minimal session information for debugging (do not log full session)
+                        $sessInfo = ['is_admin' => $_SESSION['is_admin'] ?? false, 'user_id' => $_SESSION['user_id'] ?? null];
+                        error_log('[DemolitionTraders] resend-email session: ' . json_encode($sessInfo));
                         if (!(($_SESSION['is_admin'] ?? false) || ($_SESSION['role'] ?? '') === 'admin')) {
                             sendError('Unauthorized: Admin required', 401);
                         }

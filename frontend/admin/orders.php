@@ -2165,19 +2165,21 @@ async function doResend() {
     const btn = document.querySelector('#resendConfirmModal .btn-danger');
     if (btn) btn.disabled = true;
     try {
-        const resp = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/resend-email`;return getApiUrl(p);})(), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ log_id: logId, resend_reason: reason, to_email: toEmail })
-        });
-        if (!resp.ok) {
-            const text = await resp.text();
-            alert('Resend failed: ' + (text || resp.statusText));
+        // Use apiFetch helper (which sets credentials: 'include') to ensure cookies/session are sent
+        let data;
+        try {
+            data = await window.apiFetch(getApiUrl(`/api/index.php?request=orders/${orderId}/resend-email`), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ log_id: logId, resend_reason: reason, to_email: toEmail })
+            });
+        } catch (err) {
+            let msg = (err && err.message) ? err.message : 'Unknown error';
+            alert('Resend failed: ' + msg);
             if (btn) btn.disabled = false;
             return;
         }
-        const data = await resp.json();
-        if (data.success) {
+        if (data && data.success) {
             closeResendModal();
             // Optional: show toast
             showToast('Email re-sent successfully', 'success');
