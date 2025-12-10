@@ -1125,14 +1125,36 @@ async function printOrder(id, status) {
         const responseText = await response.text();
         const order = JSON.parse(responseText);
         
-        // Parse addresses
+        // Parse addresses (handle JSON string or already-decoded object)
         let billing = {};
         try {
-            billing = JSON.parse(order.billing_address || '{}');
+            if (order.billing_address) {
+                if (typeof order.billing_address === 'string') {
+                    billing = JSON.parse(order.billing_address || '{}');
+                } else if (typeof order.billing_address === 'object') {
+                    billing = order.billing_address;
+                }
+            }
         } catch (e) {
             console.error('Failed to parse billing address:', e);
+            billing = {};
         }
         
+        // Parse shipping address similarly (if needed)
+        let shipping = {};
+        try {
+            if (order.shipping_address) {
+                if (typeof order.shipping_address === 'string') {
+                    shipping = JSON.parse(order.shipping_address || '{}');
+                } else if (typeof order.shipping_address === 'object') {
+                    shipping = order.shipping_address;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to parse shipping address:', e);
+            shipping = {};
+        }
+
         // Determine if this is a paid order (Receipt) or pending (Tax Invoice)
         const isPaid = status === 'paid' || status === 'delivered' || status === 'completed';
         
