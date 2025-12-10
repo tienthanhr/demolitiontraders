@@ -600,7 +600,6 @@ function displayProduct(product, cartQty = 0) {
                 });
             }
         }
-    }
         
         // Update wishlist count on header
         async function updateWishlistCount() {
