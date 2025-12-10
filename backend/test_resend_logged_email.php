@@ -34,12 +34,14 @@ if ($log['order_id']) {
 
 $triggeredBy = 1; // test as admin
 $result = ['success'=>false];
+// Allow overriding the recipient via argv[2] for test purposes
+$overrideTo = $argv[2] ?? null;
 if ($log['type'] === 'tax_invoice') {
-    $result = $service->sendTaxInvoice($order, $log['to_email'], true, $triggeredBy);
+    $result = $service->sendTaxInvoice($order, $overrideTo ?: $log['to_email'], true, $triggeredBy, $argv[3] ?? 'Resend via CLI');
 } elseif ($log['type'] === 'receipt') {
-    $result = $service->sendReceipt($order, $log['to_email'], true, $triggeredBy);
+    $result = $service->sendReceipt($order, $overrideTo ?: $log['to_email'], true, $triggeredBy);
 } else {
-    $ok = $service->sendEmail($log['to_email'], $log['subject'] ?? 'Resend', $log['response'] ?? 'Resend');
+    $ok = $service->sendEmail($overrideTo ?: $log['to_email'], $log['subject'] ?? 'Resend', $log['response'] ?? 'Resend', '', true);
     $result = ['success' => $ok];
 }
 

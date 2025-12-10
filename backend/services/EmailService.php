@@ -165,6 +165,7 @@ class EmailService {
                 'status' => $payload['status'] ?? null,
                 'error_message' => $payload['error_message'] ?? null,
                 'response' => $payload['response'] ?? null,
+                'resend_reason' => $payload['resend_reason'] ?? null,
             ];
             $db->insert('email_logs', $data);
         } catch (Exception $e) {
@@ -175,7 +176,7 @@ class EmailService {
     /**
      * Send Tax Invoice email
      */
-    public function sendTaxInvoice($order, $customerEmail, $forceSendToCustomer = false, $triggeredBy = null) {
+    public function sendTaxInvoice($order, $customerEmail, $forceSendToCustomer = false, $triggeredBy = null, $resendReason = null) {
         error_log('[DemolitionTraders] sendTaxInvoice called');
         if (!$this->config['enabled']) {
             return ['success' => false, 'error' => 'Email sending is disabled'];
@@ -220,6 +221,7 @@ class EmailService {
                     'subject' => $subject,
                     'status' => !empty($result['success']) ? 'success' : 'failure',
                     'response' => $result['response'] ?? null,
+                    'resend_reason' => $resendReason ?? null,
                 ]);
                 error_log('[DemolitionTraders] sendTaxInvoice: Brevo API call finished');
             } else {
@@ -244,6 +246,7 @@ class EmailService {
                     'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
                     'subject' => $subject,
                     'status' => 'success',
+                    'resend_reason' => $resendReason ?? null,
                 ]);
                 error_log('[DemolitionTraders] sendTaxInvoice: SMTP send finished');
             }
@@ -272,6 +275,7 @@ class EmailService {
                 'subject' => $subject ?? null,
                 'status' => 'failure',
                 'error_message' => $e->getMessage(),
+                'resend_reason' => $resendReason ?? null,
             ]);
             return ['success' => false, 'error' => $e->getMessage() ?: 'Unknown error'];
         }
@@ -279,8 +283,7 @@ class EmailService {
     /**
      * Send Receipt email
      */
-    public function sendReceipt($order, $customerEmail, $forceSendToCustomer = false) {
-    public function sendReceipt($order, $customerEmail, $forceSendToCustomer = false, $triggeredBy = null) {
+    public function sendReceipt($order, $customerEmail, $forceSendToCustomer = false, $triggeredBy = null, $resendReason = null) {
         if (!$this->config['enabled']) {
             return ['success' => false, 'error' => 'Email sending is disabled'];
         }
@@ -308,6 +311,7 @@ class EmailService {
                 'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
                 'subject' => "Receipt - Order #{$order['order_number']}",
                 'status' => 'success',
+                'resend_reason' => $resendReason ?? null,
             ]);
             error_log("Receipt sent to: $toEmail for order #{$order['order_number']}");
             return ['success' => true, 'message' => 'Receipt sent successfully'];
@@ -326,6 +330,7 @@ class EmailService {
                 'subject' => "Receipt - Order #{$order['order_number']}",
                 'status' => 'failure',
                 'error_message' => $e->getMessage(),
+                'resend_reason' => $resendReason ?? null,
             ]);
             return ['success' => false, 'error' => $e->getMessage() ?: 'Unknown error'];
         }
@@ -691,14 +696,14 @@ HTML;
     /**
      * Generic send email method
      */
-    public function sendEmail($to, $subject, $body, $altBody = '') {
+    public function sendEmail($to, $subject, $body, $altBody = '', $forceSendToCustomer = false) {
         if (!$this->config['enabled']) {
             error_log("Email sending is disabled");
             return false;
         }
         
         try {
-            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $to;
+            $toEmail = ($this->config['dev_mode'] && !$forceSendToCustomer) ? $this->config['dev_email'] : $to;
             
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($toEmail);

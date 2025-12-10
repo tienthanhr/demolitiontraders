@@ -99,7 +99,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = explode('/', trim($request, '/'));
 $resource = $path[0] ?? '';
 $id = $path[1] ?? $_GET['id'] ?? null; // Also check query param
-$action = $path[2] ?? null;
+$action = $path[2] ?? $_GET['action'] ?? null;
 
 error_log('[DemolitionTraders] Parsed: method=' . $method . ', resource=' . $resource . ', id=' . ($id ?? 'null') . ', action=' . ($action ?? 'null'));
 
@@ -127,7 +127,59 @@ try {
                 require_once __DIR__ . '/../controllers/ProductController.php';
                 $controller = new ProductController();
                 
-                if ($method === 'GET' && !$id) {
+                if ($method === 'GET' && (($id === 'revenue') || ($action === 'revenue' && !$id))) {
+                    // admin-only revenue totals for a specific period or custom range
+                    try {
+                        if (!(($_SESSION['is_admin'] ?? false) || ($_SESSION['role'] ?? '') === 'admin')) {
+                            sendError('Unauthorized: Admin required', 401);
+                        }
+                        $period = $_GET['period'] ?? 'all';
+                        $from = $_GET['from'] ?? null;
+                        $to = $_GET['to'] ?? null;
+
+                        $params = [];
+                        $where = "WHERE status IN ('paid','processing','shipped','delivered')";
+                        if ($period === 'today') {
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                            $params['from'] = date('Y-m-d 00:00:00');
+                            $params['to'] = date('Y-m-d 23:59:59');
+                        } elseif ($period === 'yesterday') {
+                            $y = new DateTime('yesterday');
+                            $params['from'] = $y->format('Y-m-d 00:00:00');
+                            $params['to'] = $y->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'this_week') {
+                            $start = new DateTime();
+                            $start->setTime(0,0,0);
+                            $start->modify('-' . $start->format('w') . ' days');
+                            $params['from'] = $start->format('Y-m-d 00:00:00');
+                            $params['to'] = (new DateTime())->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'this_month') {
+                            $start = new DateTime('first day of this month');
+                            $params['from'] = $start->format('Y-m-d 00:00:00');
+                            $params['to'] = (new DateTime())->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'this_year') {
+                            $start = new DateTime('first day of January this year');
+                            $params['from'] = $start->format('Y-m-d 00:00:00');
+                            $params['to'] = (new DateTime())->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'custom' && $from && $to) {
+                            $params['from'] = substr($from, 0, 10) . ' 00:00:00';
+                            $params['to'] = substr($to, 0, 10) . ' 23:59:59';
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        }
+
+                        $sql = "SELECT COALESCE(SUM(total_amount),0) as total FROM orders " . $where;
+                        $row = $db->fetchOne($sql, $params);
+                        $total = floatval($row['total'] ?? 0);
+                        send_json_response(['success' => true, 'total' => $total]);
+                    } catch (Exception $e) {
+                        error_log('Failed to compute revenue: ' . $e->getMessage());
+                        sendError('Failed to compute revenue', 500);
+                    }
+                } elseif ($method === 'GET' && !$id) {
                     // Get all products
                     send_json_response($controller->index($_GET));
                     
@@ -182,8 +234,6 @@ try {
                 
                 if ($method === 'GET' && !$id) {
                     send_json_response($controller->index());
-                } elseif ($method === 'GET' && $id) {
-                    send_json_response($controller->show($id));
                 } elseif ($method === 'POST' && !$id) {
                     send_json_response($controller->create($input), 201);
                 } elseif ($method === 'PUT' && $id) {
@@ -230,8 +280,6 @@ try {
                 
                 if ($method === 'GET' && !$id) {
                     send_json_response($controller->index());
-                } elseif ($method === 'GET' && $id) {
-                    send_json_response($controller->show($id));
                 } elseif ($method === 'PUT' && $id) {
                     send_json_response($controller->update($id, $input));
                 } elseif ($method === 'DELETE' && $id) {
@@ -254,11 +302,59 @@ try {
             try {
                 require_once __DIR__ . '/../controllers/OrderController.php';
                 $controller = new OrderController();
-                
-                if ($method === 'GET' && !$id) {
+
+                // Revenue summary endpoint (admin only)
+                if ($method === 'GET' && (($id === 'revenue') || ($action === 'revenue' && !$id))) {
+                    try {
+                        if (!(($_SESSION['is_admin'] ?? false) || ($_SESSION['role'] ?? '') === 'admin')) {
+                            sendError('Unauthorized: Admin required', 401);
+                        }
+                        $period = $_GET['period'] ?? 'all';
+                        $from = $_GET['from'] ?? null;
+                        $to = $_GET['to'] ?? null;
+                        $params = [];
+                        $where = "WHERE status IN ('paid','processing','shipped','delivered')";
+                        if ($period === 'today') {
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                            $params['from'] = date('Y-m-d 00:00:00');
+                            $params['to'] = date('Y-m-d 23:59:59');
+                        } elseif ($period === 'yesterday') {
+                            $y = new DateTime('yesterday');
+                            $params['from'] = $y->format('Y-m-d 00:00:00');
+                            $params['to'] = $y->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'this_week') {
+                            $start = new DateTime();
+                            $start->setTime(0,0,0);
+                            $start->modify('-' . $start->format('w') . ' days');
+                            $params['from'] = $start->format('Y-m-d 00:00:00');
+                            $params['to'] = (new DateTime())->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'this_month') {
+                            $start = new DateTime('first day of this month');
+                            $params['from'] = $start->format('Y-m-d 00:00:00');
+                            $params['to'] = (new DateTime())->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'this_year') {
+                            $start = new DateTime('first day of January this year');
+                            $params['from'] = $start->format('Y-m-d 00:00:00');
+                            $params['to'] = (new DateTime())->format('Y-m-d 23:59:59');
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        } elseif ($period === 'custom' && $from && $to) {
+                            $params['from'] = substr($from, 0, 10) . ' 00:00:00';
+                            $params['to'] = substr($to, 0, 10) . ' 23:59:59';
+                            $where .= " AND created_at >= :from AND created_at <= :to";
+                        }
+                        $sql = "SELECT COALESCE(SUM(total_amount),0) as total FROM orders " . $where;
+                        $row = $db->fetchOne($sql, $params);
+                        $total = floatval($row['total'] ?? 0);
+                        send_json_response(['success' => true, 'total' => $total]);
+                    } catch (Exception $e) {
+                        error_log('Failed to compute revenue: ' . $e->getMessage());
+                        sendError('Failed to compute revenue', 500);
+                    }
+                } elseif ($method === 'GET' && !$id) {
                     send_json_response($controller->index());
-                } elseif ($method === 'GET' && $id) {
-                    send_json_response($controller->show($id));
                 } elseif ($method === 'POST' && !$id) {
                     send_json_response($controller->create($input), 201);
                 } elseif ($method === 'POST' && $id && $action === 'send-receipt') {
@@ -338,6 +434,10 @@ try {
                 } elseif ($method === 'GET' && $id && $action === 'email-logs') {
                     // Return email logs for a specific order
                     try {
+                        // Authorization: only admins can view logs
+                        if (!(($_SESSION['is_admin'] ?? false) || ($_SESSION['role'] ?? '') === 'admin')) {
+                            sendError('Unauthorized: Admin required', 401);
+                        }
                         $logs = $db->fetchAll('SELECT el.*, CONCAT(u.first_name, " ", u.last_name) as triggered_by_name FROM email_logs el LEFT JOIN users u ON u.id = el.user_id WHERE el.order_id = :id ORDER BY el.id DESC', ['id' => $id]);
                         send_json_response(['success' => true, 'logs' => $logs]);
                     } catch (Exception $e) {
@@ -351,6 +451,11 @@ try {
                         error_log('[DemolitionTraders] resend-email raw input: ' . var_export($rawInput, true));
                         $input = json_decode($rawInput, true) ?? $_POST ?? [];
                         $logId = $input['log_id'] ?? null;
+                        $resendReason = trim($input['resend_reason'] ?? '');
+                        if ($resendReason === '') $resendReason = null;
+                        if ($resendReason && strlen($resendReason) > 1000) {
+                            sendError('resend_reason too long', 400);
+                        }
                         if (!$logId) {
                             sendError('log_id is required', 400);
                         }
@@ -373,18 +478,25 @@ try {
                         $order = $controller->show($id);
                         $userId = $_SESSION['user_id'] ?? null;
 
-                        $toEmail = $log['to_email'];
+                        // Allow admin to override recipient when resending; fallback to original logged to_email
+                        $toEmail = trim($input['to_email'] ?? $log['to_email']);
+                        if ($toEmail === '') $toEmail = $log['to_email'];
+                        // Validate the email if provided
+                        if (!filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
+                            sendError('Invalid to_email', 400);
+                        }
                         $type = $log['type'];
                         $result = ['success' => false, 'message' => 'Unknown type'];
                         if ($type === 'tax_invoice') {
-                            $result = $emailService->sendTaxInvoice($order, $toEmail, true, $userId);
+                            $result = $emailService->sendTaxInvoice($order, $toEmail, true, $userId, $resendReason);
                         } elseif ($type === 'receipt') {
-                            $result = $emailService->sendReceipt($order, $toEmail, true, $userId);
+                            $result = $emailService->sendReceipt($order, $toEmail, true, $userId, $resendReason);
                         } else {
                             // Generic resend using sendEmail
                             $subject = $log['subject'] ?? 'Resend Email';
                             $body = $log['response'] ?? $subject;
-                            $ok = $emailService->sendEmail($toEmail, $subject, $body);
+                            // For admin-initiated resends, force sending to the provided email address even in dev_mode
+                            $ok = $emailService->sendEmail($toEmail, $subject, $body, '', true);
                             $result = ['success' => $ok, 'message' => $ok ? 'Email re-sent' : 'Failed to re-send'];
                         }
 
@@ -397,6 +509,8 @@ try {
                         error_log('Resend email error: ' . $e->getMessage());
                         sendError($e->getMessage(), 500);
                     }
+                } elseif ($method === 'GET' && $id) {
+                    send_json_response($controller->show($id));
                 } elseif ($method === 'DELETE' && $id) {
                     send_json_response($controller->delete($id));
                 } else {

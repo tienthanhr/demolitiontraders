@@ -65,6 +65,7 @@ Keep `dev_mode => true` during development. All emails will be sent to `dev_emai
 
 - You can now view email logs per-order in the admin UI: click the history icon next to an order to open the email logs modal.
 - For quick debugging you can also fetch logs via API: `GET /api/index.php?request=orders/{orderId}/email-logs` (admin-only). The UI already uses this endpoint.
+ - Email logs now include a `resend_reason` field and the admin modal provides a 'Resend' action with an optional reason. The admin UI displays full details and lets you filter/search, view raw responses, and track resends for better auditability.
 - A helper page is included for debugging: `backend/show_email_logs.php` (simple JSON output of recent logs). Make sure to remove / restrict this before deploying to production.
 
 ## Using Microsoft Exchange / Office365 (SMTP) notes

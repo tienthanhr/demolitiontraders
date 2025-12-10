@@ -226,10 +226,11 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             <h3 id="stat-processing">0</h3>
             <p>Processing/Shipped</p>
         </div>
-        <div class="stat-card" onclick="toggleRevenueFilter()" style="cursor: pointer;">
+        <div class="stat-card">
             <i class="fas fa-dollar-sign"></i>
             <h3 id="stat-revenue">$0</h3>
             <p id="revenue-period-label">Total Revenue</p>
+        </div>
         </div>
     </div>
     
@@ -438,6 +439,7 @@ let currentSortColumn = 'date';
 let currentSortDirection = 'desc';
 let allOrders = [];
 let currentRevenuePeriodFilter = null; // { period, customDate }
+let currentRevenuePeriod = 'all';
 
 // Load orders
 async function loadOrders() {
@@ -488,6 +490,8 @@ async function loadOrders() {
         // Store orders globally and apply current sort
         allOrders = orders;
         updateStatistics(orders);
+        // Fetch the accurate server-side revenue for the current period
+        await updateRevenue(currentRevenuePeriod || 'all');
         
         // Update revenue for current period (default is 'all')
         if (currentRevenuePeriod === 'all') {
@@ -518,11 +522,7 @@ function updateStatistics(orders) {
     document.getElementById('stat-pending').textContent = pending;
     document.getElementById('stat-processing').textContent = processing;
     
-    // Update revenue based on current period if not already set
-    if (!document.getElementById('stat-revenue').textContent.includes('$')) {
-        const revenue = orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
-        document.getElementById('stat-revenue').textContent = '$' + revenue.toFixed(2);
-    }
+    // Revenue is fetched from the server via updateRevenue (to ensure accurate totals across pages)
 }
 
 // Bulk actions
@@ -869,6 +869,8 @@ function searchOrders() {
 
 // View order details
 async function viewOrder(id) {
+    // Close other overlays that might block the view modal
+    closeAllOverlays();
     const modal = document.getElementById('order-modal');
     const content = document.getElementById('order-details-content');
     
@@ -1948,12 +1950,17 @@ async function sendTaxInvoice(id) {
 // View Email Logs for an order (admin)
 async function viewEmailLogs(orderId) {
     try {
+        closeAllOverlays();
         const modal = document.getElementById('emailLogsModal');
         const orderIdSpan = document.getElementById('emailLogsOrderId');
         const content = document.getElementById('emailLogsContent');
         content.innerHTML = '<p>Loading...</p>';
         orderIdSpan.textContent = orderId;
         modal.style.display = 'block';
+        // Clicking outside modal content should close logs modal
+        modal.onclick = (e) => {
+            if (e.target === modal) closeEmailLogs();
+        };
 
         const response = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/email-logs`;return getApiUrl(p);})(), { method: 'GET' });
         if (!response.ok) {
@@ -1970,31 +1977,193 @@ async function viewEmailLogs(orderId) {
             content.innerHTML = '<div class="alert alert-info">No email logs for this order.</div>';
             return;
         }
-        let html = `<table class="table table-sm" style="width:100%;"><thead><tr><th>Date</th><th>Type</th><th>Method</th><th>To</th><th>Subject</th><th>Triggered</th><th>Status</th><th>Error</th><th>Actions</th></tr></thead><tbody>`;
-        for (const l of data.logs) {
-            html += `<tr><td>${l.created_at}</td><td>${l.type}</td><td>${l.send_method}</td><td>${l.to_email}</td><td>${l.subject || ''}</td><td>${l.triggered_by_name || ''}</td><td>${l.status}</td><td>${l.error_message || ''}</td><td>`;
-            if (l.type === 'tax_invoice' || l.type === 'receipt') {
-                html += `<button id="resendBtn-${l.id}" class="btn btn-sm btn-outline-primary" onclick="resendLoggedEmail(${l.id}, ${orderId})">Resend</button>`;
-            }
-            html += `</td></tr>`;
-        }
-        html += '</tbody></table>';
-        content.innerHTML = html;
+        // Save logs in a global var for filtering / pagination
+        window.__emailLogs = data.logs;
+        window.__emailLogsPage = 1;
+        window.__emailLogsPerPage = 8;
+        renderEmailLogs();
     } catch (err) {
         console.error(err);
         alert('Failed to fetch email logs');
     }
 }
 
+function renderEmailLogs() {
+    const content = document.getElementById('emailLogsContent');
+    const logs = window.__emailLogs || [];
+    const perPage = window.__emailLogsPerPage || 10;
+    const page = window.__emailLogsPage || 1;
+    // Apply basic filtering
+    const search = (document.getElementById('emailLogsSearch')?.value || '').toLowerCase();
+    const typeFilter = (document.getElementById('emailLogsTypeFilter')?.value || '');
+    let filtered = logs.filter(l => {
+        if (typeFilter && l.type !== typeFilter) return false;
+        if (!search) return true;
+        return (l.to_email || '').toLowerCase().includes(search) || (l.subject || '').toLowerCase().includes(search) || (l.type || '').toLowerCase().includes(search);
+    });
+    const total = filtered.length;
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    const pageItems = filtered.slice(start, end);
+
+    let html = `<table class="table dt-table table-sm" style="width:100%;"><thead><tr><th>ID</th><th>Date</th><th>Type</th><th>To</th><th>From</th><th>Subject</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+    for (const l of pageItems) {
+        const statusBadge = l.status === 'success' ? '<span class="dt-badge-success">Success</span>' : (l.status === 'failure' ? '<span class="dt-badge-error">Failed</span>' : '<span class="dt-badge-pending">'+(l.status||'pending')+'</span>');
+        html += `<tr class="dt-log-row"><td>${l.id}</td><td>${l.created_at}</td><td>${l.type}</td><td class="td-grow">${l.to_email}</td><td class="td-grow">${l.from_email || ''}</td><td class="td-grow"><a href="#" onclick="toggleLogDetails(event, ${l.id})">${escapeHtml(l.subject || '')}</a></td><td class="td-grow">${escapeHtml(l.resend_reason || '')}</td><td>${statusBadge}</td><td>`;
+        if (l.error_message) html += `<button class="btn btn-sm btn-outline-danger" onclick="alert('Error message: '+escapeHtml(l.error_message))">Error</button> `;
+        // removed view button inside logs (keep expand and resend) - don't show separate 'View' modal here
+        if (l.type === 'tax_invoice' || l.type === 'receipt') {
+            html += `<button id="resendBtn-${l.id}" class="btn btn-sm btn-outline-primary" onclick="openResendModal(${l.id}, ${l.order_id})">Resend</button>`;
+        }
+        html += `</td></tr>`;
+        // details row
+        html += `<tr id="log-details-${l.id}" style="display:none;"><td colspan="9"><div class="dt-log-response"><strong>ID:</strong> ${l.id} <strong>OrderID:</strong> ${l.order_id} <br><strong>To:</strong> ${l.to_email} <br><strong>From:</strong> ${l.from_email || ''}<br><strong>Subject:</strong> ${escapeHtml(l.subject || '')}<br><strong>Response:</strong><pre style="white-space:pre-wrap;margin:6px 0;">${escapeHtml(l.response || '')}</pre><strong>Error:</strong> ${escapeHtml(l.error_message || '')}<br><strong>Resend Reason:</strong> ${escapeHtml(l.resend_reason || '')}</div></td></tr>`;
+    }
+    html += `</tbody></table>`;
+    content.innerHTML = html;
+    // update footer count and page controls
+    const footer = document.getElementById('emailLogsFooterCount');
+    footer.textContent = `${start+1}-${Math.min(end, total)} of ${total} logs`;
+    document.getElementById('emailLogsPrev').disabled = page <= 1;
+    document.getElementById('emailLogsNext').disabled = end >= total;
+}
+
+function changeLogsPage(dir) {
+    window.__emailLogsPage = (window.__emailLogsPage || 1) + dir;
+    if (window.__emailLogsPage < 1) window.__emailLogsPage = 1;
+    renderEmailLogs();
+}
+
+function filterEmailLogs(reset) {
+    if (reset) {
+        document.getElementById('emailLogsSearch').value = '';
+        document.getElementById('emailLogsTypeFilter').value = '';
+    }
+    window.__emailLogsPage = 1;
+    renderEmailLogs();
+}
+
+function toggleLogDetails(e, id) {
+    e.preventDefault();
+    const el = document.getElementById('log-details-' + id);
+    if (!el) return;
+    el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function viewRawLog(id) {
+    // Use a modal to view log content instead of alert
+    openLogModal(id);
+}
+
+function openLogModal(id) {
+    const logs = window.__emailLogs || [];
+    const l = logs.find(x => x.id == id);
+    if (!l) {
+        showToast('Log not found', 'error');
+        return;
+    }
+    const container = document.getElementById('emailLogViewContent');
+    if (!container) return;
+    const footer = document.getElementById('emailLogViewFooter');
+    const fields = [
+        ['ID', l.id],
+        ['Order ID', l.order_id || 'N/A'],
+        ['Date', l.created_at || 'N/A'],
+        ['Type', l.type || 'N/A'],
+        ['Method', l.send_method || 'N/A'],
+        ['To', l.to_email || 'N/A'],
+        ['From', l.from_email || 'N/A'],
+        ['Subject', l.subject || 'N/A'],
+        ['Triggered By', l.triggered_by_name || 'N/A'],
+        ['Status', l.status || 'N/A'],
+        ['Error', l.error_message || 'N/A'],
+        ['Response', l.response || 'N/A'],
+        ['Resend Reason', l.resend_reason || 'N/A']
+    ];
+    let html = '<div style="display:flex;flex-direction:column;gap:12px;">';
+    html += '<div style="display:grid;grid-template-columns: 150px 1fr; gap:8px; align-items:start;">';
+    for (const [k,v] of fields) {
+        html += `<div style="font-weight:600;color:#2f3192;">${escapeHtml(k)}</div><div style="word-break:break-word;">${escapeHtml((v===null? 'N/A': String(v)))}</div>`;
+    }
+    html += '</div>';
+    // Add a pre block for the response to preserve line breaks
+    html += '<div style="margin-top:10px;"><div style="font-weight:600;color:#2f3192;margin-bottom:6px;">Raw Response</div><pre style="white-space:pre-wrap;background:#f8f9fa;padding:12px;border-radius:6px;overflow:auto;max-height:200px;">' + escapeHtml(l.response || 'N/A') + '</pre></div>';
+    html += '</div>';
+    container.innerHTML = html;
+    footer.textContent = `Log ${l.id}`;
+    const modal = document.getElementById('emailLogViewModal');
+    modal.onclick = (e) => {
+        if (e.target === modal) closeLogModal();
+    };
+    modal.style.display = 'block';
+}
+
+function closeLogModal() {
+    const modal = document.getElementById('emailLogViewModal');
+    modal.style.display = 'none';
+}
+
+// Escape HTML helper
+function escapeHtml(unsafe) {
+    return (unsafe || '').replace(/[&<>"]/g, function(m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]; });
+}
+
 async function resendLoggedEmail(logId, orderId) {
-    if (!confirm('Resend this email?')) return;
+    // Open resend confirmation modal to collect an optional reason, and proceed
+    openResendModal(logId, orderId);
+}
+
+function openResendModal(logId, orderId) {
+    const logs = window.__emailLogs || [];
+    const l = logs.find(x => x.id == logId);
+    if (!l) return alert('Log not found');
+    // Populate editable To field
+    const toInput = document.getElementById('resendToEmailInput');
+    if (toInput) { toInput.value = l.to_email || ''; try { toInput.focus(); } catch (e) {} }
+    document.getElementById('resendType').textContent = l.type;
+    document.getElementById('resendReason').value = '';
+    // remember the payload
+    window.__resendLogId = logId;
+    window.__resendOrderId = orderId;
+    const modal = document.getElementById('resendConfirmModal');
+    modal.style.display = 'block';
+    modal.onclick = (e) => {
+        if (e.target === modal) closeResendModal();
+    };
+}
+
+function closeResendModal() {
+    const modal = document.getElementById('resendConfirmModal');
+    modal.style.display = 'none';
+}
+
+function closeAllOverlays() {
+    const ids = ['emailLogsModal', 'resendConfirmModal', 'emailLogViewModal', 'dateRangeModal', 'dateRangeBackdrop', 'confirm-modal-overlay'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'none';
+    });
+}
+
+async function doResend() {
+    const logId = window.__resendLogId;
+    const orderId = window.__resendOrderId;
+    const reason = document.getElementById('resendReason').value || null;
+    const toEmail = document.getElementById('resendToEmailInput') ? document.getElementById('resendToEmailInput').value : null;
+    // Client-side validation
+    if (!toEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(toEmail)) {
+        alert('Please provide a valid recipient email address.');
+        if (btn) btn.disabled = false;
+        return;
+    }
+    const btn = document.querySelector('#resendConfirmModal .btn-danger');
+    if (btn) btn.disabled = true;
     try {
-        const btn = document.getElementById('resendBtn-' + logId);
-        if (btn) btn.disabled = true;
         const resp = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/resend-email`;return getApiUrl(p);})(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ log_id: logId })
+            body: JSON.stringify({ log_id: logId, resend_reason: reason, to_email: toEmail })
         });
         if (!resp.ok) {
             const text = await resp.text();
@@ -2004,15 +2173,17 @@ async function resendLoggedEmail(logId, orderId) {
         }
         const data = await resp.json();
         if (data.success) {
-            alert('Email re-sent successfully');
-            // Refresh logs
+            closeResendModal();
+            // Optional: show toast
+            showToast('Email re-sent successfully', 'success');
+            // Refresh logs (re-fetch from server)
             await viewEmailLogs(orderId);
         } else {
             alert('Resend error: ' + (data.message || 'Unknown'));
         }
     } catch (e) {
         alert('Error resending: ' + e.message);
-        const btn = document.getElementById('resendBtn-' + logId);
+    } finally {
         if (btn) btn.disabled = false;
     }
 }
@@ -2023,7 +2194,6 @@ function closeEmailLogs() {
 }
 
 // Revenue Filter Functions
-let currentRevenuePeriod = 'all';
 
 function toggleRevenueFilter() {
     const dropdown = document.getElementById('revenueFilterDropdown');
@@ -2078,32 +2248,18 @@ async function setRevenuePeriod(period) {
 
 async function updateRevenue(period, customDate = null) {
     try {
-        let url = getApiUrl('/api/index.php?request=orders');
-        
-        const response = await fetch(url);
-        const responseText = await response.text();
-        const data = JSON.parse(responseText);
-        
-        // Handle both array and object with data property
-        const allOrders = Array.isArray(data) ? data : (data.data || []);
-        
-        if (!allOrders || allOrders.length === 0) {
-            document.getElementById('stat-revenue').textContent = '$0.00';
-            return;
+        // Use server-side revenue endpoint to avoid summing only current page results
+        let url = getApiUrl(`/api/index.php?request=orders/revenue&period=${encodeURIComponent(period)}`);
+        if (period === 'custom' && customDate && customDate.from && customDate.to) {
+            url += `&from=${encodeURIComponent(customDate.from)}&to=${encodeURIComponent(customDate.to)}`;
         }
-        
-        // Filter orders based on period
-        const filteredOrders = filterOrdersByPeriod(allOrders, period, customDate);
-        
-        // Calculate revenue (exclude cancelled orders)
-        let revenue = 0;
-        filteredOrders.forEach(order => {
-            if (order.status !== 'cancelled') {
-                revenue += parseFloat(order.total_amount || order.total || 0);
-            }
-        });
-        
-        document.getElementById('stat-revenue').textContent = '$' + revenue.toFixed(2);
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('stat-revenue').textContent = '$' + parseFloat(data.total || 0).toFixed(2);
+        } else {
+            document.getElementById('stat-revenue').textContent = '$0.00';
+        }
     } catch (error) {
         console.error('Error updating revenue:', error);
         document.getElementById('stat-revenue').textContent = '$0.00';
@@ -2241,13 +2397,97 @@ loadOrders();
         </main>
     </div>
     
-    <!-- Email Logs Modal -->
-    <div id="emailLogsModal" style="display:none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999;">
-        <div style="max-width: 900px; margin: 60px auto; background: white; padding: 20px; border-radius: 6px; position: relative;">
-            <button onclick="closeEmailLogs()" style="position:absolute; right: 12px; top: 12px;">Close</button>
-            <h3>Email Logs for Order <span id="emailLogsOrderId"></span></h3>
-            <div id="emailLogsContent" style="max-height: 500px; overflow: auto; margin-top: 12px;"></div>
+    <!-- Email Logs Modal (improved) -->
+    <style>
+        /* Compact modal styling for email logs */
+        .dt-modal-backdrop { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: none; }
+        .dt-modal { max-width: 1100px; margin: 48px auto; background: white; padding: 18px; border-radius: 8px; position: relative; box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
+        .dt-modal-header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .dt-modal-title { font-size: 18px; font-weight:700; color:#2f3192; }
+        .dt-modal-controls { display:flex; gap:10px; align-items:center; }
+        .dt-modal-body { max-height: 520px; overflow:auto; margin-top:12px; }
+        .dt-modal-footer { display:flex; justify-content:flex-end; gap:8px; margin-top: 12px; }
+        .dt-badge-success { background:#28a745; color:white; padding:3px 8px; border-radius:14px; font-size:12px; }
+        .dt-badge-error { background:#dc3545; color:white; padding:3px 8px; border-radius:14px; font-size:12px; }
+        .dt-badge-pending { background:#ffc107; color:#212529; padding:3px 8px; border-radius:14px; font-size:12px; }
+        .dt-log-row .td-grow { white-space:normal; overflow-wrap: anywhere; word-break: break-word; max-width:260px; }
+        .dt-log-response { padding:8px 12px; background:#f8f9fa; border-radius:6px; font-family:monospace; font-size:12px; display:none; }
+        .dt-controls-input { padding:6px 8px; border:1px solid #ddd; border-radius:6px; }
+        .dt-table th, .dt-table td { padding:8px; vertical-align:middle; }
+    </style>
+
+    <div id="emailLogsModal" class="dt-modal-backdrop">
+        <div class="dt-modal">
+            <div class="dt-modal-header">
+                <div>
+                    <span class="dt-modal-title">Email Logs for Order <span id="emailLogsOrderId"></span></span>
+                    <div style="font-size:12px;color:#6c757d;margin-top:4px;">Use the filters to quickly find logs. Click subject to expand details.</div>
+                </div>
+                <div class="dt-modal-controls">
+                    <input id="emailLogsSearch" class="dt-controls-input" placeholder="Search by recipient, subject or type" oninput="filterEmailLogs()" />
+                    <select id="emailLogsTypeFilter" class="dt-controls-input" onchange="filterEmailLogs()">
+                        <option value="">All types</option>
+                        <option value="tax_invoice">Tax Invoice</option>
+                        <option value="receipt">Receipt</option>
+                        <option value="contact">Contact Form</option>
+                    </select>
+                    <button class="btn btn-outline-secondary" onclick="filterEmailLogs(true)">Reset</button>
+                    <button class="btn btn-outline-dark" onclick="closeEmailLogs()">Close</button>
+                </div>
+            </div>
+            <div id="emailLogsContent" class="dt-modal-body">
+                <div style="padding:12px; color:#6c757d;">Loading...</div>
+            </div>
+            <div class="dt-modal-footer">
+                <div style="flex:1; text-align:left; color:#6c757d; padding-top:6px;" id="emailLogsFooterCount"></div>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="emailLogsPrev" onclick="changeLogsPage(-1)">Prev</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="emailLogsNext" onclick="changeLogsPage(1)">Next</button>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <!-- Resend Confirmation Modal -->
+    <div id="resendConfirmModal" class="dt-modal-backdrop">
+        <div class="dt-modal" style="max-width:520px;">
+            <div class="dt-modal-header">
+                <div class="dt-modal-title">Resend Email</div>
+                <div><button class="btn btn-sm btn-outline-dark" onclick="closeResendModal()">Close</button></div>
+            </div>
+            <div class="dt-modal-body">
+                <div style="margin-bottom:10px;">
+                    <label for="resendToEmailInput">To: </label>
+                    <input id="resendToEmailInput" type="email" maxlength="254" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;" />
+                </div>
+                <div style="margin-bottom:10px;">Type: <strong id="resendType"></strong></div>
+                <div style="margin-bottom:6px;"><label for="resendReason">Reason (optional):</label></div>
+                <textarea id="resendReason" style="width:100%;min-height:80px;padding:8px;border:1px solid #ddd;border-radius:6px;"></textarea>
+            </div>
+            <div class="dt-modal-footer">
+                <button class="btn btn-danger" onclick="doResend()">Confirm resend</button>
+                <button class="btn btn-outline-secondary" onclick="closeResendModal()">Cancel</button>
+            </div>
+        </div>
+
+            <!-- Log View Modal -->
+            <div id="emailLogViewModal" class="dt-modal-backdrop">
+                <div class="dt-modal" style="max-width:900px;">
+                    <div class="dt-modal-header">
+                        <div class="dt-modal-title">Email Log Details</div>
+                        <div><button class="btn btn-sm btn-outline-dark" onclick="closeLogModal()">Close</button></div>
+                    </div>
+                    <div class="dt-modal-body" id="emailLogViewContent" style="max-height:520px; overflow:auto;">
+                        <div style="padding:8px;color:#6c757d">Select a log to view its details</div>
+                    </div>
+                    <div class="dt-modal-footer">
+                        <div style="flex:1; text-align:left; color:#6c757d; padding-top:6px;" id="emailLogViewFooter"></div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="closeLogModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
     <?php include '../components/toast-notification.php'; ?>
     <script src="../assets/js/date-formatter.js"></script>
