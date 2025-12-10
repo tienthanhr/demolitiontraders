@@ -71,6 +71,7 @@ function sendError($message, $statusCode = 400) {
 }
 
 // Get request path
+error_log('[DemolitionTraders] About to get request path');
 $request = $_GET['request'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
