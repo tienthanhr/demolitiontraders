@@ -117,3 +117,13 @@ Keep `dev_mode => true` during development. All emails will be sent to `dev_emai
    5. For quick debugging, deploy the `backend/test_smtp_debug.php` script and run it on Railway using a Railway run/exec or via the admin run command to get debug output.
 
 If you share the Railway service logs for a triggered send attempt (with `SMTP_DEBUG=1` enabled), I can help interpret the transcript and recommend next steps.
+
+### Running the debug script on Railway
+
+If you want to run the debug script on Railway directly, use the Railway CLI to run a one-off command (or any platform run/exec feature). Example:
+
+```bash
+railway run php -f backend/test_smtp_debug.php you@example.com
+```
+
+This will print the PHPMailer SMTP transcript to your Railway build logs so you can review the connection, auth, and server responses.
