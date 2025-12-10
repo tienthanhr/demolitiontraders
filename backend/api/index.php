@@ -442,7 +442,12 @@ try {
                         send_json_response(['success' => true, 'logs' => $logs]);
                     } catch (Exception $e) {
                         error_log('Failed to fetch email logs for order ' . $id . ': ' . $e->getMessage());
-                        sendError('Failed to fetch email logs: ' . $e->getMessage(), 500);
+                        $msg = $e->getMessage();
+                        // Detect missing table errors (MySQL: 1146, PostgreSQL: does not exist)
+                        if (strpos($msg, '1146') !== false || stripos($msg, 'does not exist') !== false || stripos($msg, 'doesn\'t exist') !== false) {
+                            sendError('Failed to fetch email logs: table "email_logs" does not exist. Run database/add-email-logs.sql or use the provided `database/ensure-email-logs.php` script.', 500);
+                        }
+                        sendError('Failed to fetch email logs: ' . $msg, 500);
                     }
                 } elseif ($method === 'POST' && $id && $action === 'resend-email') {
                     // Resend an email from a logged email_log (requires admin privileges)
@@ -507,7 +512,11 @@ try {
                         }
                     } catch (Exception $e) {
                         error_log('Resend email error: ' . $e->getMessage());
-                        sendError($e->getMessage(), 500);
+                        $msg = $e->getMessage();
+                        if (strpos($msg, '1146') !== false || stripos($msg, 'does not exist') !== false || stripos($msg, 'doesn\'t exist') !== false) {
+                            sendError('Email logs table missing: run database/add-email-logs.sql (or `php database/ensure-email-logs.php`) to create it.', 500);
+                        }
+                        sendError($msg, 500);
                     }
                 } elseif ($method === 'GET' && $id) {
                     send_json_response($controller->show($id));
