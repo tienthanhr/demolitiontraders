@@ -61,8 +61,10 @@ return [
     
     // Brevo API Key (Alternative to SMTP)
     'brevo_api_key' => $_ENV['BREVO_API_KEY'] ?? null,
-    // Prefer Brevo over SMTP in production (1=true)
+    // Prefer Brevo over SMTP in production (1=true). Default false (do not use Brevo unless enabled)
     'prefer_brevo' => (bool)($_ENV['PREFER_BREVO'] ?? false),
+    // Allow Brevo fallback if SMTP fails (1=true) - default false
+    'allow_brevo_fallback' => (bool)($_ENV['ALLOW_BREVO_FALLBACK'] ?? false),
     // Force all outgoing mails to this from address (optional)
     'force_from_email' => $_ENV['FORCE_FROM_EMAIL'] ?? null,
     

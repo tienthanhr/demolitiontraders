@@ -50,31 +50,10 @@ class EmailService {
      */
     private function setupMailer() {
         try {
+            // Nothing to send here - just setup PHPMailer. Keep fromEmail and flags available for send time.
             $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
             $preferBrevo = !empty($this->config['prefer_brevo']) && !empty($this->config['brevo_api_key']);
-            $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
-            $preferBrevo = !empty($this->config['prefer_brevo']) && !empty($this->config['brevo_api_key']);
-            if ($preferBrevo) {
-                try {
-                    $result = $this->sendViaBrevoApi($toEmail, '', $subject, $body, []);
-                    $this->logEmail([
-                        'order_id' => null,
-                        'user_id' => null,
-                        'type' => 'generic',
-                        'send_method' => 'brevo',
-                        'to_email' => $toEmail,
-                        'from_email' => $fromEmail,
-                        'subject' => $subject,
-                        'status' => !empty($result['success']) ? 'success' : 'failure',
-                        'response' => $result['response'] ?? null,
-                        'error_message' => !empty($result['success']) ? null : ($result['response'] ?? null),
-                    ]);
-                    return !empty($result['success']);
-                } catch (Exception $e) {
-                    error_log('[DemolitionTraders] Generic send via Brevo failed: ' . $e->getMessage());
-                    // fall-through to SMTP
-                }
-            }
+            $allowBrevoFallback = !empty($this->config['allow_brevo_fallback']) && !empty($this->config['brevo_api_key']);
             // Check if email is configured
             if (empty($this->config['smtp_username']) || empty($this->config['smtp_password'])) {
                 error_log("Email service disabled - SMTP credentials not configured");
@@ -328,7 +307,7 @@ class EmailService {
             // Decide whether to prefer Brevo API for sending
             $preferBrevo = !empty($this->config['prefer_brevo']) && !empty($this->config['brevo_api_key']);
             // Check if we should use Brevo API
-            if ($preferBrevo || (!empty($this->config['brevo_api_key']) && empty($this->config['prefer_brevo']) && $this->config['dev_mode'])) {
+            if ($preferBrevo) {
                 error_log('[DemolitionTraders] sendTaxInvoice: using Brevo API');
                 $attachments = [];
                 if ($pdfPath && file_exists($pdfPath)) {
@@ -367,8 +346,8 @@ class EmailService {
                     $smtpErr = $mailEx->getMessage();
                 }
 
-                // If SMTP failed and Brevo is configured, try Brevo as a fallback
-                if (empty($sendResult) && !empty($this->config['brevo_api_key'])) {
+                // If SMTP failed and fallback is explicitly allowed, try Brevo as a fallback
+                if (empty($sendResult) && $allowBrevoFallback) {
                     try {
                         error_log('[DemolitionTraders] sendTaxInvoice: SMTP failed, falling back to Brevo API.');
                         $attachments = [];
