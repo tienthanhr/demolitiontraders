@@ -2014,8 +2014,7 @@ function renderEmailLogs() {
             const safeErr = (escapeHtml(l.error_message || '')).replace(/'/g, "\\'").replace(/\n/g, "\\n");
             html += `<button class="btn btn-sm btn-outline-danger" onclick="alert('Error message: ' + '${safeErr}')">Error</button> `;
         }
-        // View button - open modal with full log (for any type)
-        html += `<button class="btn btn-sm btn-outline-secondary" onclick="openLogModal(${l.id})">View</button> `;
+        // (removed 'View' button as requested) - logs are viewable by clicking the subject to expand details
         // removed view button inside logs (keep expand and resend) - don't show separate 'View' modal here
         if (l.type === 'tax_invoice' || l.type === 'receipt') {
             html += `<button id="resendBtn-${l.id}" class="btn btn-sm btn-outline-primary" onclick="openResendModal(${l.id}, ${l.order_id})">Resend</button>`;
