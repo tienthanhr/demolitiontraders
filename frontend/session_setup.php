@@ -14,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
         'lifetime' => 86400, // 24 hours
         'path' => '/',
         'domain' => '',          
-        'secure' => false, // Match backend setting
+        'secure' => $is_secure, // Match protocol
         'httponly' => true,      
         'samesite' => 'Lax'      
     ]);
@@ -24,6 +24,9 @@ if (session_status() === PHP_SESSION_NONE) {
     $sessionPath = realpath(__DIR__ . '/../cache/sessions');
     if ($sessionPath && is_dir($sessionPath) && is_writable($sessionPath)) {
         session_save_path($sessionPath);
+    } else {
+        // For production environments like Railway, use default session path
+        // Don't set session_save_path to avoid issues
     }
 
     // 4. Use the same session name as the backend
