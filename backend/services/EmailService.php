@@ -146,16 +146,21 @@ class EmailService {
     /**
      * Send Tax Invoice email
      */
-    public function sendTaxInvoice($order, $customerEmail) {
+    public function sendTaxInvoice($order, $customerEmail, $forceSendToCustomer = false) {
+        error_log('[DemolitionTraders] sendTaxInvoice called');
         if (!$this->config['enabled']) {
             return ['success' => false, 'error' => 'Email sending is disabled'];
         }
+        error_log('[DemolitionTraders] sendTaxInvoice: config enabled');
         try {
+            error_log('[DemolitionTraders] sendTaxInvoice: try block entered');
             $billing = $this->decodeAddress($order['billing_address'] ?? null);
+            error_log('[DemolitionTraders] sendTaxInvoice: billing decoded');
             $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Customer';
-            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
+            $toEmail = ($this->config['dev_mode'] && !$forceSendToCustomer) ? $this->config['dev_email'] : $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $invoiceHtml = $this->generateTaxInvoiceHTML($order, $billing);
+            error_log('[DemolitionTraders] sendTaxInvoice: invoice HTML generated');
             $subject = "Tax Invoice - Order #{$order['order_number']}";
             $body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
 
@@ -163,18 +168,22 @@ class EmailService {
             $pdfPath = null;
             try {
                 $pdfPath = generate_invoice_pdf_html($invoiceHtml, 'invoice');
+                error_log('[DemolitionTraders] sendTaxInvoice: PDF generated');
             } catch (Exception $pdfEx) {
                 error_log("Warning: PDF generation failed for order #{$order['order_number']}: " . $pdfEx->getMessage());
             }
 
             // Check if we should use Brevo API
             if (!empty($this->config['brevo_api_key'])) {
+                error_log('[DemolitionTraders] sendTaxInvoice: using Brevo API');
                 $attachments = [];
                 if ($pdfPath && file_exists($pdfPath)) {
                     $attachments[$pdfPath] = 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf';
                 }
                 $this->sendViaBrevoApi($toEmail, $customerName, $subject, $body, $attachments);
+                error_log('[DemolitionTraders] sendTaxInvoice: Brevo API call finished');
             } else {
+                error_log('[DemolitionTraders] sendTaxInvoice: using SMTP');
                 // Use SMTP (PHPMailer)
                 $this->mailer->clearAddresses();
                 $this->mailer->addAddress($toEmail, $customerName);
@@ -186,11 +195,13 @@ class EmailService {
                 }
                 
                 $this->mailer->send();
+                error_log('[DemolitionTraders] sendTaxInvoice: SMTP send finished');
             }
             
             // Clean up if PDF was created
             if (isset($pdfPath) && $pdfPath && file_exists($pdfPath)) {
                 unlink($pdfPath);
+                error_log('[DemolitionTraders] sendTaxInvoice: PDF cleaned up');
             }
             
             error_log("Tax Invoice sent to: $toEmail for order #{$order['order_number']}");
@@ -206,14 +217,14 @@ class EmailService {
     /**
      * Send Receipt email
      */
-    public function sendReceipt($order, $customerEmail) {
+    public function sendReceipt($order, $customerEmail, $forceSendToCustomer = false) {
         if (!$this->config['enabled']) {
             return ['success' => false, 'error' => 'Email sending is disabled'];
         }
         try {
             $billing = $this->decodeAddress($order['billing_address'] ?? null);
             $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Customer';
-            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $customerEmail;
+            $toEmail = ($this->config['dev_mode'] && !$forceSendToCustomer) ? $this->config['dev_email'] : $customerEmail;
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $receiptHtml = $this->generateReceiptHTML($order, $billing);
             $this->mailer->clearAddresses();

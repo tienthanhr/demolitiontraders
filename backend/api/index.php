@@ -275,7 +275,8 @@ try {
                         sendError('No customer email found', 400);
                     }
                     
-                    $result = $emailService->sendReceipt($order, $customerEmail);
+                    // For admin-initiated sends, force send to the actual customer even when dev_mode is true
+                    $result = $emailService->sendReceipt($order, $customerEmail, true);
                     if ($result['success']) {
                         send_json_response($result);
                     } else {
@@ -295,8 +296,9 @@ try {
                     if (!$customerEmail) {
                         sendError('No customer email found', 400);
                     }
-                    error_log('[DemolitionTraders] About to call sendTaxInvoice');
-                    $result = $emailService->sendTaxInvoice($order, $customerEmail);
+                    error_log('[DemolitionTraders] About to call sendTaxInvoice (admin forced)');
+                    // For admin-initiated sends, bypass dev_mode so email goes to the actual customer
+                    $result = $emailService->sendTaxInvoice($order, $customerEmail, true);
                     error_log('[DemolitionTraders] sendTaxInvoice returned: ' . print_r($result, true));
                     if ($result['success']) {
                         send_json_response($result);
