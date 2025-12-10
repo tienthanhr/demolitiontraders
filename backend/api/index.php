@@ -65,11 +65,9 @@ try {
         error_reporting(E_ALL);
         error_log('[DemolitionTraders] About to enable log_errors');
         ini_set('log_errors', 1);
-        error_log('[DemolitionTraders] log_errors enabled, about to set error_log path');
-        $logPath = __DIR__ . '/../logs/php_errors.log';
-        // Commented out actual ini_set to avoid crash while debugging
-        // ini_set('error_log', $logPath);
-        error_log('[DemolitionTraders] (TEMP) Skipping setting error_log to: ' . $logPath);
+        error_log('[DemolitionTraders] log_errors enabled, not setting error_log path from code');
+        // NOTE: Setting error_log path at runtime can cause the PHP/Apache process to fail
+        // in some Windows/XAMPP configurations. Manage error_log via php.ini or Apache configuration instead.
     } else {
         error_reporting(0);
     }
