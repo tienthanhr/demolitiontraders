@@ -32,6 +32,8 @@ class EmailService {
 
     public function __construct() {
         $this->config = require __DIR__ . '/../config/email.php';
+        // Test PHP error logging
+        error_log("[DemolitionTraders] EmailService.php loaded at " . date('Y-m-d H:i:s'));
         // Initialize PHPMailer
         require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
         require_once __DIR__ . '/PHPMailer/src/SMTP.php';
