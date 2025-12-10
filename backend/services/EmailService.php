@@ -54,13 +54,17 @@ class EmailService {
         $lastError = null;
         while ($attempt < $maxAttempts) {
             $attempt++;
+            $startTs = microtime(true);
             try {
                 if ($this->mailer->send()) {
+                    $duration = round((microtime(true) - $startTs) * 1000);
+                    error_log("[DemolitionTraders] smtpSendWithRetries attempt $attempt succeeded in ${duration}ms");
                     return ['success' => true, 'error' => null, 'attempts' => $attempt];
                 }
             } catch (Exception $e) {
                 $lastError = $e->getMessage();
-                error_log('[DemolitionTraders] smtpSendWithRetries attempt ' . $attempt . ' failed: ' . $lastError);
+                $duration = round((microtime(true) - $startTs) * 1000);
+                error_log('[DemolitionTraders] smtpSendWithRetries attempt ' . $attempt . ' failed in ' . $duration . 'ms: ' . $lastError);
             }
             // Wait before retry (don't block too long)
             if ($attempt < $maxAttempts) {
@@ -330,7 +334,7 @@ class EmailService {
             }
 
             // Decide whether to prefer Brevo API for sending
-            $preferBrevo = !empty($this->config['prefer_brevo']) && !empty($this->config['brevo_api_key']);
+            $preferBrevo = false; // Always use SMTP
             // Check if we should use Brevo API
             if ($preferBrevo) {
                 error_log('[DemolitionTraders] sendTaxInvoice: using Brevo API');
@@ -365,6 +369,9 @@ class EmailService {
                 }
                 
                 try {
+                    // Log the SMTP host IP we resolved and attempt timings for diagnostics
+                    $smtpHostIp = @gethostbyname($this->config['smtp_host']);
+                    error_log('[DemolitionTraders] SMTP host resolved to: ' . ($smtpHostIp ?? 'unknown'));
                     $result = $this->smtpSendWithRetries(3, 1);
                     $sendResult = $result['success'];
                     $smtpErr = $result['error'] ?? null;
@@ -377,6 +384,8 @@ class EmailService {
                 }
 
                 // If SMTP failed and fallback is explicitly allowed, try Brevo as a fallback
+                // Pull allow_brevo_fallback from config here; it may not be available from setupMailer() local var
+                $allowBrevoFallback = !empty($this->config['allow_brevo_fallback']) && !empty($this->config['brevo_api_key']);
                 if (empty($sendResult) && $allowBrevoFallback) {
                     try {
                         error_log('[DemolitionTraders] sendTaxInvoice: SMTP failed, falling back to Brevo API.');
@@ -406,6 +415,8 @@ class EmailService {
                 }
 
                 // If send appears to succeed but we have debug info showing an issue, treat as failure
+
+                // Ensure we pick up the latest mailer error info for diagnostics
                 $smtpErr = $smtpErr ?? ($this->mailer->ErrorInfo ?? null);
 
                 $this->logEmail([
@@ -430,8 +441,26 @@ class EmailService {
                 error_log('[DemolitionTraders] sendTaxInvoice: PDF cleaned up');
             }
             
-            error_log("Tax Invoice sent to: $toEmail for order #{$order['order_number']}");
-            return ['success' => true, 'message' => 'Tax Invoice sent successfully'];
+            // Decide and return success only if a real send happened
+            $finalSuccess = false;
+            $finalMessage = 'Tax Invoice send failed';
+            if ($preferBrevo) {
+                $finalSuccess = !empty($result['success']);
+                $finalMessage = $finalSuccess ? 'Tax Invoice sent successfully (brevo)' : 'Tax Invoice send failed (brevo)';
+            } else {
+                $finalSuccess = !empty($sendResult) && empty($smtpErr);
+                if ($finalSuccess) {
+                    $finalMessage = 'Tax Invoice sent successfully (smtp)';
+                } else {
+                    $finalMessage = 'Tax Invoice send failed: ' . ($smtpErr ?? 'unknown');
+                }
+            }
+            if ($finalSuccess) {
+                error_log("Tax Invoice sent to: $toEmail for order #{$order['order_number']}");
+                return ['success' => true, 'message' => $finalMessage];
+            }
+            error_log('[DemolitionTraders] sendTaxInvoice final status: ' . $finalMessage);
+            return ['success' => false, 'error' => $finalMessage];
         } catch (Exception $e) {
             error_log("Failed to send Tax Invoice: " . $e->getMessage());
             error_log("Exception Trace: " . print_r($e->getTraceAsString(), true));
@@ -464,6 +493,7 @@ class EmailService {
             $billing = $this->decodeAddress($order['billing_address'] ?? null);
             $customerName = trim(($billing['first_name'] ?? '') . ' ' . ($billing['last_name'] ?? '')) ?: 'Customer';
             $toEmail = ($this->config['dev_mode'] && !$forceSendToCustomer) ? $this->config['dev_email'] : $customerEmail;
+            $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $receiptHtml = $this->generateReceiptHTML($order, $billing);
             $this->mailer->clearAddresses();
@@ -472,8 +502,11 @@ class EmailService {
             $this->mailer->Body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
             // Generate PDF from HTML and attach
             $pdfPath = generate_invoice_pdf_html($receiptHtml, 'receipt');
+            $brevoResp = [];
             $this->mailer->addAttachment($pdfPath, 'Receipt_Order_' . $order['order_number'] . '.pdf');
                 try {
+                    $smtpHostIp = @gethostbyname($this->config['smtp_host']);
+                    error_log('[DemolitionTraders] SMTP host resolved to: ' . ($smtpHostIp ?? 'unknown'));
                     $result = $this->smtpSendWithRetries(3, 1);
                     $sendResult = $result['success'];
                     $smtpErr = $result['error'] ?? null;
@@ -486,7 +519,8 @@ class EmailService {
                 }
             if (file_exists($pdfPath)) unlink($pdfPath);
             // If SMTP failed and Brevo is configured, try Brevo as a fallback
-            if ((empty($sendResult) || !empty($smtpErr)) && !empty($this->config['brevo_api_key'])) {
+            $allowBrevoFallback = false; // Always use SMTP
+            if ((empty($sendResult) || !empty($smtpErr)) && !empty($this->config['brevo_api_key']) && $allowBrevoFallback) {
                 try {
                     error_log('[DemolitionTraders] sendReceipt: SMTP failed, falling back to Brevo API.');
                     $attachments = [];
@@ -526,8 +560,19 @@ class EmailService {
                 'response' => $this->debugLog ?? null,
                 'resend_reason' => $resendReason ?? null,
             ]);
-            error_log("Receipt sent to: $toEmail for order #{$order['order_number']}");
-            return ['success' => true, 'message' => 'Receipt sent successfully'];
+            // Return success only when a real send happened
+            $finalSuccess = !empty($sendResult) && empty($smtpErr);
+            $finalMessage = $finalSuccess ? 'Receipt sent successfully' : ('Receipt send failed: ' . ($smtpErr ?? 'unknown'));
+            if (!empty($this->config['brevo_api_key']) && empty($finalSuccess) && !empty($brevoResp['success'] ?? null)) {
+                $finalSuccess = true;
+                $finalMessage = 'Receipt sent successfully (brevo)';
+            }
+            if ($finalSuccess) {
+                error_log("Receipt sent to: $toEmail for order #{$order['order_number']}");
+                return ['success' => true, 'message' => $finalMessage];
+            }
+            error_log('[DemolitionTraders] sendReceipt final status: ' . $finalMessage);
+            return ['success' => false, 'error' => $finalMessage];
         } catch (Exception $e) {
             error_log("Failed to send Receipt: " . $e->getMessage());
             error_log("Exception Trace: " . print_r($e->getTraceAsString(), true));
@@ -926,8 +971,21 @@ HTML;
             if ($altBody) {
                 $this->mailer->AltBody = $altBody;
             }
+            $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
             
-            $this->mailer->send();
+            // Use the same SMTP helper which includes retries and timing diagnostics
+            $sendResult = true;
+            $sendError = null;
+            try {
+                $sendRes = $this->smtpSendWithRetries(3, 1);
+                $sendResult = $sendRes['success'];
+                $sendError = $sendRes['error'] ?? null;
+                if (!$sendResult) {
+                    throw new Exception('SMTP send failed: ' . ($sendError ?? 'unknown'));
+                }
+            } catch (Exception $e) {
+                throw $e; // propagate to catch below
+            }
             error_log("Email sent successfully to: $toEmail - Subject: $subject");
             // Log it
             $this->logEmail([

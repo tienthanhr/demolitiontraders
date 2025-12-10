@@ -834,6 +834,9 @@ function renderOrders(orders) {
                         <button id="sendReceiptBtn-${order.id}" class="btn btn-info btn-sm" onclick="sendReceipt(${order.id})" title="Send Receipt Email">
                             <i class="fas fa-envelope"></i>
                         </button>
+                        <button class="btn btn-light btn-sm" onclick="viewEmailLogs(${order.id})" title="View Email Logs">
+                            <i class="fas fa-history"></i>
+                        </button>
                         ` : ''}
                         ${orderStatus === 'pending' || orderStatus === 'processing' || orderStatus === 'ready' || orderStatus === 'shipped' || orderStatus === 'refunded' || orderStatus === 'cancelled' ? `
                         <button id="sendTaxInvoiceBtn-${order.id}" class="btn btn-secondary btn-sm" onclick="sendTaxInvoice(${order.id})" title="Send Tax Invoice Email">
@@ -1780,6 +1783,10 @@ async function deleteOrder(id) {
 
 // Send Receipt Email
 async function sendReceipt(id) {
+    openSendEmailModal('Send receipt email for Order #' + id + '?', () => doSendReceipt(id));
+}
+
+async function doSendReceipt(id) {
     // Check if receipt was already sent recently
     let shouldForce = false;
     try {
@@ -1792,17 +1799,10 @@ async function sendReceipt(id) {
                     return;
                 }
                 shouldForce = true;
-            } else {
-                if (!confirm(`Send receipt email for Order #${id}?`)) {
-                    return;
-                }
-                shouldForce = false;
             }
         }
     } catch (err) {
-        if (!confirm(`Send receipt email for Order #${id}?`)) {
-            return;
-        }
+        // Continue without check
     }
     
     try {
@@ -1866,6 +1866,10 @@ async function sendReceipt(id) {
 
 // Send Tax Invoice Email
 async function sendTaxInvoice(id) {
+    openSendEmailModal('Send tax invoice email for Order #' + id + '?', () => doSendTaxInvoice(id));
+}
+
+async function doSendTaxInvoice(id) {
     // Check if tax invoice was already sent recently
     let shouldForce = false;
     try {
@@ -1873,24 +1877,17 @@ async function sendTaxInvoice(id) {
         if (orderResp.ok) {
             const orderData = await orderResp.json();
             if (orderData.tax_invoice_sent_at) {
-                // Ask for confirmation to re-send and set force flag
+                // Ask for confirmation to re-send
                 if (!confirm(`Tax invoice was already sent on ${orderData.tax_invoice_sent_at}. Resend anyway?`)) {
                     return;
                 }
                 shouldForce = true;
-            } else {
-                if (!confirm(`Send tax invoice email for Order #${id}?`)) {
-                    return;
-                }
-                shouldForce = false;
             }
         }
     } catch (err) {
-        // If we can't fetch order details, fall back to simple confirm
-        if (!confirm(`Send tax invoice email for Order #${id}?`)) {
-            return;
-        }
+        // Continue without check
     }
+    
     try {
         // Disable button to prevent duplicate clicks
         const btn2 = document.getElementById('sendTaxInvoiceBtn-' + id);
@@ -2142,8 +2139,46 @@ function closeResendModal() {
     modal.style.display = 'none';
 }
 
+function closeSendEmailModal() {
+    const modal = document.getElementById('sendEmailConfirmModal');
+    modal.classList.remove('show');
+}
+
+function openSendEmailModal(message, callback) {
+    const msgEl = document.getElementById('sendEmailConfirmMessage');
+    if (!msgEl) {
+        return;
+    }
+    msgEl.textContent = message;
+    window.__sendEmailCallback = callback;
+    const modal = document.getElementById('sendEmailConfirmModal');
+    if (!modal) {
+        return;
+    }
+    modal.classList.add('show');
+    const innerModal = modal.querySelector('.dt-modal');
+    if (!innerModal) {
+        return;
+    }
+    innerModal.style.setProperty('position', 'fixed', 'important');
+    innerModal.style.setProperty('top', '50%', 'important');
+    innerModal.style.setProperty('left', '50%', 'important');
+    innerModal.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+    innerModal.style.setProperty('margin', '0', 'important');
+    modal.onclick = (e) => {
+        if (e.target === modal) closeSendEmailModal();
+    };
+}
+
+function proceedSendEmail() {
+    closeSendEmailModal();
+    if (window.__sendEmailCallback) {
+        window.__sendEmailCallback();
+    }
+}
+
 function closeAllOverlays() {
-    const ids = ['emailLogsModal', 'resendConfirmModal', 'emailLogViewModal', 'dateRangeModal', 'dateRangeBackdrop', 'confirm-modal-overlay'];
+    const ids = ['emailLogsModal', 'resendConfirmModal', 'sendEmailConfirmModal', 'emailLogViewModal', 'dateRangeModal', 'dateRangeBackdrop', 'confirm-modal-overlay'];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -2423,6 +2458,7 @@ loadOrders();
     <style>
         /* Compact modal styling for email logs */
         .dt-modal-backdrop { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: none; }
+        .dt-modal-backdrop.show { display: block !important; }
         .dt-modal { max-width: 1100px; margin: 48px auto; background: white; padding: 18px; border-radius: 8px; position: relative; box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
         .dt-modal-header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
         .dt-modal-title { font-size: 18px; font-weight:700; color:#2f3192; }
@@ -2470,6 +2506,23 @@ loadOrders();
         </div>
     </div>
 
+    <!-- Send Email Confirmation Modal -->
+    <div id="sendEmailConfirmModal" class="dt-modal-backdrop">
+        <div class="dt-modal" style="max-width:400px;">
+            <div class="dt-modal-header">
+                <div class="dt-modal-title">Confirm Send Email</div>
+                <div><button class="btn btn-sm btn-outline-dark" onclick="closeSendEmailModal()">Close</button></div>
+            </div>
+            <div class="dt-modal-body">
+                <p id="sendEmailConfirmMessage"></p>
+            </div>
+            <div class="dt-modal-footer">
+                <button class="btn btn-danger" id="sendEmailConfirmBtn" onclick="proceedSendEmail()">Confirm Send</button>
+                <button class="btn btn-outline-secondary" onclick="closeSendEmailModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Resend Confirmation Modal -->
     <div id="resendConfirmModal" class="dt-modal-backdrop">
         <div class="dt-modal" style="max-width:520px;">
@@ -2489,6 +2542,22 @@ loadOrders();
             <div class="dt-modal-footer">
                 <button class="btn btn-danger" onclick="doResend()">Confirm resend</button>
                 <button class="btn btn-outline-secondary" onclick="closeResendModal()">Cancel</button>
+            </div>
+        </div>
+
+    <!-- Send Email Confirmation Modal -->
+    <div id="sendEmailConfirmModal" class="dt-modal-backdrop">
+        <div class="dt-modal" style="max-width:400px;">
+            <div class="dt-modal-header">
+                <div class="dt-modal-title">Confirm Send Email</div>
+                <div><button class="btn btn-sm btn-outline-dark" onclick="closeSendEmailModal()">Close</button></div>
+            </div>
+            <div class="dt-modal-body">
+                <p id="sendEmailConfirmMessage"></p>
+            </div>
+            <div class="dt-modal-footer">
+                <button class="btn btn-danger" id="sendEmailConfirmBtn" onclick="proceedSendEmail()">Confirm Send</button>
+                <button class="btn btn-outline-secondary" onclick="closeSendEmailModal()">Cancel</button>
             </div>
         </div>
 
