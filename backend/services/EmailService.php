@@ -50,6 +50,31 @@ class EmailService {
      */
     private function setupMailer() {
         try {
+            $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
+            $preferBrevo = !empty($this->config['prefer_brevo']) && !empty($this->config['brevo_api_key']);
+            $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
+            $preferBrevo = !empty($this->config['prefer_brevo']) && !empty($this->config['brevo_api_key']);
+            if ($preferBrevo) {
+                try {
+                    $result = $this->sendViaBrevoApi($toEmail, '', $subject, $body, []);
+                    $this->logEmail([
+                        'order_id' => null,
+                        'user_id' => null,
+                        'type' => 'generic',
+                        'send_method' => 'brevo',
+                        'to_email' => $toEmail,
+                        'from_email' => $fromEmail,
+                        'subject' => $subject,
+                        'status' => !empty($result['success']) ? 'success' : 'failure',
+                        'response' => $result['response'] ?? null,
+                        'error_message' => !empty($result['success']) ? null : ($result['response'] ?? null),
+                    ]);
+                    return !empty($result['success']);
+                } catch (Exception $e) {
+                    error_log('[DemolitionTraders] Generic send via Brevo failed: ' . $e->getMessage());
+                    // fall-through to SMTP
+                }
+            }
             // Check if email is configured
             if (empty($this->config['smtp_username']) || empty($this->config['smtp_password'])) {
                 error_log("Email service disabled - SMTP credentials not configured");
@@ -97,11 +122,14 @@ class EmailService {
                 )
             );
             
-            // From. Ensure envelope sender matches authenticated SMTP user to avoid SendAsDenied
-            $fromEmail = $this->config['from_email'] ?? $this->config['smtp_username'];
+            // From. Allow forced from email via env (e.g., FORCE_FROM_EMAIL)
+            $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
             $this->mailer->setFrom($fromEmail, $this->config['from_name']);
             // Set envelope sender to authenticated user to avoid SendAsDenied errors with Exchange
             $this->mailer->Sender = $this->config['smtp_username'];
+            if (!empty($fromEmail) && !empty($this->config['smtp_username']) && strtolower($fromEmail) !== strtolower($this->config['smtp_username'])) {
+                error_log('[DemolitionTraders] Warning: from_email (' . $fromEmail . ') does not match SMTP username (' . $this->config['smtp_username'] . '). This may trigger SendAsDenied on some SMTP providers.');
+            }
             $this->mailer->addReplyTo($this->config['reply_to'], $this->config['from_name']);
             
             // Content type
@@ -123,8 +151,9 @@ class EmailService {
         }
 
         $url = 'https://api.brevo.com/v3/smtp/email';
+        $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
         $data = [
-            'sender' => ['name' => $this->config['from_name'], 'email' => $this->config['from_email']],
+            'sender' => ['name' => $this->config['from_name'], 'email' => $fromEmail],
             'to' => [['email' => $toEmail, 'name' => $toName]],
             'subject' => $subject,
             'htmlContent' => $htmlContent
@@ -283,7 +312,8 @@ class EmailService {
             // Sử dụng HTML giống frontend (đã có CSS receipt)
             $invoiceHtml = $this->generateTaxInvoiceHTML($order, $billing);
             error_log('[DemolitionTraders] sendTaxInvoice: invoice HTML generated');
-            $subject = "Tax Invoice - Order #{$order['order_number']}";
+                $subject = "Tax Invoice - Order #{$order['order_number']}";
+                $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
             $body = "Hi {$customerName},<br><br>Thank you for your order, please find attached the receipt/tax invoice.<br><br>Regards,<br>Demolition Traders Team";
 
             // Try to generate PDF
@@ -295,8 +325,10 @@ class EmailService {
                 error_log("Warning: PDF generation failed for order #{$order['order_number']}: " . $pdfEx->getMessage());
             }
 
+            // Decide whether to prefer Brevo API for sending
+            $preferBrevo = !empty($this->config['prefer_brevo']) && !empty($this->config['brevo_api_key']);
             // Check if we should use Brevo API
-            if (!empty($this->config['brevo_api_key'])) {
+            if ($preferBrevo || (!empty($this->config['brevo_api_key']) && empty($this->config['prefer_brevo']) && $this->config['dev_mode'])) {
                 error_log('[DemolitionTraders] sendTaxInvoice: using Brevo API');
                 $attachments = [];
                 if ($pdfPath && file_exists($pdfPath)) {
@@ -309,7 +341,7 @@ class EmailService {
                     'type' => 'tax_invoice',
                     'send_method' => 'brevo',
                     'to_email' => $toEmail,
-                    'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                        'from_email' => $fromEmail,
                     'subject' => $subject,
                     'status' => !empty($result['success']) ? 'success' : 'failure',
                     'response' => $result['response'] ?? null,
@@ -454,7 +486,7 @@ class EmailService {
                         'type' => 'receipt',
                         'send_method' => 'brevo',
                         'to_email' => $toEmail,
-                        'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                        'from_email' => $fromEmail,
                         'subject' => "Receipt - Order #{$order['order_number']}",
                         'status' => !empty($brevoResp['success']) ? 'success' : 'failure',
                         'response' => $brevoResp['response'] ?? null,
@@ -467,13 +499,13 @@ class EmailService {
                 }
             }
 
-            $this->logEmail([
+                $this->logEmail([
                 'order_id' => $order['id'] ?? null,
                 'user_id' => $triggeredBy ?? null,
                 'type' => 'receipt',
                 'send_method' => 'smtp',
                 'to_email' => $toEmail,
-                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                    'from_email' => $fromEmail,
                 'subject' => "Receipt - Order #{$order['order_number']}",
                 'status' => (!empty($sendResult) && empty($smtpErr)) ? 'success' : 'failure',
                 'error_message' => $smtpErr ?? null,
@@ -890,7 +922,7 @@ HTML;
                 'type' => 'generic',
                 'send_method' => 'smtp',
                 'to_email' => $toEmail,
-                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                'from_email' => $fromEmail,
                 'subject' => $subject,
                 'status' => 'success',
             ]);
@@ -904,7 +936,7 @@ HTML;
                 'type' => 'generic',
                 'send_method' => 'smtp',
                 'to_email' => $to,
-                'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                'from_email' => $fromEmail,
                 'subject' => $subject,
                 'status' => 'failure',
                 'error_message' => $e->getMessage(),

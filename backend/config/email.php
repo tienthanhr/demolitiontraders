@@ -48,8 +48,8 @@ return [
     'smtp_username' => $_ENV['SMTP_USER'] ?? '',
     'smtp_password' => $_ENV['SMTP_PASS'] ?? '',
     
-    // From Email
-    'from_email' => $_ENV['SMTP_FROM'] ?? $_ENV['SMTP_USER'] ?? 'nguyenthanh123426@gmail.com',
+    // From Email (default to info@ for production)
+    'from_email' => $_ENV['SMTP_FROM'] ?? $_ENV['SMTP_USER'] ?? 'info@demolitiontraders.co.nz',
     'from_name' => $_ENV['SMTP_FROM_NAME'] ?? 'Demolition Traders',
     
     // Reply To
@@ -61,6 +61,10 @@ return [
     
     // Brevo API Key (Alternative to SMTP)
     'brevo_api_key' => $_ENV['BREVO_API_KEY'] ?? null,
+    // Prefer Brevo over SMTP in production (1=true)
+    'prefer_brevo' => (bool)($_ENV['PREFER_BREVO'] ?? false),
+    // Force all outgoing mails to this from address (optional)
+    'force_from_email' => $_ENV['FORCE_FROM_EMAIL'] ?? null,
     
     // Enable/Disable Email Sending
     'enabled' => true,
