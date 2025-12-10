@@ -106,3 +106,14 @@ Keep `dev_mode => true` during development. All emails will be sent to `dev_emai
 - Check error logs
 - Verify email address is correct
 - Test with different email provider
+
+### Railway specific guidance
+
+- Railway often restricts or blocks outbound SMTP connections on shared IPs for abuse prevention. If you are running on Railway and your app reports a successful send but recipients do not receive email, do the following:
+   1. Set `SMTP_DEBUG=1` in Railway environment variables and view the service logs after triggering a send. The PHPMailer transcript will help identify connection, auth, and server responses.
+   2. If PHPMailer connects and the SMTP server accepts the mail (250 2.0.0 OK), then the issue is likely delivery filtering (spam/quarantine) or Office365 configuration (SendAs/SendOnBehalf). Check the sending mailbox’s admin portal for quarantined messages.
+   3. If PHPMailer fails to connect or authenticate from Railway but works locally, Railway may block the traffic; in that case use an API-based email provider (Brevo/Sendgrid/Mailgun) and set `BREVO_API_KEY` in Railway to enable the built-in fallback. The app will automatically attempt Brevo if SMTP fails.
+   4. If you prefer SMTP and Railway blocks outbound email, contact Railway support to enable outbound SMTP for your project or use a relay service (e.g., SendGrid SMTP Relay) that Railway permits.
+   5. For quick debugging, deploy the `backend/test_smtp_debug.php` script and run it on Railway using a Railway run/exec or via the admin run command to get debug output.
+
+If you share the Railway service logs for a triggered send attempt (with `SMTP_DEBUG=1` enabled), I can help interpret the transcript and recommend next steps.

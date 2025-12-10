@@ -6,6 +6,7 @@ use PHPMailer\PHPMailer\Exception;
 class EmailService {
     private $config;
     private $mailer;
+    private $debugLog = '';
 
     /**
      * Decode address JSON that may have been HTML-escaped by escape_output()
@@ -67,7 +68,25 @@ class EmailService {
             
             // Add timeouts to prevent hanging
             $this->mailer->Timeout    = 10;
-            $this->mailer->SMTPDebug  = 0;
+            // Enable SMTP debug if configured. Use SMTP_DEBUG env=1 for verbose logs.
+            $smtpDebug = (bool)($_ENV['SMTP_DEBUG'] ?? false);
+            $this->mailer->SMTPDebug  = $smtpDebug ? 2 : 0;
+
+            // Capture debug output so we can store it in the email_logs and application logs
+            $this->debugLog = '';
+            $this->mailer->Debugoutput = function($str, $level) {
+                try {
+                    $message = sprintf("[PHPMailer DEBUG-%s] %s", $level, trim($str));
+                    error_log($message);
+                    // keep the last 64k of debug info to avoid huge storage
+                    if (isset($this->debugLog)) {
+                        $this->debugLog .= $message . "\n";
+                        $this->debugLog = substr($this->debugLog, -65536);
+                    }
+                } catch (Exception $e) {
+                    // Avoid any debug logging errors preventing email sends
+                }
+            };
             
             // Fix for SSL certificate issues in some environments
             $this->mailer->SMTPOptions = array(
@@ -236,7 +255,45 @@ class EmailService {
                     $this->mailer->addAttachment($pdfPath, 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf');
                 }
                 
-                $this->mailer->send();
+                try {
+                    $sendResult = $this->mailer->send();
+                } catch (Exception $mailEx) {
+                    $sendResult = false;
+                    $smtpErr = $mailEx->getMessage();
+                }
+
+                // If SMTP failed and Brevo is configured, try Brevo as a fallback
+                if (empty($sendResult) && !empty($this->config['brevo_api_key'])) {
+                    try {
+                        error_log('[DemolitionTraders] sendTaxInvoice: SMTP failed, falling back to Brevo API.');
+                        $attachments = [];
+                        if (isset($pdfPath) && $pdfPath && file_exists($pdfPath)) {
+                            $attachments[$pdfPath] = 'Tax_Invoice_Order_' . $order['order_number'] . '.pdf';
+                        }
+                        $brevoResp = $this->sendViaBrevoApi($toEmail, $customerName, $subject, $body, $attachments);
+                        $this->logEmail([
+                            'order_id' => $order['id'] ?? null,
+                            'user_id' => $triggeredBy ?? null,
+                            'type' => 'tax_invoice',
+                            'send_method' => 'brevo',
+                            'to_email' => $toEmail,
+                            'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                            'subject' => $subject,
+                            'status' => !empty($brevoResp['success']) ? 'success' : 'failure',
+                            'response' => $brevoResp['response'] ?? null,
+                            'error_message' => !empty($brevoResp['success']) ? null : ($brevoResp['response'] ?? null),
+                            'resend_reason' => $resendReason ?? null,
+                        ]);
+                        // Set sendResult to indicate success if Brevo succeeded
+                        $sendResult = !empty($brevoResp['success']);
+                    } catch (Exception $brevoEx) {
+                        error_log('[DemolitionTraders] Brevo fallback failed: ' . $brevoEx->getMessage());
+                    }
+                }
+
+                // If send appears to succeed but we have debug info showing an issue, treat as failure
+                $smtpErr = $smtpErr ?? ($this->mailer->ErrorInfo ?? null);
+
                 $this->logEmail([
                     'order_id' => $order['id'] ?? null,
                     'user_id' => $triggeredBy ?? null,
@@ -245,7 +302,9 @@ class EmailService {
                     'to_email' => $toEmail,
                     'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
                     'subject' => $subject,
-                    'status' => 'success',
+                    'status' => (!empty($sendResult) && empty($smtpErr)) ? 'success' : 'failure',
+                    'error_message' => $smtpErr ?? null,
+                    'response' => $this->debugLog ?? null,
                     'resend_reason' => $resendReason ?? null,
                 ]);
                 error_log('[DemolitionTraders] sendTaxInvoice: SMTP send finished');
@@ -300,8 +359,41 @@ class EmailService {
             // Generate PDF from HTML and attach
             $pdfPath = generate_invoice_pdf_html($receiptHtml, 'receipt');
             $this->mailer->addAttachment($pdfPath, 'Receipt_Order_' . $order['order_number'] . '.pdf');
-            $this->mailer->send();
+            try {
+                $sendResult = $this->mailer->send();
+            } catch (Exception $mailEx) {
+                $sendResult = false;
+                $smtpErr = $mailEx->getMessage();
+            }
             if (file_exists($pdfPath)) unlink($pdfPath);
+            // If SMTP failed and Brevo is configured, try Brevo as a fallback
+            if ((empty($sendResult) || !empty($smtpErr)) && !empty($this->config['brevo_api_key'])) {
+                try {
+                    error_log('[DemolitionTraders] sendReceipt: SMTP failed, falling back to Brevo API.');
+                    $attachments = [];
+                    if (isset($pdfPath) && $pdfPath && file_exists($pdfPath)) {
+                        $attachments[$pdfPath] = 'Receipt_Order_' . $order['order_number'] . '.pdf';
+                    }
+                    $brevoResp = $this->sendViaBrevoApi($toEmail, $customerName, "Receipt - Order #{$order['order_number']}", $this->mailer->Body, $attachments);
+                    $this->logEmail([
+                        'order_id' => $order['id'] ?? null,
+                        'user_id' => $triggeredBy ?? null,
+                        'type' => 'receipt',
+                        'send_method' => 'brevo',
+                        'to_email' => $toEmail,
+                        'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                        'subject' => "Receipt - Order #{$order['order_number']}",
+                        'status' => !empty($brevoResp['success']) ? 'success' : 'failure',
+                        'response' => $brevoResp['response'] ?? null,
+                        'error_message' => !empty($brevoResp['success']) ? null : ($brevoResp['response'] ?? null),
+                        'resend_reason' => $resendReason ?? null,
+                    ]);
+                    $sendResult = !empty($brevoResp['success']);
+                } catch (Exception $brevoEx) {
+                    error_log('[DemolitionTraders] Brevo fallback failed for receipt: ' . $brevoEx->getMessage());
+                }
+            }
+
             $this->logEmail([
                 'order_id' => $order['id'] ?? null,
                 'user_id' => $triggeredBy ?? null,
@@ -310,7 +402,9 @@ class EmailService {
                 'to_email' => $toEmail,
                 'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
                 'subject' => "Receipt - Order #{$order['order_number']}",
-                'status' => 'success',
+                'status' => (!empty($sendResult) && empty($smtpErr)) ? 'success' : 'failure',
+                'error_message' => $smtpErr ?? null,
+                'response' => $this->debugLog ?? null,
                 'resend_reason' => $resendReason ?? null,
             ]);
             error_log("Receipt sent to: $toEmail for order #{$order['order_number']}");
