@@ -24,7 +24,7 @@ if (session_status() === PHP_SESSION_NONE) {
     $is_secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
     $domain = '';
     if (!$isLocalhost) {
-        $domain = $_SERVER['HTTP_HOST'] ?? '';
+        $domain = '';
     }
     session_set_cookie_params([
         'lifetime' => 86400, // 24 hours
