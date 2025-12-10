@@ -534,14 +534,19 @@ function displayProduct(product, cartQty = 0) {
                     try {
                         const data = JSON.parse(text);
                         if (data.success) {
-                    if (data.success) {
-                        icon.classList.remove('fas');
-                        icon.classList.add('far');
-                        button.classList.remove('active');
-                        isInWishlist = false;
-                        showNotification('Removed from wishlist');
-                        localStorage.setItem('wishlistUpdated', Date.now());
-                        document.dispatchEvent(new Event('wishlistUpdated'));
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                            button.classList.remove('active');
+                            isInWishlist = false;
+                            showNotification('Removed from wishlist');
+                            localStorage.setItem('wishlistUpdated', Date.now());
+                            document.dispatchEvent(new Event('wishlistUpdated'));
+                        } else {
+                            showNotification(data.message || 'Error removing from wishlist', true);
+                        }
+                    } catch (parseError) {
+                        console.error('Failed to parse response:', parseError);
+                        showNotification('Error removing from wishlist', true);
                     }
                 })
                 .catch(error => {
