@@ -78,8 +78,11 @@ class EmailService {
                 )
             );
             
-            // From
-            $this->mailer->setFrom($this->config['from_email'], $this->config['from_name']);
+            // From. Ensure envelope sender matches authenticated SMTP user to avoid SendAsDenied
+            $fromEmail = $this->config['from_email'] ?? $this->config['smtp_username'];
+            $this->mailer->setFrom($fromEmail, $this->config['from_name']);
+            // Set envelope sender to authenticated user to avoid SendAsDenied errors with Exchange
+            $this->mailer->Sender = $this->config['smtp_username'];
             $this->mailer->addReplyTo($this->config['reply_to'], $this->config['from_name']);
             
             // Content type

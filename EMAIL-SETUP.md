@@ -59,6 +59,12 @@ Keep `dev_mode => true` during development. All emails will be sent to `dev_emai
 - By default, the API will not re-send an invoice or receipt for an order that already has a corresponding `*_sent_at` timestamp. Admins can explicitly force a re-send by passing `{ force: true }` in the JSON body of the send endpoint, or by using the admin UI which will ask for confirmation before forcing a re-send.
 - To add the required database columns, run: `database/add-email-timestamps.sql` (ALTER TABLE to add `tax_invoice_sent_at` and `receipt_sent_at`).
 
+## Using Microsoft Exchange / Office365 (SMTP) notes
+
+- If you are using Office365 (smtp.office365.com), ensure that `SMTP_USER` and `SMTP_FROM` are set in your `.env` and `SMTP_FROM` usually needs to match `SMTP_USER` unless the authenticated mailbox has SendAs/SendOnBehalf permission for the chosen from address.
+- If you get errors like `SendAsDenied` then set `SMTP_FROM` to equal `SMTP_USER` or configure the mailbox/service account with the `SendAs` permission for the desired From address in Exchange Admin.
+- For tenants where Basic SMTP Auth is disabled, consider using Microsoft Graph API based sending instead (OAuth client credentials + `Mail.Send` permission). If you want, I can implement Graph API support in `EmailService`.
+
 ## Testing
 
 1. Create a test order
