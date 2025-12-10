@@ -172,6 +172,29 @@ class EmailService {
         try {
             require_once __DIR__ . '/../config/database.php';
             $db = Database::getInstance();
+            // If the email_logs table doesn't exist, try to create it using the migration SQL
+            if (!$db->tableExists('email_logs')) {
+                try {
+                    $migrationFile = __DIR__ . '/../../database/add-email-logs.sql';
+                    if (file_exists($migrationFile)) {
+                        $sql = file_get_contents($migrationFile);
+                        // Basic split and execute
+                        $statements = preg_split('/;\s*\n/', $sql);
+                        foreach ($statements as $stmt) {
+                            $s = trim($stmt);
+                            if (!$s) continue;
+                            try {
+                                $db->query($s);
+                            } catch (Exception $e) {
+                                // If create failed, log and continue - a subsequent insert will still fail and be caught
+                                error_log('[DemolitionTraders] Failed to run email_logs migration: ' . $e->getMessage());
+                            }
+                        }
+                    }
+                } catch (Exception $migrEx) {
+                    error_log('[DemolitionTraders] Migration for email_logs failed: ' . $migrEx->getMessage());
+                }
+            }
             // Insert fields mapping
             $data = [
                 'order_id' => $payload['order_id'] ?? null,
