@@ -194,7 +194,10 @@ class EmailService {
             return ['success' => true, 'message' => 'Tax Invoice sent successfully'];
         } catch (Exception $e) {
             error_log("Failed to send Tax Invoice: " . $e->getMessage());
-            return ['success' => false, 'error' => $e->getMessage()];
+            error_log("Exception Trace: " . print_r($e->getTraceAsString(), true));
+            error_log("Order Data: " . print_r($order, true));
+            error_log("Customer Email: " . print_r($customerEmail, true));
+            return ['success' => false, 'error' => $e->getMessage() ?: 'Unknown error'];
         }
     }
     /**
@@ -223,7 +226,10 @@ class EmailService {
             return ['success' => true, 'message' => 'Receipt sent successfully'];
         } catch (Exception $e) {
             error_log("Failed to send Receipt: " . $e->getMessage());
-            return ['success' => false, 'error' => $e->getMessage()];
+            error_log("Exception Trace: " . print_r($e->getTraceAsString(), true));
+            error_log("Order Data: " . print_r($order, true));
+            error_log("Customer Email: " . print_r($customerEmail, true));
+            return ['success' => false, 'error' => $e->getMessage() ?: 'Unknown error'];
         }
     }
     
