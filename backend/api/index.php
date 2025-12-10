@@ -50,7 +50,9 @@ error_log('[DemolitionTraders] Rate limit loaded');
 require_once __DIR__ . '/../config/config.php';
 error_log('[DemolitionTraders] Config loaded');
 require_once __DIR__ . '/../config/database.php';
+error_log('[DemolitionTraders] Database config loaded');
 require_once __DIR__ . '/../utils/security.php'; // Include for send_json_response
+error_log('[DemolitionTraders] Security utils loaded');
 
 // Set error handling based on config (nhưng vẫn log errors, không display)
 if (Config::isDebug()) {
