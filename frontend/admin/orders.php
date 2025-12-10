@@ -2014,6 +2014,8 @@ function renderEmailLogs() {
             const safeErr = (escapeHtml(l.error_message || '')).replace(/'/g, "\\'").replace(/\n/g, "\\n");
             html += `<button class="btn btn-sm btn-outline-danger" onclick="alert('Error message: ' + '${safeErr}')">Error</button> `;
         }
+        // View button - open modal with full log (for any type)
+        html += `<button class="btn btn-sm btn-outline-secondary" onclick="openLogModal(${l.id})">View</button> `;
         // removed view button inside logs (keep expand and resend) - don't show separate 'View' modal here
         if (l.type === 'tax_invoice' || l.type === 'receipt') {
             html += `<button id="resendBtn-${l.id}" class="btn btn-sm btn-outline-primary" onclick="openResendModal(${l.id}, ${l.order_id})">Resend</button>`;
@@ -2125,6 +2127,7 @@ function openResendModal(logId, orderId) {
     if (toInput) { toInput.value = l.to_email || ''; try { toInput.focus(); } catch (e) {} }
     document.getElementById('resendType').textContent = l.type;
     document.getElementById('resendReason').value = '';
+    window.__resendLogType = l.type;
     // remember the payload
     window.__resendLogId = logId;
     window.__resendOrderId = orderId;
@@ -2181,6 +2184,21 @@ async function doResend() {
             showToast('Email re-sent successfully', 'success');
             // Refresh logs (re-fetch from server)
             await viewEmailLogs(orderId);
+            // Check the most recent log for this type / email to verify final send status
+            try {
+                const logs = window.__emailLogs || [];
+                // Find the newest log that matches type and toEmail
+                const recent = logs.filter(x => x.type === (window.__resendLogType || '') && (x.to_email || '').toLowerCase() === (toEmail || '').toLowerCase()).sort((a,b) => b.id - a.id)[0];
+                if (recent) {
+                    if (recent.status !== 'success') {
+                        // Show raw response in modal and warn
+                        openLogModal(recent.id);
+                        showToast('Note: server reported success but log indicates a failure. View the log for details.', 'warning');
+                    }
+                }
+            } catch (e) {
+                console.error('Error verifying log after resend:', e);
+            }
         } else {
             alert('Resend error: ' + (data.message || 'Unknown'));
         }
