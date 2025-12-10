@@ -2010,7 +2010,10 @@ function renderEmailLogs() {
     for (const l of pageItems) {
         const statusBadge = l.status === 'success' ? '<span class="dt-badge-success">Success</span>' : (l.status === 'failure' ? '<span class="dt-badge-error">Failed</span>' : '<span class="dt-badge-pending">'+(l.status||'pending')+'</span>');
         html += `<tr class="dt-log-row"><td>${l.id}</td><td>${l.created_at}</td><td>${l.type}</td><td class="td-grow">${l.to_email}</td><td class="td-grow">${l.from_email || ''}</td><td class="td-grow"><a href="#" onclick="toggleLogDetails(event, ${l.id})">${escapeHtml(l.subject || '')}</a></td><td class="td-grow">${escapeHtml(l.resend_reason || '')}</td><td>${statusBadge}</td><td>`;
-        if (l.error_message) html += `<button class="btn btn-sm btn-outline-danger" onclick="alert('Error message: '+escapeHtml(l.error_message))">Error</button> `;
+        if (l.error_message) {
+            const safeErr = (escapeHtml(l.error_message || '')).replace(/'/g, "\\'").replace(/\n/g, "\\n");
+            html += `<button class="btn btn-sm btn-outline-danger" onclick="alert('Error message: ' + '${safeErr}')">Error</button> `;
+        }
         // removed view button inside logs (keep expand and resend) - don't show separate 'View' modal here
         if (l.type === 'tax_invoice' || l.type === 'receipt') {
             html += `<button id="resendBtn-${l.id}" class="btn btn-sm btn-outline-primary" onclick="openResendModal(${l.id}, ${l.order_id})">Resend</button>`;
