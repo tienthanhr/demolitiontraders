@@ -182,7 +182,7 @@ function displayProduct(product, cartQty = 0) {
                 <div class="product-meta">
                     <div class="meta-row">
                         <span class="meta-label"><i class="fas fa-tag"></i> Category:</span> 
-                        <a href="<?php echo userUrl('shop.php?category='); ?>" + product.category_id>${product.category_name || 'Uncategorized'}</a>
+                        <a href="<?php echo userUrl('shop.php?category='); ?>${product.category_id}">${product.category_name || 'Uncategorized'}</a>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label"><i class="fas fa-certificate"></i> Condition:</span> 
@@ -285,13 +285,9 @@ function displayProduct(product, cartQty = 0) {
                             icon.classList.add('fas');
                             button.classList.add('active');
                             isInWishlist = true;
-                    if (data.success && data.wishlist.includes(productId.toString())) {
-                        const button = document.querySelector('.btn-wishlist');
-                        const icon = button.querySelector('i');
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                        button.classList.add('active');
-                        isInWishlist = true;
+                        }
+                    } catch (error) {
+                        console.error('Error parsing wishlist response:', error);
                     }
                 })
                 .catch(error => console.error('Error checking wishlist:', error));
