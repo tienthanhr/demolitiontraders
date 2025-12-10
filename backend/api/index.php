@@ -614,6 +614,80 @@ try {
                 sendError($e->getMessage(), 500);
             }
             break;
+        case 'probe-smtp':
+            try {
+                // Publicly accessible, low-sensitivity probe endpoint to test SMTP connectivity
+                require_once __DIR__ . '/../config/email.php';
+                $emailCfg = require __DIR__ . '/../config/email.php';
+                $host = $emailCfg['smtp_host'] ?? 'smtp.office365.com';
+                $port = (int)($emailCfg['smtp_port'] ?? 587);
+                $timeout = 5;
+                $resolvedIp = gethostbyname($host);
+                // Try fsockopen
+                $fp_ok = false; $fp_msg = '';
+                $fp = @fsockopen($host, $port, $errno, $errstr, $timeout);
+                if ($fp) { $fp_ok = true; $fp_msg = 'OK'; fclose($fp); } else { $fp_ok = false; $fp_msg = "$errno - $errstr"; }
+                // Try stream_socket_client
+                $ctx = stream_context_create(['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]]);
+                $fp2_ok = false; $fp2_msg = '';
+                $fp2 = @stream_socket_client("tcp://$host:$port", $errno2, $errstr2, $timeout, STREAM_CLIENT_CONNECT, $ctx);
+                if ($fp2) { $fp2_ok = true; $fp2_msg = 'OK'; fclose($fp2); } else { $fp2_ok = false; $fp2_msg = "$errno2 - $errstr2"; }
+                send_json_response([ 'success' => true, 'host'=>$host, 'port'=>$port, 'resolved_ip'=>$resolvedIp, 'fsockopen'=>['ok'=>$fp_ok,'msg'=>$fp_msg], 'stream_socket_client'=>['ok'=>$fp2_ok,'msg'=>$fp2_msg] ]);
+            } catch (Exception $e) {
+                error_log('Probe SMTP Error: ' . $e->getMessage());
+                sendError('SMTP probe failed: ' . $e->getMessage(), 500);
+            }
+            break;
+        case 'admin':
+            try {
+                // Simple admin-only diagnostics endpoints
+                if (!(($_SESSION['is_admin'] ?? false) || ($_SESSION['role'] ?? '') === 'admin')) {
+                    sendError('Unauthorized: Admin required', 401);
+                }
+                if ($method === 'GET' && ($id === 'probe-smtp' || $action === 'probe-smtp')) {
+                    require_once __DIR__ . '/../config/email.php';
+                    $emailCfg = require __DIR__ . '/../config/email.php';
+                    $host = $emailCfg['smtp_host'] ?? 'smtp.office365.com';
+                    $port = (int)($emailCfg['smtp_port'] ?? 587);
+                    $timeout = 5;
+                    $resolvedIp = gethostbyname($host);
+                    // Try fsockopen
+                    $fp_ok = false; $fp_msg = '';
+                    $fp = @fsockopen($host, $port, $errno, $errstr, $timeout);
+                    if ($fp) {
+                        $fp_ok = true;
+                        $fp_msg = 'OK';
+                        fclose($fp);
+                    } else {
+                        $fp_ok = false;
+                        $fp_msg = "$errno - $errstr";
+                    }
+                    // Try stream_socket_client
+                    $ctx = stream_context_create(['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]]);
+                    $fp2_ok = false; $fp2_msg = '';
+                    $fp2 = @stream_socket_client("tcp://$host:$port", $errno2, $errstr2, $timeout, STREAM_CLIENT_CONNECT, $ctx);
+                    if ($fp2) {
+                        $fp2_ok = true;
+                        $fp2_msg = 'OK';
+                        fclose($fp2);
+                    } else {
+                        $fp2_ok = false;
+                        $fp2_msg = "$errno2 - $errstr2";
+                    }
+                    send_json_response([
+                        'success' => true,
+                        'host' => $host,
+                        'port' => $port,
+                        'resolved_ip' => $resolvedIp,
+                        'fsockopen' => ['ok' => $fp_ok, 'msg' => $fp_msg],
+                        'stream_socket_client' => ['ok' => $fp2_ok, 'msg' => $fp2_msg],
+                    ]);
+                }
+            } catch (Exception $e) {
+                error_log('Admin API Error: ' . $e->getMessage());
+                sendError($e->getMessage(), 500);
+            }
+            break;
             
         default:
             sendError('Resource not found', 404);
