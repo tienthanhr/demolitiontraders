@@ -5,15 +5,26 @@
  */
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Detect localhost
+    $isLocalhost = (
+        ($_SERVER['SERVER_NAME'] ?? '') === 'localhost' || 
+        ($_SERVER['SERVER_NAME'] ?? '') === '127.0.0.1' ||
+        strpos(($_SERVER['SERVER_NAME'] ?? ''), 'localhost') !== false
+    );
+
     // 1. Force session to only use cookies
     ini_set('session.use_only_cookies', 1);
 
     // 2. Set secure cookie parameters (Must match backend/core/bootstrap.php)
     $is_secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+    $domain = '';
+    if (!$isLocalhost) {
+        $domain = $_SERVER['HTTP_HOST'] ?? '';
+    }
     session_set_cookie_params([
         'lifetime' => 86400, // 24 hours
         'path' => '/',
-        'domain' => '',          
+        'domain' => $domain,          
         'secure' => $is_secure, // Match protocol
         'httponly' => true,      
         'samesite' => 'Lax'      
