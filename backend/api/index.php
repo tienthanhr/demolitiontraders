@@ -335,6 +335,15 @@ try {
                     }
                 } elseif ($method === 'PUT' && $id) {
                     send_json_response($controller->update($id, $input));
+                } elseif ($method === 'GET' && $id && $action === 'email-logs') {
+                    // Return email logs for a specific order
+                    try {
+                        $logs = $db->fetchAll('SELECT * FROM email_logs WHERE order_id = :id ORDER BY id DESC', ['id' => $id]);
+                        send_json_response(['success' => true, 'logs' => $logs]);
+                    } catch (Exception $e) {
+                        error_log('Failed to fetch email logs for order ' . $id . ': ' . $e->getMessage());
+                        sendError('Failed to fetch email logs: ' . $e->getMessage(), 500);
+                    }
                 } elseif ($method === 'DELETE' && $id) {
                     send_json_response($controller->delete($id));
                 } else {

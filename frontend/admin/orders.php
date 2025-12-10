@@ -839,6 +839,9 @@ function renderOrders(orders) {
                         <button id="sendTaxInvoiceBtn-${order.id}" class="btn btn-secondary btn-sm" onclick="sendTaxInvoice(${order.id})" title="Send Tax Invoice Email">
                             <i class="fas fa-file-invoice"></i>
                         </button>
+                        <button class="btn btn-light btn-sm" onclick="viewEmailLogs(${order.id})" title="View Email Logs">
+                            <i class="fas fa-history"></i>
+                        </button>
                         ` : ''}
                         <button class="btn btn-warning btn-sm" onclick="updateOrderStatus(${order.id})" title="Update Status">
                             <i class="fas fa-edit"></i>
@@ -1920,6 +1923,48 @@ async function sendTaxInvoice(id) {
     }
 }
 
+// View Email Logs for an order (admin)
+async function viewEmailLogs(orderId) {
+    try {
+        const modal = document.getElementById('emailLogsModal');
+        const orderIdSpan = document.getElementById('emailLogsOrderId');
+        const content = document.getElementById('emailLogsContent');
+        content.innerHTML = '<p>Loading...</p>';
+        orderIdSpan.textContent = orderId;
+        modal.style.display = 'block';
+
+        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/email-logs`;return getApiUrl(p);})(), { method: 'GET' });
+        if (!response.ok) {
+            const text = await response.text();
+            content.innerHTML = `<div class="alert alert-danger">Failed to load logs: ${text}</div>`;
+            return;
+        }
+        const data = await response.json();
+        if (!data.success) {
+            content.innerHTML = `<div class="alert alert-warning">No logs found or failed to load.</div>`;
+            return;
+        }
+        if (!data.logs || data.logs.length === 0) {
+            content.innerHTML = '<div class="alert alert-info">No email logs for this order.</div>';
+            return;
+        }
+        let html = `<table class="table table-sm" style="width:100%;"><thead><tr><th>Date</th><th>Type</th><th>Method</th><th>To</th><th>Subject</th><th>Status</th><th>Error</th></tr></thead><tbody>`;
+        for (const l of data.logs) {
+            html += `<tr><td>${l.created_at}</td><td>${l.type}</td><td>${l.send_method}</td><td>${l.to_email}</td><td>${l.subject || ''}</td><td>${l.status}</td><td>${l.error_message || ''}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        content.innerHTML = html;
+    } catch (err) {
+        console.error(err);
+        alert('Failed to fetch email logs');
+    }
+}
+
+function closeEmailLogs() {
+    const modal = document.getElementById('emailLogsModal');
+    modal.style.display = 'none';
+}
+
 // Revenue Filter Functions
 let currentRevenuePeriod = 'all';
 
@@ -2137,6 +2182,15 @@ function setCustomDate(date) {
 loadOrders();
 </script>
         </main>
+    </div>
+    
+    <!-- Email Logs Modal -->
+    <div id="emailLogsModal" style="display:none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999;">
+        <div style="max-width: 900px; margin: 60px auto; background: white; padding: 20px; border-radius: 6px; position: relative;">
+            <button onclick="closeEmailLogs()" style="position:absolute; right: 12px; top: 12px;">Close</button>
+            <h3>Email Logs for Order <span id="emailLogsOrderId"></span></h3>
+            <div id="emailLogsContent" style="max-height: 500px; overflow: auto; margin-top: 12px;"></div>
+        </div>
     </div>
     <?php include '../components/toast-notification.php'; ?>
     <script src="../assets/js/date-formatter.js"></script>
