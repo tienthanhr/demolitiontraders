@@ -55,6 +55,7 @@ require_once __DIR__ . '/../utils/security.php'; // Include for send_json_respon
 error_log('[DemolitionTraders] Security utils loaded');
 
 // Set error handling based on config (nhưng vẫn log errors, không display)
+error_log('[DemolitionTraders] About to check Config::isDebug()');
 if (Config::isDebug()) {
     error_reporting(E_ALL);
     ini_set('log_errors', 1);
@@ -64,11 +65,13 @@ if (Config::isDebug()) {
 }
 // LUÔN TẮT display_errors để đảm bảo JSON response sạch
 ini_set('display_errors', 0);
+error_log('[DemolitionTraders] Error handling set up');
 
 // Helper function to send error response is now part of security.php (send_json_response)
 function sendError($message, $statusCode = 400) {
     send_json_response(['error' => $message], $statusCode);
 }
+error_log('[DemolitionTraders] sendError function defined');
 
 // Get request path
 error_log('[DemolitionTraders] About to get request path');
