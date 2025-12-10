@@ -59,6 +59,8 @@ error_log('[DemolitionTraders] About to check Config::isDebug()');
 try {
     $isDebug = Config::isDebug();
     error_log('[DemolitionTraders] Config::isDebug() returned: ' . ($isDebug ? 'true' : 'false'));
+    error_log('[DemolitionTraders] $isDebug (var_export): ' . var_export($isDebug, true));
+    error_log('[DemolitionTraders] $isDebug type: ' . gettype($isDebug));
     if ($isDebug) {
         error_reporting(E_ALL);
         error_log('[DemolitionTraders] About to enable log_errors');
