@@ -209,7 +209,39 @@ class EmailService {
                 'response' => $payload['response'] ?? null,
                 'resend_reason' => $payload['resend_reason'] ?? null,
             ];
-            $db->insert('email_logs', $data);
+            try {
+                $db->insert('email_logs', $data);
+            } catch (Exception $e) {
+                $msg = $e->getMessage();
+                // If it fails because the column doesn't exist, try to add column and retry once
+                if (stripos($msg, 'Unknown column') !== false || stripos($msg, 'does not exist') !== false) {
+                    error_log('[DemolitionTraders] logEmail insert failed due to missing column, attempting to add resend_reason: ' . $msg);
+                    try {
+                        // Check if column exists (MySQL)
+                        $col = null;
+                        try {
+                            $col = $db->fetchOne("SHOW COLUMNS FROM email_logs LIKE 'resend_reason'");
+                        } catch (Exception $e2) {
+                            // ignore - fallback to information_schema query
+                        }
+                        if (empty($col)) {
+                            // Add the column (MySQL)
+                            $db->query("ALTER TABLE email_logs ADD COLUMN resend_reason TEXT NULL");
+                        }
+                    } catch (Exception $alterEx) {
+                        error_log('[DemolitionTraders] Failed to add resend_reason column: ' . $alterEx->getMessage());
+                    }
+                    // Retry insert once
+                    try {
+                        $db->insert('email_logs', $data);
+                    } catch (Exception $insertEx) {
+                        error_log('[DemolitionTraders] Retry insert into email_logs failed: ' . $insertEx->getMessage());
+                        throw $insertEx; // rethrow after retry
+                    }
+                } else {
+                    throw $e; // not a missing column error
+                }
+            }
         } catch (Exception $e) {
             error_log('Failed to write email log: ' . $e->getMessage());
         }
