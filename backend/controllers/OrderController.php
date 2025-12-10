@@ -294,7 +294,15 @@ class OrderController {
                     try {
                         // Get complete order with items for email
                         $completeOrder = $this->show($orderId);
-                        $emailService->sendTaxInvoice($completeOrder, $customerEmail);
+                        $result = $emailService->sendTaxInvoice($completeOrder, $customerEmail);
+                        if (!empty($result['success'])) {
+                            // Update order to record tax invoice was sent (prevents duplicate sends)
+                            try {
+                                $this->db->query('UPDATE orders SET tax_invoice_sent_at = NOW() WHERE id = :id', ['id' => $orderId]);
+                            } catch (Exception $ignore) {
+                                error_log('Failed to write tax_invoice_sent_at for order ' . $orderId . ': ' . $ignore->getMessage());
+                            }
+                        }
                         error_log("Tax Invoice email sent to: $customerEmail for order #$orderId");
                     } catch (Exception $emailEx) {
                         // Log email error but don't break order creation

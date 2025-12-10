@@ -51,6 +51,9 @@ require_once __DIR__ . '/../config/config.php';
 error_log('[DemolitionTraders] Config loaded');
 require_once __DIR__ . '/../config/database.php';
 error_log('[DemolitionTraders] Database config loaded');
+// Initialize a DB instance for use in API endpoints that need to update orders
+$db = Database::getInstance();
+error_log('[DemolitionTraders] Database instance initialized in API');
 require_once __DIR__ . '/../utils/security.php'; // Include for send_json_response
 error_log('[DemolitionTraders] Security utils loaded');
 
@@ -274,10 +277,22 @@ try {
                     if (!$customerEmail) {
                         sendError('No customer email found', 400);
                     }
-                    
+                    // Check if receipt already sent - allow override via force param
+                    $force = ($input['force'] ?? false) === true || ($input['force'] ?? '') === 'true';
+                    if (!empty($order['receipt_sent_at']) && !$force) {
+                        // Already sent - return success with a note
+                        send_json_response(['success' => true, 'message' => 'Receipt already sent', 'already_sent' => true, 'sent_at' => $order['receipt_sent_at']]);
+                    }
+
                     // For admin-initiated sends, force send to the actual customer even when dev_mode is true
                     $result = $emailService->sendReceipt($order, $customerEmail, true);
                     if ($result['success']) {
+                        // Update database to record a sent timestamp
+                        try {
+                            $db->query('UPDATE orders SET receipt_sent_at = NOW() WHERE id = :id', ['id' => $id]);
+                        } catch (Exception $ex) {
+                            error_log('Failed to update receipt_sent_at for order ' . $id . ': ' . $ex->getMessage());
+                        }
                         send_json_response($result);
                     } else {
                         sendError($result['error'], 500);
@@ -297,10 +312,21 @@ try {
                         sendError('No customer email found', 400);
                     }
                     error_log('[DemolitionTraders] About to call sendTaxInvoice (admin forced)');
+                    // Check if tax invoice already sent - allow override via force param
+                    $force = ($input['force'] ?? false) === true || ($input['force'] ?? '') === 'true';
+                    if (!empty($order['tax_invoice_sent_at']) && !$force) {
+                        send_json_response(['success' => true, 'message' => 'Tax invoice already sent', 'already_sent' => true, 'sent_at' => $order['tax_invoice_sent_at']]);
+                    }
                     // For admin-initiated sends, bypass dev_mode so email goes to the actual customer
                     $result = $emailService->sendTaxInvoice($order, $customerEmail, true);
                     error_log('[DemolitionTraders] sendTaxInvoice returned: ' . print_r($result, true));
                     if ($result['success']) {
+                        // Update tax_invoice_sent_at
+                        try {
+                            $db->query('UPDATE orders SET tax_invoice_sent_at = NOW() WHERE id = :id', ['id' => $id]);
+                        } catch (Exception $ex) {
+                            error_log('Failed to update tax_invoice_sent_at for order ' . $id . ': ' . $ex->getMessage());
+                        }
                         send_json_response($result);
                     } else {
                         sendError($result['error'], 500);

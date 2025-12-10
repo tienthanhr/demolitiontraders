@@ -831,12 +831,12 @@ function renderOrders(orders) {
                             <i class="fas fa-print"></i>
                         </button>
                         ${orderStatus === 'paid' || orderStatus === 'delivered' || orderStatus === 'completed' ? `
-                        <button class="btn btn-info btn-sm" onclick="sendReceipt(${order.id})" title="Send Receipt Email">
+                        <button id="sendReceiptBtn-${order.id}" class="btn btn-info btn-sm" onclick="sendReceipt(${order.id})" title="Send Receipt Email">
                             <i class="fas fa-envelope"></i>
                         </button>
                         ` : ''}
                         ${orderStatus === 'pending' || orderStatus === 'processing' || orderStatus === 'ready' || orderStatus === 'shipped' || orderStatus === 'refunded' || orderStatus === 'cancelled' ? `
-                        <button class="btn btn-secondary btn-sm" onclick="sendTaxInvoice(${order.id})" title="Send Tax Invoice Email">
+                        <button id="sendTaxInvoiceBtn-${order.id}" class="btn btn-secondary btn-sm" onclick="sendTaxInvoice(${order.id})" title="Send Tax Invoice Email">
                             <i class="fas fa-file-invoice"></i>
                         </button>
                         ` : ''}
@@ -1753,11 +1753,35 @@ async function deleteOrder(id) {
 
 // Send Receipt Email
 async function sendReceipt(id) {
-    if (!confirm(`Send receipt email for Order #${id}?`)) {
-        return;
+    // Check if receipt was already sent recently
+    let shouldForce = false;
+    try {
+        const orderResp = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
+        if (orderResp.ok) {
+            const orderData = await orderResp.json();
+            if (orderData.receipt_sent_at) {
+                // Ask for confirmation to re-send
+                if (!confirm(`Receipt was already sent on ${orderData.receipt_sent_at}. Resend anyway?`)) {
+                    return;
+                }
+                shouldForce = true;
+            } else {
+                if (!confirm(`Send receipt email for Order #${id}?`)) {
+                    return;
+                }
+                shouldForce = false;
+            }
+        }
+    } catch (err) {
+        if (!confirm(`Send receipt email for Order #${id}?`)) {
+            return;
+        }
     }
     
     try {
+        // Disable button to prevent double-clicks
+        const btn = document.getElementById('sendReceiptBtn-' + id);
+        if (btn) btn.disabled = true;
         // Show sending message
         const sendingMsg = document.createElement('div');
         sendingMsg.className = 'alert alert-info';
@@ -1767,10 +1791,12 @@ async function sendReceipt(id) {
         
         const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-receipt`;return getApiUrl(p);})(), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ force: shouldForce })
         });
 
         sendingMsg.remove();
+        if (btn) btn.disabled = false;
 
         if (response.ok) {
             try {
@@ -1813,10 +1839,35 @@ async function sendReceipt(id) {
 
 // Send Tax Invoice Email
 async function sendTaxInvoice(id) {
-    if (!confirm(`Send tax invoice email for Order #${id}?`)) {
-        return;
+    // Check if tax invoice was already sent recently
+    let shouldForce = false;
+    try {
+        const orderResp = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})());
+        if (orderResp.ok) {
+            const orderData = await orderResp.json();
+            if (orderData.tax_invoice_sent_at) {
+                // Ask for confirmation to re-send and set force flag
+                if (!confirm(`Tax invoice was already sent on ${orderData.tax_invoice_sent_at}. Resend anyway?`)) {
+                    return;
+                }
+                shouldForce = true;
+            } else {
+                if (!confirm(`Send tax invoice email for Order #${id}?`)) {
+                    return;
+                }
+                shouldForce = false;
+            }
+        }
+    } catch (err) {
+        // If we can't fetch order details, fall back to simple confirm
+        if (!confirm(`Send tax invoice email for Order #${id}?`)) {
+            return;
+        }
     }
     try {
+        // Disable button to prevent duplicate clicks
+        const btn2 = document.getElementById('sendTaxInvoiceBtn-' + id);
+        if (btn2) btn2.disabled = true;
         const sendingMsg = document.createElement('div');
         sendingMsg.className = 'alert alert-info';
         sendingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #6c757d; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
@@ -1825,10 +1876,12 @@ async function sendTaxInvoice(id) {
 
         const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-tax-invoice`;return getApiUrl(p);})(), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ force: shouldForce })
         });
 
         sendingMsg.remove();
+        if (btn2) btn2.disabled = false;
 
         if (response.ok) {
             try {

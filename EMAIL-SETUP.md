@@ -53,6 +53,12 @@ Keep `dev_mode => true` during development. All emails will be sent to `dev_emai
 'dev_email' => 'test@example.com',
 ```
 
+## Preventing duplicate emails
+
+- The system now records when tax-invoice and receipt emails are sent using `tax_invoice_sent_at` and `receipt_sent_at` fields on the `orders` table.
+- By default, the API will not re-send an invoice or receipt for an order that already has a corresponding `*_sent_at` timestamp. Admins can explicitly force a re-send by passing `{ force: true }` in the JSON body of the send endpoint, or by using the admin UI which will ask for confirmation before forcing a re-send.
+- To add the required database columns, run: `database/add-email-timestamps.sql` (ALTER TABLE to add `tax_invoice_sent_at` and `receipt_sent_at`).
+
 ## Testing
 
 1. Create a test order
