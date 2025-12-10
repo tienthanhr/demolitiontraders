@@ -210,6 +210,24 @@ class EmailService {
                 'resend_reason' => $payload['resend_reason'] ?? null,
             ];
             try {
+                // Ensure the insert only includes columns that exist to avoid fatal SQL errors
+                try {
+                    $existingColumns = $db->fetchAll("SHOW COLUMNS FROM email_logs");
+                    $colNames = [];
+                    foreach ($existingColumns as $c) {
+                        $colNames[] = $c['Field'] ?? $c['field'] ?? null;
+                    }
+                } catch (Exception $colEx) {
+                    // If the columns query fails (e.g., table missing), attempt migration then proceed
+                    $colNames = [];
+                }
+                if (!empty($colNames)) {
+                    foreach (array_keys($data) as $k) {
+                        if (!in_array($k, $colNames)) {
+                            unset($data[$k]);
+                        }
+                    }
+                }
                 $db->insert('email_logs', $data);
             } catch (Exception $e) {
                 $msg = $e->getMessage();
