@@ -71,6 +71,7 @@ try {
     // Default to no error reporting if config fails
     error_reporting(0);
 }
+error_log('[DemolitionTraders] After try-catch block');
 // LUÔN TẮT display_errors để đảm bảo JSON response sạch
 ini_set('display_errors', 0);
 error_log('[DemolitionTraders] Error handling set up');
