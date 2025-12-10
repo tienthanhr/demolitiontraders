@@ -8,7 +8,7 @@
 
 // --- Configuration ---
 const RATE_LIMIT_PERIOD = 60; // Time window in seconds (1 minute)
-const RATE_LIMIT_MAX_REQUESTS = 60; // Max requests per period
+const RATE_LIMIT_MAX_REQUESTS = 1000; // Temporarily increased for debugging
 const RATE_LIMIT_LOG_DIR = __DIR__ . '/../logs/rate_limit/';
 
 // --- Rate Limiting Logic ---
