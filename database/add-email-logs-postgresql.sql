@@ -1,0 +1,16 @@
+-- Migration: Add email_logs table to store all outgoing emails for auditing (PostgreSQL)
+CREATE TABLE IF NOT EXISTS email_logs (
+    id SERIAL PRIMARY KEY,
+    order_id INT NULL,
+    user_id INT NULL,
+    type VARCHAR(64) NOT NULL,
+    send_method VARCHAR(32) NOT NULL,
+    to_email VARCHAR(255) NOT NULL,
+    from_email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NULL,
+    status VARCHAR(32) NULL,
+    error_message TEXT NULL,
+    response TEXT NULL,
+    resend_reason TEXT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
