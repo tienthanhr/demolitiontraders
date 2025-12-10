@@ -56,11 +56,19 @@ error_log('[DemolitionTraders] Security utils loaded');
 
 // Set error handling based on config (nhưng vẫn log errors, không display)
 error_log('[DemolitionTraders] About to check Config::isDebug()');
-if (Config::isDebug()) {
-    error_reporting(E_ALL);
-    ini_set('log_errors', 1);
-    ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
-} else {
+try {
+    $isDebug = Config::isDebug();
+    error_log('[DemolitionTraders] Config::isDebug() returned: ' . ($isDebug ? 'true' : 'false'));
+    if ($isDebug) {
+        error_reporting(E_ALL);
+        ini_set('log_errors', 1);
+        ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
+    } else {
+        error_reporting(0);
+    }
+} catch (Exception $e) {
+    error_log('[DemolitionTraders] Exception in Config::isDebug(): ' . $e->getMessage());
+    // Default to no error reporting if config fails
     error_reporting(0);
 }
 // LUÔN TẮT display_errors để đảm bảo JSON response sạch
