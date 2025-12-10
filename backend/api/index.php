@@ -61,8 +61,11 @@ try {
     error_log('[DemolitionTraders] Config::isDebug() returned: ' . ($isDebug ? 'true' : 'false'));
     if ($isDebug) {
         error_reporting(E_ALL);
+        error_log('[DemolitionTraders] About to enable log_errors');
         ini_set('log_errors', 1);
+        error_log('[DemolitionTraders] log_errors enabled, about to set error_log path');
         ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
+        error_log('[DemolitionTraders] error_log set to: ' . __DIR__ . '/../logs/php_errors.log');
     } else {
         error_reporting(0);
     }
