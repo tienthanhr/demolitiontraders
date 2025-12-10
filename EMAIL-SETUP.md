@@ -61,6 +61,12 @@ Keep `dev_mode => true` during development. All emails will be sent to `dev_emai
  - To add the required database columns, run: `database/add-email-timestamps.sql` (ALTER TABLE to add `tax_invoice_sent_at` and `receipt_sent_at`).
  - To track all outgoing emails (audit trail), run: `database/add-email-logs.sql` which creates the `email_logs` table. This will log every outgoing email with status, method (SMTP/Brevo), and an associated order ID or user.
 
+## Viewing Email Logs
+
+- You can now view email logs per-order in the admin UI: click the history icon next to an order to open the email logs modal.
+- For quick debugging you can also fetch logs via API: `GET /api/index.php?request=orders/{orderId}/email-logs` (admin-only). The UI already uses this endpoint.
+- A helper page is included for debugging: `backend/show_email_logs.php` (simple JSON output of recent logs). Make sure to remove / restrict this before deploying to production.
+
 ## Using Microsoft Exchange / Office365 (SMTP) notes
 
 - If you are using Office365 (smtp.office365.com), ensure that `SMTP_USER` and `SMTP_FROM` are set in your `.env` and `SMTP_FROM` usually needs to match `SMTP_USER` unless the authenticated mailbox has SendAs/SendOnBehalf permission for the chosen from address.
