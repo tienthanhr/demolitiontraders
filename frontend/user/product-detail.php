@@ -583,19 +583,9 @@ function displayProduct(product, cartQty = 0) {
                         showNotification('Added to wishlist');
                         localStorage.setItem('wishlistUpdated', Date.now());
                         document.dispatchEvent(new Event('wishlistUpdated'));
-                            // Update wishlist count on header
-                            async function updateWishlistCount() {
-                                try {
-                                    const response = await fetch(getApiUrl('/api/wishlist/get.php'));
-                                    const responseText = await response.text();
-                                    const data = JSON.parse(responseText);
-                                    const count = data.wishlist ? data.wishlist.length : 0;
-                                    const el = document.getElementById('wishlist-count');
-                                    if (el) el.textContent = count;
-                                } catch (error) {
-                                    // ignore
-                                }
-                            }
+                        
+                        // Update wishlist count on header
+                        updateWishlistCount();
                     } else {
                         showNotification(data.message || 'Error adding to wishlist', true);
                     }
@@ -608,6 +598,20 @@ function displayProduct(product, cartQty = 0) {
                     button.style.pointerEvents = '';
                     button.style.opacity = '';
                 });
+            }
+        }
+        
+        // Update wishlist count on header
+        async function updateWishlistCount() {
+            try {
+                const response = await fetch(getApiUrl('/api/wishlist/get.php'));
+                const responseText = await response.text();
+                const data = JSON.parse(responseText);
+                const count = data.wishlist ? data.wishlist.length : 0;
+                const el = document.getElementById('wishlist-count');
+                if (el) el.textContent = count;
+            } catch (error) {
+                // ignore
             }
         }
         
