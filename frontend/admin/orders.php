@@ -1948,15 +1948,50 @@ async function viewEmailLogs(orderId) {
             content.innerHTML = '<div class="alert alert-info">No email logs for this order.</div>';
             return;
         }
-        let html = `<table class="table table-sm" style="width:100%;"><thead><tr><th>Date</th><th>Type</th><th>Method</th><th>To</th><th>Subject</th><th>Status</th><th>Error</th></tr></thead><tbody>`;
+        let html = `<table class="table table-sm" style="width:100%;"><thead><tr><th>Date</th><th>Type</th><th>Method</th><th>To</th><th>Subject</th><th>Triggered</th><th>Status</th><th>Error</th><th>Actions</th></tr></thead><tbody>`;
         for (const l of data.logs) {
-            html += `<tr><td>${l.created_at}</td><td>${l.type}</td><td>${l.send_method}</td><td>${l.to_email}</td><td>${l.subject || ''}</td><td>${l.status}</td><td>${l.error_message || ''}</td></tr>`;
+            html += `<tr><td>${l.created_at}</td><td>${l.type}</td><td>${l.send_method}</td><td>${l.to_email}</td><td>${l.subject || ''}</td><td>${l.triggered_by_name || ''}</td><td>${l.status}</td><td>${l.error_message || ''}</td><td>`;
+            if (l.type === 'tax_invoice' || l.type === 'receipt') {
+                html += `<button id="resendBtn-${l.id}" class="btn btn-sm btn-outline-primary" onclick="resendLoggedEmail(${l.id}, ${orderId})">Resend</button>`;
+            }
+            html += `</td></tr>`;
         }
         html += '</tbody></table>';
         content.innerHTML = html;
     } catch (err) {
         console.error(err);
         alert('Failed to fetch email logs');
+    }
+}
+
+async function resendLoggedEmail(logId, orderId) {
+    if (!confirm('Resend this email?')) return;
+    try {
+        const btn = document.getElementById('resendBtn-' + logId);
+        if (btn) btn.disabled = true;
+        const resp = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/resend-email`;return getApiUrl(p);})(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ log_id: logId })
+        });
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert('Resend failed: ' + (text || resp.statusText));
+            if (btn) btn.disabled = false;
+            return;
+        }
+        const data = await resp.json();
+        if (data.success) {
+            alert('Email re-sent successfully');
+            // Refresh logs
+            await viewEmailLogs(orderId);
+        } else {
+            alert('Resend error: ' + (data.message || 'Unknown'));
+        }
+    } catch (e) {
+        alert('Error resending: ' + e.message);
+        const btn = document.getElementById('resendBtn-' + logId);
+        if (btn) btn.disabled = false;
     }
 }
 

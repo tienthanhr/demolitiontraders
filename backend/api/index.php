@@ -338,11 +338,64 @@ try {
                 } elseif ($method === 'GET' && $id && $action === 'email-logs') {
                     // Return email logs for a specific order
                     try {
-                        $logs = $db->fetchAll('SELECT * FROM email_logs WHERE order_id = :id ORDER BY id DESC', ['id' => $id]);
+                        $logs = $db->fetchAll('SELECT el.*, CONCAT(u.first_name, " ", u.last_name) as triggered_by_name FROM email_logs el LEFT JOIN users u ON u.id = el.user_id WHERE el.order_id = :id ORDER BY el.id DESC', ['id' => $id]);
                         send_json_response(['success' => true, 'logs' => $logs]);
                     } catch (Exception $e) {
                         error_log('Failed to fetch email logs for order ' . $id . ': ' . $e->getMessage());
                         sendError('Failed to fetch email logs: ' . $e->getMessage(), 500);
+                    }
+                } elseif ($method === 'POST' && $id && $action === 'resend-email') {
+                    // Resend an email from a logged email_log (requires admin privileges)
+                    try {
+                        $rawInput = file_get_contents('php://input');
+                        error_log('[DemolitionTraders] resend-email raw input: ' . var_export($rawInput, true));
+                        $input = json_decode($rawInput, true) ?? $_POST ?? [];
+                        $logId = $input['log_id'] ?? null;
+                        if (!$logId) {
+                            sendError('log_id is required', 400);
+                        }
+
+                        $log = $db->fetchOne('SELECT * FROM email_logs WHERE id = :id', ['id' => $logId]);
+                        if (!$log) {
+                            sendError('Log not found', 404);
+                        }
+                        if ($log['order_id'] != $id) {
+                            sendError('Log does not belong to order', 400);
+                        }
+
+                        // Authorization: only admins can resend
+                        if (!(($_SESSION['is_admin'] ?? false) || ($_SESSION['role'] ?? '') === 'admin')) {
+                            sendError('Unauthorized: Admin required', 401);
+                        }
+
+                        require_once __DIR__ . '/../services/EmailService.php';
+                        $emailService = new EmailService();
+                        $order = $controller->show($id);
+                        $userId = $_SESSION['user_id'] ?? null;
+
+                        $toEmail = $log['to_email'];
+                        $type = $log['type'];
+                        $result = ['success' => false, 'message' => 'Unknown type'];
+                        if ($type === 'tax_invoice') {
+                            $result = $emailService->sendTaxInvoice($order, $toEmail, true, $userId);
+                        } elseif ($type === 'receipt') {
+                            $result = $emailService->sendReceipt($order, $toEmail, true, $userId);
+                        } else {
+                            // Generic resend using sendEmail
+                            $subject = $log['subject'] ?? 'Resend Email';
+                            $body = $log['response'] ?? $subject;
+                            $ok = $emailService->sendEmail($toEmail, $subject, $body);
+                            $result = ['success' => $ok, 'message' => $ok ? 'Email re-sent' : 'Failed to re-send'];
+                        }
+
+                        if ($result['success']) {
+                            send_json_response(['success' => true, 'message' => 'Re-sent successfully']);
+                        } else {
+                            sendError($result['error'] ?? 'Failed to re-send', 500);
+                        }
+                    } catch (Exception $e) {
+                        error_log('Resend email error: ' . $e->getMessage());
+                        sendError($e->getMessage(), 500);
                     }
                 } elseif ($method === 'DELETE' && $id) {
                     send_json_response($controller->delete($id));
