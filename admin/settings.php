@@ -1,5 +1,6 @@
 <?php
-require_once '../frontend/config.php';
+require_once '../config.php';
+require_once 'auth-check.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -14,10 +15,10 @@ header('Expires: 0');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
+    <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="<?php echo BASE_PATH; ?>assets/js/api-helper.js"></script>
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -80,7 +81,7 @@ header('Expires: 0');
     <div style="margin-top: 30px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
         <h3 style="margin-bottom: 20px; color: #2f3192;">Quick Actions</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <button class="btn btn-primary" onclick="window.location.href='<?php echo BASE_PATH; ?>'" style="padding: 15px;">
+            <button class="btn btn-primary" onclick="window.location.href='<?php echo SITE_URL; ?>'" style="padding: 15px;">
                 <i class="fas fa-home"></i><br>View Website
             </button>
             <button class="btn btn-success" onclick="exportProducts()" style="padding: 15px;">
@@ -138,8 +139,8 @@ async function logoutConfirm() {
     if (result === true) {
         console.log('Redirecting to logout...');
         // Clear session via logout.php then redirect to admin-login
-        await fetch('<?php echo BASE_PATH; ?>logout.php?admin=1');
-        window.location.href = '<?php echo BASE_PATH; ?>admin-login';
+        await fetch('<?php echo SITE_URL; ?>/logout.php?admin=1');
+        window.location.href = '<?php echo SITE_URL; ?>/admin-login';
     } else {
         console.log('Logout cancelled');
     }

@@ -1,5 +1,5 @@
 <?php
-require_once '../config.php';
+require_once(__DIR__ . '/../config.php');
 require_once 'auth-check.php';
 
 // If a user requests the non-canonical frontend admin path directly, redirect to the canonical root admin path

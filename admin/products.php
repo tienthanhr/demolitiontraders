@@ -1,5 +1,6 @@
 <?php
-require_once '../frontend/config.php';
+require_once '../config.php';
+require_once 'auth-check.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -14,10 +15,10 @@ header('Expires: 0');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products Management - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
+    <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="<?php echo BASE_PATH; ?>assets/js/api-helper.js"></script>
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">

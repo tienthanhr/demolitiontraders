@@ -2,10 +2,14 @@
 /**
  * Admin Reset User Password API
  */
-require_once '../../core/bootstrap.php'; // Ensures session is started securely
-require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
-
+// Ensure clean JSON responses (avoid PHP warnings leaking into output)
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
+require_once '../../core/bootstrap.php'; // Ensures session is started securely
+require_once 'csrf_middleware.php';      // Handles admin auth and CSRF validation
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../config/database.php';
+ob_clean();
 try {
     $data = json_decode(file_get_contents('php://input'), true);
     

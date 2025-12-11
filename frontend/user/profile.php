@@ -96,7 +96,7 @@ $orders = $db->fetchAll(
     </style>
 </head>
 <body>
-    <?php include '../components/header.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
     
     <div class="account-container">
         <div class="account-header">
@@ -267,8 +267,8 @@ $orders = $db->fetchAll(
         </div>
     </div>
     
-    <?php include '../components/footer.php'; ?>
-    <?php include '../components/toast-notification.php'; ?>
+    <?php include __DIR__ . '/../components/footer.php'; ?>
+    <?php include __DIR__ . '/../components/toast-notification.php'; ?>
     
     <script>
         // Tab switching

@@ -15,44 +15,44 @@
         </button>
     </div>
     <nav class="sidebar-menu">
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=index.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/index.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
             <i class="fas fa-home"></i> Dashboard
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=products.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'products.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/products.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'products.php' ? 'active' : ''; ?>">
             <i class="fas fa-box"></i> Products
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=categories.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'categories.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/categories.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'categories.php' ? 'active' : ''; ?>">
             <i class="fas fa-tags"></i> Categories
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=orders.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'orders.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/orders.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'orders.php' ? 'active' : ''; ?>">
             <i class="fas fa-shopping-cart"></i> Orders
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=customers.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'customers.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/customers.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'customers.php' ? 'active' : ''; ?>">
             <i class="fas fa-users"></i> Customers
         </a>
         
         <div class="menu-divider"></div>
         <div class="menu-label">Customer Inquiries</div>
         
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=sell-to-us.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'sell-to-us.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/sell-to-us.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'sell-to-us.php' ? 'active' : ''; ?>">
             <i class="fas fa-handshake"></i> Sell to Us
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=wanted-listings.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'wanted-listings.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/wanted-listings.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'wanted-listings.php' ? 'active' : ''; ?>">
             <i class="fas fa-star"></i> Wanted Listings
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=contact-messages.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'contact-messages.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/contact-messages.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'contact-messages.php' ? 'active' : ''; ?>">
             <i class="fas fa-envelope"></i> Contact Messages
         </a>
         
         <div class="menu-divider"></div>
         
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=admins.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admins.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/admins.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'admins.php' ? 'active' : ''; ?>">
             <i class="fas fa-user-shield"></i> Admins
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=low-stock.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'low-stock.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/low-stock.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'low-stock.php' ? 'active' : ''; ?>">
             <i class="fas fa-exclamation-triangle"></i> Low Stock
         </a>
-        <a href="<?php echo ADMIN_SCRIPT; ?>?path=settings.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>">
+        <a href="<?php echo ADMIN_URL; ?>/settings.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>">
             <i class="fas fa-cog"></i> Settings
         </a>
         

@@ -20,20 +20,22 @@ if ($isLocalhost) {
     define('FRONTEND_PATH', '/demolitiontraders/frontend/');
     define('API_BASE', '/demolitiontraders/backend/api/');
     // Admin path alias to avoid server-level conflicts on /admin
-    define('SITE_ADMIN_PATH', '/demolitiontraders/site-admin/');
+    define('SITE_ADMIN_PATH', '/demolitiontraders/admin/');
 } else {
     // Production (Render, etc.)
     define('BASE_PATH', '/');
     define('FRONTEND_PATH', '/frontend/');
     define('API_BASE', '/backend/api/');
     // Admin path alias to avoid server-level conflicts on /admin
-    define('SITE_ADMIN_PATH', '/site-admin/');
+    define('SITE_ADMIN_PATH', '/admin/');
 }
 
 // Backwards-compatibility constant for admin URL
 define('ADMIN_PATH', SITE_ADMIN_PATH);
-// Script-based admin entrypoint path (for pages using query-based dispatcher)
-define('ADMIN_SCRIPT', rtrim(BASE_PATH, '/') . '/site-admin.php');
+// Direct admin base URL
+define('ADMIN_URL', rtrim(BASE_PATH, '/') . '/admin');
+// Legacy constant kept for compatibility; points to direct admin base
+define('ADMIN_SCRIPT', ADMIN_URL);
 
 // Helper function to get asset path
 function asset($path) {

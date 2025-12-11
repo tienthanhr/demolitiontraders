@@ -1,5 +1,6 @@
 <?php
-require_once '../frontend/config.php';
+require_once '../config.php';
+require_once 'auth-check.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -9,7 +10,7 @@ header('Expires: 0');
 // Old auth code removed by update script
 
 $pageTitle = 'Wanted Listings';
-include __DIR__ . '/../components/admin-header.php';
+include __DIR__ . '/../frontend/components/admin-header.php';
 ?>
 
 <style>
@@ -726,4 +727,4 @@ include __DIR__ . '/../components/admin-header.php';
     }
 </script>
 
-<?php include __DIR__ . '/../components/admin-footer.php'; ?>
+<?php include __DIR__ . '/../frontend/components/admin-footer.php'; ?>

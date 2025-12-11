@@ -1,6 +1,12 @@
 <?php
-require_once '../frontend/config.php';
+require_once '../config.php';
+require_once 'auth-check.php';
 require_once '../frontend/components/date-helper.php';
+
+// Ensure CSRF token for admin actions
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -17,10 +23,14 @@ header('Expires: 0');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customers Management - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
+    <?php if (!empty($_SESSION['csrf_token'])): ?>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>">
+    <script>window.CSRF_TOKEN = '<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>';</script>
+    <?php endif; ?>
+    <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="<?php echo BASE_PATH; ?>assets/js/api-helper.js"></script>
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js"></script>
     <style>
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -132,7 +142,6 @@ header('Expires: 0');
         .info-group input, .info-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
         .info-group select { cursor: pointer; }
     </style>
-    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -1160,16 +1169,18 @@ async function submitResetPassword() {
     errorDiv.style.display = 'none';
     
     try {
-        const res = await fetch(getApiUrl('/api/admin/reset-user-password.php'), {
+        const result = await apiFetch(getApiUrl('/api/admin/reset-user-password.php'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
             body: JSON.stringify({ 
                 user_id: resetPasswordUserId,
                 new_password: newPassword
-            })
+            }),
+            credentials: 'include'
         });
-        
-        const result = await res.json();
         
         if (result.success) {
             closeResetPasswordModal();
@@ -1200,10 +1211,11 @@ async function submitResetPassword() {
             document.getElementById('stat-total-customers').textContent = totalCustomers;
             const activeCustomers = customers.filter(c => c.status === 'active').length;
             document.getElementById('stat-active-customers').textContent = activeCustomers;
-            const withOrders = customers.filter(c => (c.order_count && c.order_count > 0) || (c.total_spent && parseFloat(c.total_spent) > 0)).length;
+            const withOrders = customers.filter(c => (Number(c.order_count || 0) > 0) || (Number(c.total_spent || 0) > 0)).length;
             document.getElementById('stat-with-orders').textContent = withOrders;
+            const totalOrders = customers.reduce((sum, c) => sum + Number(c.order_count || 0), 0);
             const totalOrdersEl = document.getElementById('stat-total-orders');
-            if (totalOrdersEl) totalOrdersEl.textContent = '-';
+            if (totalOrdersEl) totalOrdersEl.textContent = totalOrders;
 
             // Populate table
             const tbody = document.getElementById('customers-tbody');
@@ -1221,8 +1233,8 @@ async function submitResetPassword() {
                     <td data-label="Phone">${customer.phone || '-'}</td>
                     <td data-label="Status"><span class="badge badge-${customer.status || 'unknown'}">${(customer.status || 'unknown').charAt(0).toUpperCase() + (customer.status || 'unknown').slice(1)}</span></td>
                     <td data-label="Registered">${customer.created_at ? formatDate(customer.created_at, 'long') : '-'}</td>
-                    <td data-label="Orders"><strong>${customer.order_count || '-'}</strong></td>
-                    <td data-label="Total Spent"><strong>$${customer.total_spent ? parseFloat(customer.total_spent).toFixed(2) : '-'}</strong></td>
+                    <td data-label="Orders"><strong>${Number(customer.order_count || 0)}</strong></td>
+                    <td data-label="Total Spent"><strong>$${Number(customer.total_spent || 0).toFixed(2)}</strong></td>
                     <td data-label="Actions">
                         <button class="btn btn-sm btn-primary" onclick="viewCustomer(${customer.id})" title="View Details"><i class="fas fa-eye"></i></button>
                         <button class="btn btn-sm btn-info" onclick="resetPassword(${customer.id}, '${(customer.first_name || '') + ' ' + (customer.last_name || '')}')" title="Reset Password"><i class="fas fa-key"></i></button>
@@ -1236,6 +1248,17 @@ async function submitResetPassword() {
             const tbody = document.getElementById('customers-tbody');
             tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:40px;">Error loading customers.</td></tr>`;
         }
+    }
+
+    // Simple date formatter for client rendering
+    function formatDate(dateStr, format = 'short') {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        if (Number.isNaN(date.getTime())) return dateStr;
+        if (format === 'long') {
+            return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        return date.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
     }
 
     // Initialize

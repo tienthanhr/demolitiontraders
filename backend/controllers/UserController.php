@@ -28,11 +28,30 @@ class UserController {
             $totalResult = $this->db->fetchOne($countSql);
             $total = $totalResult['total'];
             
-            // Get users with pagination
-            $sql = "SELECT id, email, first_name, last_name, phone, role, created_at, updated_at 
-                    FROM users 
-                    WHERE role = 'customer' OR role IS NULL
-                    ORDER BY created_at DESC 
+            // Get users with pagination + order aggregates
+            $sql = "SELECT 
+                        u.id, 
+                        u.email, 
+                        u.first_name, 
+                        u.last_name, 
+                        u.phone, 
+                        u.status,
+                        u.role, 
+                        u.created_at, 
+                        u.updated_at,
+                        (
+                            SELECT COUNT(*) 
+                            FROM orders o 
+                            WHERE o.user_id = u.id
+                        ) AS order_count,
+                        (
+                            SELECT COALESCE(SUM(o.total_amount), 0) 
+                            FROM orders o 
+                            WHERE o.user_id = u.id
+                        ) AS total_spent
+                    FROM users u
+                    WHERE u.role = 'customer' OR u.role IS NULL
+                    ORDER BY u.created_at DESC 
                     LIMIT :limit OFFSET :offset";
             
             $users = $this->db->fetchAll($sql, [
@@ -40,6 +59,13 @@ class UserController {
                 'offset' => $offset
             ]);
             
+            // Normalize status default
+            foreach ($users as &$u) {
+                if (empty($u['status'])) {
+                    $u['status'] = 'unknown';
+                }
+            }
+
             return [
                 'data' => $users,
                 'pagination' => [
@@ -61,9 +87,28 @@ class UserController {
      */
     public function show($id) {
         try {
-            $sql = "SELECT id, email, first_name, last_name, phone, role, created_at, updated_at 
-                    FROM users 
-                    WHERE id = :id";
+            $sql = "SELECT 
+                        u.id, 
+                        u.email, 
+                        u.first_name, 
+                        u.last_name, 
+                        u.phone, 
+                        u.status,
+                        u.role, 
+                        u.created_at, 
+                        u.updated_at,
+                        (
+                            SELECT COUNT(*) 
+                            FROM orders o 
+                            WHERE o.user_id = u.id
+                        ) AS order_count,
+                        (
+                            SELECT COALESCE(SUM(o.total_amount), 0) 
+                            FROM orders o 
+                            WHERE o.user_id = u.id
+                        ) AS total_spent
+                    FROM users u
+                    WHERE u.id = :id";
             
             $user = $this->db->fetchOne($sql, ['id' => $id]);
             
@@ -71,6 +116,10 @@ class UserController {
                 throw new Exception('User not found');
             }
             
+            if (empty($user['status'])) {
+                $user['status'] = 'unknown';
+            }
+
             return $user;
         } catch (Exception $e) {
             error_log('UserController::show error: ' . $e->getMessage());

@@ -4,18 +4,12 @@
  * Include this at the top of all admin pages
  */
 
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../admin/auth-check.php';
 
-// Check if user is admin
-$isAdmin = ($_SESSION['role'] ?? '') === 'admin' || 
-           ($_SESSION['user_role'] ?? '') === 'admin' || 
-           ($_SESSION['is_admin'] ?? false) === true;
-
-if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'];
-    header('Location: ' . $protocol . $host . BASE_PATH . 'admin-login');
-    exit;
+// Ensure a CSRF token exists for admin actions
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 ?>
 <!DOCTYPE html>
@@ -24,16 +18,20 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle ?? 'Admin Dashboard'; ?> - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
+    <?php if (!empty($_SESSION['csrf_token'])): ?>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>">
+    <script>window.CSRF_TOKEN = '<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>';</script>
+    <?php endif; ?>
+    <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
     
-    <script src="<?php echo asset('assets/js/api-helper.js?v=1'); ?>"></script>
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js?v=1"></script>
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <?php if (isset($additionalCSS)) echo $additionalCSS; ?>
 </head>
 <body>
     <div class="admin-wrapper">
-        <?php include __DIR__ . '/../admin/sidebar.php'; ?>
+        <?php include __DIR__ . '/../../admin/sidebar.php'; ?>
         
         <div class="main-content">

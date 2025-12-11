@@ -88,32 +88,30 @@ RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^backend/api/.*\.php$ - [L]
 
 # ============================================================================
-# ADMIN ROUTES (/admin/... → admin/...)
+# ADMIN ROUTES (/admin/...)
 # ============================================================================
 
-# /admin → /admin/index.php
+# /admin -> /admin/index.php
 RewriteRule ^admin/?$ %{ENV:BASE}/admin/index.php [L]
-RewriteRule ^site-admin/?$ site-admin.php [L]
 
-# /admin-login → /frontend/admin-login.php
+# Legacy site-admin paths: redirect to /admin equivalents
+RewriteRule ^site-admin/?$ %{ENV:BASE}/admin/index.php [R=301,L]
+RewriteRule ^site-admin/(.+)$ %{ENV:BASE}/admin/$1 [R=301,L]
+
+# /admin-login -> /frontend/admin-login.php
 RewriteRule ^admin-login/?$ %{ENV:BASE}/frontend/admin-login.php [L]
 
-# /admin/sell-to-us → /admin/sell-to-us.php
+# /admin/sell-to-us -> /admin/sell-to-us.php
 RewriteRule ^admin/sell-to-us/?$ %{ENV:BASE}/admin/sell-to-us.php [L]
 
-# /admin/wanted-listings → /admin/wanted-listings.php
+# /admin/wanted-listings -> /admin/wanted-listings.php
 RewriteRule ^admin/wanted-listings/?$ %{ENV:BASE}/admin/wanted-listings.php [L]
 
-# /admin/contact-messages → /admin/contact-messages.php
+# /admin/contact-messages -> /admin/contact-messages.php
 RewriteRule ^admin/contact-messages/?$ %{ENV:BASE}/admin/contact-messages.php [L]
 
-# /admin/* → /admin/*
+# /admin/* -> /admin/*
 RewriteRule ^admin/(.+)$ %{ENV:BASE}/admin/$1 [L]
-RewriteRule ^site-admin/(.+)$ site-admin.php?path=$1 [L,QSA]
-
-# Alternative admin path to avoid conflicts (site-admin)
-RewriteRule ^site-admin/?$ %{ENV:BASE}/admin/index.php [L]
-RewriteRule ^site-admin/(.+)$ %{ENV:BASE}/admin/$1 [L]
 
 # ============================================================================
 # USER PAGES & PUBLIC ROUTES

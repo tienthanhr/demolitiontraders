@@ -1,5 +1,6 @@
 <?php
-require_once '../frontend/config.php';
+require_once '../config.php';
+require_once 'auth-check.php';
 require_once '../frontend/components/date-helper.php';
 
 // Prevent caching
@@ -17,10 +18,10 @@ header('Expires: 0');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Management - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
+    <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="<?php echo BASE_PATH; ?>assets/js/api-helper.js"></script>
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js"></script>
     <style>
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s; }
@@ -46,7 +47,6 @@ header('Expires: 0');
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .section-header h2 { margin: 0; }
     </style>
-    <script src="../assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -70,7 +70,7 @@ header('Expires: 0');
             <h3 id="stat-total-admins">-</h3>
             <p>Total Admins</p>
         </div>
-        <div class="stat-card" onclick="window.location.href='<?php echo ADMIN_SCRIPT; ?>?path=customers.php'">
+        <div class="stat-card" onclick="window.location.href='<?php echo ADMIN_URL; ?>/customers.php'">
             <i class="fas fa-users"></i>
             <h3 id="stat-total-customers">-</h3>
             <p>Total Customers</p>
@@ -284,9 +284,9 @@ async function showAllUsers() {
 
 function viewUserPage(role, userId) {
     if (role === 'admin') {
-        window.location.href = '<?php echo ADMIN_PATH; ?>admins.php';
+        window.location.href = '<?php echo ADMIN_URL; ?>/admins.php';
     } else {
-        window.location.href = '<?php echo ADMIN_PATH; ?>customers.php';
+        window.location.href = '<?php echo ADMIN_URL; ?>/customers.php';
     }
 }
 
@@ -298,25 +298,22 @@ function showPromoteModal() {
 }
 
 async function promoteToAdmin(email) {
-    if (!confirm(`⚠️ Are you sure you want to promote "${email}" to ADMIN?\n\nThey will have FULL access to admin panel!`)) return;
-    
+    if (!confirm(`Are you sure you want to promote "${email}" to ADMIN?\n\nThey will have FULL access to admin panel!`)) return;
     try {
-        const res = await fetch(getApiUrl('/api/admin/promote-to-admin.php'), {
+        const result = await apiFetch(getApiUrl('/api/admin/promote-to-admin.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email })
+            body: JSON.stringify({ email: email }),
+            credentials: 'include'
         });
-        
-        const result = await res.json();
-        
         if (result.success) {
-            alert('✓ User promoted to Admin successfully!');
+            alert('User promoted to Admin successfully!');
             location.reload();
         } else {
-            alert('✗ Error: ' + result.message);
+            alert('Error: ' + result.message);
         }
     } catch (err) {
-        alert('✗ Server error. Please try again.');
+        alert('Server error. Please try again.');
         console.error(err);
     }
 }
@@ -487,3 +484,4 @@ async function demoteAdmin(adminId, adminName) {
     </script>
 </body>
 </html>
+

@@ -7,7 +7,7 @@ $reqUri = $_SERVER['REQUEST_URI'] ?? '';
 if (strpos($reqUri, '/frontend/admin') === 0) {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
     $host = $_SERVER['HTTP_HOST'];
-    $newUri = preg_replace('#^/frontend/admin#', rtrim(BASE_PATH, '/') . '/admin', $reqUri);
+    $newUri = preg_replace('#^/frontend/admin#', rtrim(SITE_URL, '/') . '/admin', $reqUri);
     header('Location: ' . $protocol . $host . $newUri);
     exit;
 }
@@ -24,28 +24,22 @@ header('X-Admin-Origin: frontend');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
+    <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
     
-    <!-- ✅ Fixed: Use BASE_PATH for CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css?v=<?php echo time(); ?>">
+    <!-- ✅ Correct asset URLs for admin dashboard -->
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="<?php echo BASE_PATH; ?>assets/js/api-helper.js"></script>
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js"></script>
     
     <script>
-        // ✅ Immediately check session on load
+        // Optional client-side session log (PHP auth-check already enforces access)
         (async function() {
             try {
-                const response = await fetch(getApiUrl('/api/index.php?request=session'));
-                const data = await response.json();
-                
-                if (!data.logged_in || !data.is_admin) {
-                    console.error('Session check failed:', data);
-                    window.location.href = '<?php echo BASE_PATH; ?>admin-login';
-                }
+                const data = await apiFetch(getApiUrl('/api/index.php?request=session'), { credentials: 'include' });
+                console.log('Admin session info:', data);
             } catch (e) {
-                console.error('Session check error:', e);
-                window.location.href = '<?php echo BASE_PATH; ?>admin-login';
+                console.warn('Session info fetch skipped:', e);
             }
         })();
     </script>
@@ -129,14 +123,18 @@ header('X-Admin-Origin: frontend');
         async function loadStats() {
             try {
                 // Products count
-                const productsRes = await fetch(getApiUrl('/api/index.php?request=products&per_page=1'));
+                const productsRes = await fetch(getApiUrl('/api/index.php?request=products&per_page=1'), {
+                    credentials: 'include'
+                });
                 const productsData = await productsRes.json();
                 document.getElementById('total-products').textContent = productsData.pagination?.total || 0;
 
                 // Orders count
                 let ordersCount = 0;
                 try {
-                    const ordersRes = await fetch(getApiUrl('/api/index.php?request=orders&per_page=1'));
+                    const ordersRes = await fetch(getApiUrl('/api/index.php?request=orders&per_page=1'), {
+                        credentials: 'include'
+                    });
                     const ordersData = await ordersRes.json();
                     ordersCount = ordersData.pagination?.total || (Array.isArray(ordersData.data) ? ordersData.data.length : 0);
                 } catch (e) {
@@ -147,7 +145,9 @@ header('X-Admin-Origin: frontend');
                 // Customers count
                 let customersCount = 0;
                 try {
-                    const customersRes = await fetch(getApiUrl('/api/index.php?request=customers&per_page=1'));
+                    const customersRes = await fetch(getApiUrl('/api/index.php?request=customers&per_page=1'), {
+                        credentials: 'include'
+                    });
                     const customersData = await customersRes.json();
                     customersCount = customersData.pagination?.total || 0;
                 } catch (e) {
@@ -158,7 +158,9 @@ header('X-Admin-Origin: frontend');
                 // Low stock
                 let lowStock = 0;
                 try {
-                    const lowStockRes = await fetch(getApiUrl('/api/index.php?request=products&low_stock=1'));
+                    const lowStockRes = await fetch(getApiUrl('/api/index.php?request=products&low_stock=1'), {
+                        credentials: 'include'
+                    });
                     const lowStockData = await lowStockRes.json();
                     lowStock = Array.isArray(lowStockData.data) ? lowStockData.data.length : 0;
                 } catch (e) {
@@ -185,7 +187,9 @@ header('X-Admin-Origin: frontend');
                 const dd = String(today.getDate()).padStart(2, '0');
                 const todayStr = `${yyyy}-${mm}-${dd}`;
                 
-                const res = await fetch(getApiUrl('/api/index.php?request=orders'));
+                const res = await fetch(getApiUrl('/api/index.php?request=orders'), {
+                    credentials: 'include'
+                });
                 const data = await res.json();
                 let orders = Array.isArray(data) ? data : (data.data || []);
                 
@@ -277,3 +281,13 @@ header('X-Admin-Origin: frontend');
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

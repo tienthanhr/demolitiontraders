@@ -1,5 +1,6 @@
 <?php
-require_once '../frontend/config.php';
+require_once '../config.php';
+require_once 'auth-check.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -419,7 +420,7 @@ $additionalCSS = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/full
         }
 </style>';
 
-include __DIR__ . '/../components/admin-header.php';
+include __DIR__ . '/../frontend/components/admin-header.php';
 ?>
 
 <!-- Page Header -->
@@ -1092,4 +1093,4 @@ include __DIR__ . '/../components/admin-header.php';
         }
     </script>
 
-<?php include __DIR__ . '/../components/admin-footer.php'; ?>
+<?php include __DIR__ . '/../frontend/components/admin-footer.php'; ?>

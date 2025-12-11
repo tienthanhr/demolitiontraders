@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
 </head>
 <body>
-    <?php include '../components/header.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
     
     <div class="page-header">
         <div class="container">
@@ -147,8 +147,8 @@
         </div>
     </div>
     
-    <?php include '../components/footer.php'; ?>
-<?php include '../components/toast-notification.php'; ?>
+    <?php include __DIR__ . '/../components/footer.php'; ?>
+    <?php include __DIR__ . '/../components/toast-notification.php'; ?>
     
     <!-- Chỉ giữ 1 dòng CDN noUiSlider, đặt trước main.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>

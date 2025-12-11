@@ -1,5 +1,6 @@
 <?php
-require_once '../frontend/config.php';
+require_once '../config.php';
+require_once 'auth-check.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -14,10 +15,10 @@ header('Expires: 0');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Low Stock - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
+    <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="<?php echo BASE_PATH; ?>assets/js/api-helper.js"></script>
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -48,7 +49,7 @@ header('Expires: 0');
                     <td data-label="Product">${p.product_name || p.name || 'N/A'}</td>
                     <td data-label="SKU">${p.sku || ''}</td>
                     <td data-label="Stock" class="stock-warning">${p.stock ?? '-'}</td>
-                    <td data-label="Action"><a href="<?php echo ADMIN_SCRIPT; ?>?path=products.php&sku=${encodeURIComponent(p.sku)}" style="color:#2f3192;text-decoration:underline;">View</a></td>
+                    <td data-label="Action"><a href="<?php echo ADMIN_URL; ?>/products.php?sku=${encodeURIComponent(p.sku)}" style="color:#2f3192;text-decoration:underline;">View</a></td>
                 </tr>
             `).join('')}</tbody></table></div>`;
         } catch (e) {
@@ -57,6 +58,5 @@ header('Expires: 0');
     }
         loadLowStock();
     </script>
-    <script src="../assets/js/api-helper.js"></script>
 </body>
 </html>

@@ -17,13 +17,23 @@ function redirectToLogin() {
     session_unset();
     session_destroy();
     
-    // Build redirect URL
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'];
-    $redirectPath = rtrim(BASE_PATH, '/') . '/admin-login';
+    // Use SITE_URL constant for proper URL (not file path!)
+    if (defined('SITE_URL')) {
+        $loginUrl = SITE_URL . '/frontend/admin-login.php';
+    } else {
+        // Fallback: build URL from server variables
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'];
+        
+        // Extract base path from REQUEST_URI
+        $scriptName = dirname($_SERVER['SCRIPT_NAME']);
+        $basePath = str_replace('/admin', '', $scriptName);
+        
+        $loginUrl = $protocol . $host . $basePath . '/frontend/admin-login.php';
+    }
     
     // Redirect
-    header('Location: ' . $protocol . $host . $redirectPath);
+    header('Location: ' . $loginUrl);
     exit;
 }
 

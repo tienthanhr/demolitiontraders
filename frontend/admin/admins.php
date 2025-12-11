@@ -89,7 +89,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             <h3 id="stat-total-admins">-</h3>
             <p>Total Admins</p>
         </div>
-        <div class="stat-card" onclick="window.location.href='<?php echo ADMIN_SCRIPT; ?>?path=customers.php'">
+        <div class="stat-card" onclick="window.location.href='<?php echo ADMIN_URL; ?>/customers.php'">
             <i class="fas fa-users"></i>
             <h3 id="stat-total-customers">-</h3>
             <p>Total Customers</p>
@@ -303,9 +303,9 @@ async function showAllUsers() {
 
 function viewUserPage(role, userId) {
     if (role === 'admin') {
-        window.location.href = '<?php echo ADMIN_SCRIPT; ?>?path=admins.php';
+        window.location.href = '<?php echo ADMIN_URL; ?>/admins.php';
     } else {
-        window.location.href = '<?php echo ADMIN_SCRIPT; ?>?path=customers.php';
+        window.location.href = '<?php echo ADMIN_URL; ?>/customers.php';
     }
 }
 
