@@ -6,12 +6,10 @@ header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-echo 'PHP executed';
-
 // Check if user is admin
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
 
-if (true) { // Always redirect for testing
+if (!isset($_SESSION['user_id']) || !$isAdmin) {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
     $host = $_SERVER['HTTP_HOST'];
     header('Location: ' . $protocol . $host . BASE_PATH . 'admin-login');

@@ -69,6 +69,12 @@
                 
                 // Check if response is ok
                 if (!response.ok) {
+                    // If a 401 occurs while on admin pages, redirect to admin login
+                    if (response.status === 401 && window.location.pathname && window.location.pathname.startsWith('/admin')) {
+                        console.warn('[API] 401 Unauthorized on admin page - redirecting to admin-login');
+                        window.location.href = '/admin-login';
+                        return; // Give browser a moment to redirect
+                    }
                     const errorText = await response.text();
                     let errorData;
                     
