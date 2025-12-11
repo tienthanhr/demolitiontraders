@@ -1,5 +1,15 @@
 <?php
 require_once '../config.php';
+
+// If a user requests the non-canonical frontend admin path directly, redirect to the canonical root admin path
+$reqUri = $_SERVER['REQUEST_URI'] ?? '';
+if (strpos($reqUri, '/frontend/admin') === 0) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'];
+    $newUri = preg_replace('#^/frontend/admin#', rtrim(BASE_PATH, '/') . '/admin', $reqUri);
+    header('Location: ' . $protocol . $host . $newUri);
+    exit;
+}
 require_once '../components/date-helper.php';
 
 // Prevent caching
