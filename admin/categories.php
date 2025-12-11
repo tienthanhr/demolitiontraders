@@ -113,6 +113,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                         Name <i class="fas fa-sort" style="opacity: 0.3;"></i>
                     </th>
                     <th>Slug</th>
+                    <th>Parent</th>
                     <th onclick="sortTable('count')" style="cursor: pointer;" title="Click to sort">
                         Products Count <i class="fas fa-sort" style="opacity: 0.3;"></i>
                     </th>
@@ -121,8 +122,8 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                 </tr>
             </thead>
             <tbody id="categories-tbody">
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px;">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px;">
                         <div class="spinner"></div>
                         <p>Loading categories...</p>
                     </td>
@@ -160,6 +161,13 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
             </div>
 
             <div class="form-group">
+                <label class="form-label">Parent Category</label>
+                <select class="form-control" id="category-parent">
+                    <option value="">None (Top Level)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">Description</label>
                 <textarea class="form-control" id="category-description"></textarea>
             </div>
@@ -192,7 +200,7 @@ let currentSort = { column: '', direction: 'asc' };
 // Load categories
 async function loadCategories() {
     const tbody = document.getElementById('categories-tbody');
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading categories...</p></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;"><div class="spinner"></div><p>Loading categories...</p></td></tr>';
 
     try {
         const response = await fetch(getApiUrl('/api/index.php?request=categories'));
@@ -201,7 +209,7 @@ async function loadCategories() {
         categoriesData = data.data || data;
 
         if (!categoriesData || categoriesData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No categories found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No categories found</td></tr>';
             return;
         }
 
@@ -216,9 +224,10 @@ async function loadCategories() {
         });
 
         renderCategories();
+        populateParentSelect();
     } catch (error) {
         console.error('Error loading categories:', error);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: red;">Error loading categories</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: red;">Error loading categories</td></tr>';
     }
 }
 
@@ -233,6 +242,7 @@ function renderCategories() {
             <td data-label="ID"><strong>${category.id}</strong></td>
             <td data-label="Name">${category.name}</td>
             <td data-label="Slug"><code>${category.slug}</code></td>
+            <td data-label="Parent">${(categoriesData.find(c => c.id == category.parent_id) || {}).name || ''}</td>
             <td data-label="Products">${productCounts[category.id] || 0} products</td>
             <td data-label="Status">
                 <span class="badge badge-${category.is_active == 1 ? 'active' : 'inactive'}">
@@ -358,6 +368,8 @@ function openCategoryModal() {
     document.getElementById('category-id').value = '';
     document.getElementById('category-custom-id').value = '';
     document.getElementById('custom-id-group').style.display = 'block'; // Show ID field for new category
+    // Populate parent select with categories
+    populateParentSelect();
     document.getElementById('category-modal').classList.add('active');
 }
 
@@ -382,6 +394,9 @@ async function editCategory(id) {
         document.getElementById('category-slug').value = category.slug;
         document.getElementById('category-description').value = category.description || '';
         document.getElementById('category-status').value = category.is_active;
+        // Set parent
+        populateParentSelect();
+        document.getElementById('category-parent').value = category.parent_id || '';
 
         document.getElementById('category-modal').classList.add('active');
     } catch (error) {
@@ -399,12 +414,19 @@ async function saveCategory(event) {
         name: document.getElementById('category-name').value,
         slug: document.getElementById('category-slug').value || null,
         description: document.getElementById('category-description').value,
+        parent_id: (document.getElementById('category-parent').value ? parseInt(document.getElementById('category-parent').value) : null),
         is_active: document.getElementById('category-status').value
     };
 
     // Include custom ID only for new categories
     if (!id && customId) {
         data.id = parseInt(customId);
+    }
+
+    // Validate parent not same as self
+    if (data.parent_id && id && String(data.parent_id) === String(id)) {
+        alert('Invalid parent: a category cannot be its own parent');
+        return;
     }
 
     try {
@@ -488,6 +510,21 @@ function updateBulkActions() {
     
     const allCheckboxes = document.querySelectorAll('.category-checkbox');
     selectAll.checked = count > 0 && count === allCheckboxes.length;
+}
+
+// Populate parent select options
+function populateParentSelect() {
+    const select = document.getElementById('category-parent');
+    if (!select) return;
+    const currentId = document.getElementById('category-id').value;
+    let html = '<option value="">None (Top Level)</option>';
+    const sorted = [...categoriesData].sort((a,b) => a.name.localeCompare(b.name));
+    sorted.forEach(c => {
+        // Prevent parent option being itself when editing
+        if (currentId && String(c.id) === String(currentId)) return;
+        html += `<option value="${c.id}">${c.name}</option>`;
+    });
+    select.innerHTML = html;
 }
 
 function toggleSelectAll(checkbox) {
