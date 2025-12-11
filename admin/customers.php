@@ -7,15 +7,7 @@ header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-// Check if user is admin
-$isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
-
-if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'];
-    header('Location: ' . $protocol . $host . BASE_PATH . 'admin-login');
-    exit;
-}
+// Old auth code removed by update script
 
 // No direct DB connection - admin UI fetches data from API via client-side JS
 ?>
@@ -28,7 +20,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <base href="<?php echo FRONTEND_PATH; ?>">
     <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="assets/js/api-helper.js"></script>
+    <script src="<?php echo BASE_PATH; ?>assets/js/api-helper.js"></script>
     <style>
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }

@@ -1,17 +1,6 @@
 <?php
-require_once '../config.php';
-require_once 'auth-check.php';
-
-// If a user requests the non-canonical frontend admin path directly, redirect to the canonical root admin path
-$reqUri = $_SERVER['REQUEST_URI'] ?? '';
-if (strpos($reqUri, '/frontend/admin') === 0) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'];
-    $newUri = preg_replace('#^/frontend/admin#', rtrim(BASE_PATH, '/') . '/admin', $reqUri);
-    header('Location: ' . $protocol . $host . $newUri);
-    exit;
-}
-require_once '../components/date-helper.php';
+require_once '../frontend/config.php';
+require_once '../frontend/components/date-helper.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -28,7 +17,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     exit;
 }
 
-// No direct DB connection — use API endpoints from the backend
+// No direct DB connection - admin UI fetches data from API via client-side JS
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1206,7 +1195,7 @@ async function submitResetPassword() {
 </script>
         </main>
     </div>
-    <?php include '../components/toast-notification.php'; ?>
+    <?php include '../frontend/components/toast-notification.php'; ?>
     <script>
     // Load customers and stats via API
     async function loadCustomers() {

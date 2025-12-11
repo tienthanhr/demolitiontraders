@@ -1,17 +1,6 @@
 <?php
-require_once '../config.php';
-require_once 'auth-check.php';
-
-// If a user requests the non-canonical frontend admin path directly, redirect to the canonical root admin path
-$reqUri = $_SERVER['REQUEST_URI'] ?? '';
-if (strpos($reqUri, '/frontend/admin') === 0) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'];
-    $newUri = preg_replace('#^/frontend/admin#', rtrim(BASE_PATH, '/') . '/admin', $reqUri);
-    header('Location: ' . $protocol . $host . $newUri);
-    exit;
-}
-require_once '../components/date-helper.php';
+require_once '../frontend/config.php';
+require_once '../frontend/components/date-helper.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -28,7 +17,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     exit;
 }
 
-// No direct DB connection - use backend API endpoints from client-side
+// No direct DB connection - admin UI fetches data from API via client-side JS
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -124,7 +113,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="admins-tbody">
                 <!-- Admins will be loaded via client-side API calls -->
             </tbody>
         </table>
@@ -303,9 +292,9 @@ async function showAllUsers() {
 
 function viewUserPage(role, userId) {
     if (role === 'admin') {
-        window.location.href = '<?php echo ADMIN_SCRIPT; ?>?path=admins.php';
+        window.location.href = '<?php echo ADMIN_PATH; ?>admins.php';
     } else {
-        window.location.href = '<?php echo ADMIN_SCRIPT; ?>?path=customers.php';
+        window.location.href = '<?php echo ADMIN_PATH; ?>customers.php';
     }
 }
 
@@ -456,19 +445,17 @@ async function demoteAdmin(adminId, adminName) {
 </script>
         </main>
     </div>
-    <?php include '../components/toast-notification.php'; ?>
+    <?php include '../frontend/components/toast-notification.php'; ?>
     <script>
     // Load admins and stats via API
     async function loadAdmins() {
         try {
-            // Fetch all users via admin endpoint; compute stats
             const res = await fetch(getApiUrl('/api/admin/all-users.php'));
             const text = await res.text();
             let payload;
             try { payload = JSON.parse(text); } catch(e) { payload = text; }
 
             const users = payload && payload.data ? payload.data : (Array.isArray(payload) ? payload : []);
-
             const totalUsers = users.length;
             const totalAdmins = users.filter(u => u.role === 'admin').length;
             const totalCustomers = users.filter(u => u.role === 'customer').length;
@@ -477,8 +464,7 @@ async function demoteAdmin(adminId, adminName) {
             document.getElementById('stat-total-admins').textContent = totalAdmins;
             document.getElementById('stat-total-customers').textContent = totalCustomers;
 
-            // Populate admins table
-            const tbody = document.querySelector('table tbody');
+            const tbody = document.getElementById('admins-tbody');
             if (!users || users.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px;"><i class="fas fa-user-shield" style="font-size:48px; color:#ccc; margin-bottom:16px;"></i><p>No users found.</p></td></tr>`;
                 return;
@@ -487,7 +473,7 @@ async function demoteAdmin(adminId, adminName) {
             const rows = users.filter(u => u.role === 'admin').map(admin => `
                 <tr>
                     <td>${admin.id}</td>
-                    <td><strong>${(admin.first_name || '') + ' ' + (admin.last_name || '')}</strong> ${admin.id == window.__USER_ID ? '<span class="badge badge-you">YOU</span>' : ''}</td>
+                    <td><strong>${(admin.first_name || '') + ' ' + (admin.last_name || '')}</strong> ${admin.id == <?php echo json_encode($_SESSION['user_id'] ?? null); ?> ? '<span class="badge badge-you">YOU</span>' : ''}</td>
                     <td>${admin.email || ''}</td>
                     <td>${admin.phone || '-'}</td>
                     <td><span class="badge badge-${admin.status || 'unknown'}">${(admin.status || 'unknown').charAt(0).toUpperCase() + (admin.status || 'unknown').slice(1)}</span></td>
@@ -498,10 +484,9 @@ async function demoteAdmin(adminId, adminName) {
             `).join('');
 
             tbody.innerHTML = rows;
-
         } catch (err) {
             console.error('Error loading admins:', err);
-            const tbody = document.querySelector('table tbody');
+            const tbody = document.getElementById('admins-tbody');
             tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px;">Error loading admins.</td></tr>`;
         }
     }
