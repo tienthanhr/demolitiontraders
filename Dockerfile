@@ -33,11 +33,16 @@ WORKDIR /var/www/html
 # Expose port 80 (Railway will map to $PORT)
 EXPOSE 80
 
-# Debug: Print enabled mods and active MPM for diagnosis
-RUN echo "ENABLED MODS:" && ls -la /etc/apache2/mods-enabled || true
-RUN a2query -M || true
 
 # Verify Apache configuration during build (fail fast if misconfigured)
 RUN apache2ctl -t
 
-CMD ["apache2-foreground"]
+# Entrypoint: Xóa toàn bộ symlink MPM, bật lại mpm_prefork, in ra danh sách MPM đã bật trước khi start Apache
+ENTRYPOINT bash -c "\
+    rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf; \
+    a2enmod mpm_prefork; \
+    echo 'Enabled MPM modules:'; \
+    ls -la /etc/apache2/mods-enabled | grep mpm_ || true; \
+    a2query -M || true; \
+    apache2-foreground \
+"
