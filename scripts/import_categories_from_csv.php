@@ -93,11 +93,22 @@ foreach ($rows as $row) {
 
     $existsId = $existingByName[strtolower($name)] ?? null;
     if ($existsId) {
-        // Update if needed
-        $updateData = ['name' => $name, 'slug' => $slug, 'description' => $description, 'display_order' => $displayOrder, 'is_active' => $showOnline];
+        // Only update slug if it is not used by another category (other than itself)
+        $safeSlug = $slug;
+        if (isset($existingBySlug[$slug]) && $existingBySlug[$slug] != $existsId) {
+            // Find a unique slug
+            $suffix = 2;
+            do {
+                $safeSlug = $slug . '-' . $suffix;
+                $suffix++;
+            } while (isset($existingBySlug[$safeSlug]) && $existingBySlug[$safeSlug] != $existsId);
+        }
+        $updateData = ['name' => $name, 'slug' => $safeSlug, 'description' => $description, 'display_order' => $displayOrder, 'is_active' => $showOnline];
         if ($commit) {
             $db->update('categories', $updateData, 'id = :id', ['id' => $existsId]);
         }
+        // Update the slug mapping for future checks
+        $existingBySlug[$safeSlug] = $existsId;
         $updated++;
     } else {
         // Ensure slug uniqueness

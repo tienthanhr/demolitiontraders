@@ -455,7 +455,7 @@
                             <i class="fas fa-shopping-cart"></i>
                             <h2>Your cart is empty</h2>
                             <p>Browse our products and start shopping!</p>
-                            <a href="${BASE_PATH}shop.php" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Browse Products</a>
+                            <a href="${BASE_PATH}shop" class="btn btn-primary" style="margin-top:20px;display:inline-block;">Browse Products</a>
                         </div>
                     `;
                     if (checkoutBtn) checkoutBtn.style.display = 'none';
@@ -490,8 +490,8 @@
                         
                         return `
                         <div class="cart-item">
-                            <img src="${imagePath}" alt="${item.name}" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer" onerror="this.src='assets/images/logo.png'">
-                            <div class="item-details" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer">
+                            <img src="${imagePath}" alt="${item.name}" onclick="window.location.href=BASE_PATH + 'product-detail?id=${item.product_id}'" style="cursor:pointer" onerror="this.src='assets/images/logo.png'">
+                            <div class="item-details" onclick="window.location.href=BASE_PATH + 'product-detail?id=${item.product_id}'" style="cursor:pointer">
                                 <h3>${item.name}</h3>
                                 ${item.category_name ? `<p class="item-category">${item.category_name}</p>` : ''}
                             </div>
@@ -785,7 +785,7 @@
                 }
                 
                 return `
-                    <div class="recommendation-card" onclick="window.location.href=BASE_PATH + 'product-detail.php?id=${item.id}'">
+                    <div class="recommendation-card" onclick="window.location.href=BASE_PATH + 'product-detail?id=${item.id}'">
                         <img src="${imagePath}" alt="${item.name}" onerror="this.src='assets/images/logo.png'">
                         <h4>${item.name}</h4>
                         <div class="price">$${parseFloat(item.price).toFixed(2)}</div>

@@ -33,7 +33,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Low Stock - Demolition Traders</title>
     <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="admin/admin-style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="assets/js/api-helper.js"></script>
 </head>
@@ -66,7 +66,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
                     <td data-label="Product">${p.product_name || p.name || 'N/A'}</td>
                     <td data-label="SKU">${p.sku || ''}</td>
                     <td data-label="Stock" class="stock-warning">${p.stock ?? '-'}</td>
-                    <td data-label="Action"><a href="admin/products.php?sku=${encodeURIComponent(p.sku)}" style="color:#2f3192;text-decoration:underline;">View</a></td>
+                    <td data-label="Action"><a href="<?php echo ADMIN_SCRIPT; ?>?path=products.php&sku=${encodeURIComponent(p.sku)}" style="color:#2f3192;text-decoration:underline;">View</a></td>
                 </tr>
             `).join('')}</tbody></table></div>`;
         } catch (e) {

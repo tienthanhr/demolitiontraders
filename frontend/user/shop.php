@@ -486,7 +486,7 @@
                 if (searchVal) {
                     url.search = 'search=' + encodeURIComponent(searchVal);
                 } else {
-                    window.location.href = BASE_PATH + 'shop.php';
+                    window.location.href = BASE_PATH + 'shop';
                     return;
                 }
             } else {
@@ -647,7 +647,7 @@
                 const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
                 
                 return '<div class="product-card">' +
-                    '<a href="' + BASE_PATH + 'product-detail.php?id=' + product.id + '">' +
+                    '<a href="' + BASE_PATH + 'product-detail?id=' + product.id + '">' +
                     '<div class="product-image">' +
                         badgesBlock +
                         '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +

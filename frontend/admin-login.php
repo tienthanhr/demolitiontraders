@@ -7,7 +7,7 @@ $isAdmin = ($_SESSION['role'] ?? '') === 'admin' ||
            ($_SESSION['is_admin'] ?? false) === true;
 
 if (isset($_SESSION['user_id']) && $isAdmin) {
-    header('Location: ' . BASE_PATH . 'admin');
+    header('Location: ' . ADMIN_SCRIPT . '?path=index.php');
     exit;
 }
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
                 
-                header('Location: ' . BASE_PATH . 'admin');
+                header('Location: ' . ADMIN_PATH);
                 exit;
             } else {
                 $error = 'Invalid admin credentials';

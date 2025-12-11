@@ -23,7 +23,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orders Management - Demolition Traders</title>
     <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="admin/admin-style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="assets/js/api-helper.js"></script>
     <style>
@@ -2587,7 +2587,7 @@ loadOrders();
                 </div>
             </div>
     </div>
-    <?php include '../components/toast-notification.php'; ?>
+    <?php include '../frontend/components/toast-notification.php'; ?>
     <script src="../assets/js/date-formatter.js"></script>
 </body>
 </html>

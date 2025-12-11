@@ -19,12 +19,21 @@ if ($isLocalhost) {
     define('BASE_PATH', '/demolitiontraders/');
     define('FRONTEND_PATH', '/demolitiontraders/frontend/');
     define('API_BASE', '/demolitiontraders/backend/api/');
+    // Admin path alias to avoid server-level conflicts on /admin
+    define('SITE_ADMIN_PATH', '/demolitiontraders/site-admin/');
 } else {
     // Production (Render, etc.)
     define('BASE_PATH', '/');
     define('FRONTEND_PATH', '/frontend/');
     define('API_BASE', '/backend/api/');
+    // Admin path alias to avoid server-level conflicts on /admin
+    define('SITE_ADMIN_PATH', '/site-admin/');
 }
+
+// Backwards-compatibility constant for admin URL
+define('ADMIN_PATH', SITE_ADMIN_PATH);
+// Script-based admin entrypoint path (for pages using query-based dispatcher)
+define('ADMIN_SCRIPT', rtrim(BASE_PATH, '/') . '/site-admin.php');
 
 // Helper function to get asset path
 function asset($path) {
@@ -33,6 +42,10 @@ function asset($path) {
 
 // Helper function to get user page URL
 function userUrl($page) {
+    // Remove .php extension for clean URLs
+    if (substr($page, -4) === '.php') {
+        $page = substr($page, 0, -4);
+    }
     // With .htaccess rewrite, user pages are at root level
     return BASE_PATH . ltrim($page, '/');
 }

@@ -16,47 +16,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     exit;
 }
 
-require_once '../../backend/config/database.php';
-
-// Get statistics
-$db = Database::getInstance();
-
-$totalProducts = $db->fetchOne("SELECT COUNT(*) as count FROM products")['count'];
-$totalCategories = $db->fetchOne("SELECT COUNT(*) as count FROM categories")['count'];
-$totalOrders = $db->fetchOne("SELECT COUNT(*) as count FROM orders")['count'];
-$totalRevenue = $db->fetchOne("SELECT SUM(total_amount) as total FROM orders WHERE status IN ('paid', 'processing', 'shipped', 'delivered')")['total'] ?? 0;
-$totalCustomers = $db->fetchOne("SELECT COUNT(*) as count FROM users WHERE role = 'customer'")['count'];
-$activeProducts = $db->fetchOne("SELECT COUNT(*) as count FROM products WHERE is_active = 1")['count'];
-$lowStockProducts = $db->fetchOne("SELECT COUNT(*) as count FROM products WHERE stock_quantity > 0 AND stock_quantity <= 10")['count'];
-$outOfStockProducts = $db->fetchOne("SELECT COUNT(*) as count FROM products WHERE stock_quantity = 0")['count'];
-
-// Recent orders
-$recentOrders = $db->fetchAll(
-    "SELECT o.*, u.first_name, u.last_name, u.email 
-     FROM orders o 
-     LEFT JOIN users u ON o.user_id = u.id 
-     ORDER BY o.created_at DESC 
-     LIMIT 10"
-);
-
-// Top selling products (by order count)
-$topProducts = $db->fetchAll(
-    "SELECT p.name, p.price, p.stock_quantity, COUNT(oi.id) as order_count, SUM(oi.quantity) as total_sold
-     FROM products p
-     LEFT JOIN order_items oi ON p.id = oi.product_id
-     GROUP BY p.id
-     ORDER BY order_count DESC
-     LIMIT 10"
-);
-
-// Low stock products
-$lowStock = $db->fetchAll(
-    "SELECT name, sku, stock_quantity, price 
-     FROM products 
-     WHERE stock_quantity > 0 AND stock_quantity <= 10 
-     ORDER BY stock_quantity ASC 
-     LIMIT 10"
-);
+// No direct DB access - report data will be provided by backend APIs and loaded via client-side JS
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -263,35 +223,35 @@ $lowStock = $db->fetchAll(
         <h2>📈 Key Statistics</h2>
         <div class="stats-grid">
             <div class="stat-box">
-                <div class="value"><?php echo number_format($totalProducts); ?></div>
+                <div class="value" id="stat-total-products">-</div>
                 <div class="label">Total Products</div>
             </div>
             <div class="stat-box">
-                <div class="value"><?php echo number_format($totalCategories); ?></div>
+                <div class="value" id="stat-total-categories">-</div>
                 <div class="label">Categories</div>
             </div>
             <div class="stat-box">
-                <div class="value"><?php echo number_format($totalOrders); ?></div>
+                <div class="value" id="stat-total-orders">-</div>
                 <div class="label">Total Orders</div>
             </div>
             <div class="stat-box">
-                <div class="value">$<?php echo number_format($totalRevenue, 2); ?></div>
+                <div class="value" id="stat-total-revenue">$-</div>
                 <div class="label">Total Revenue</div>
             </div>
             <div class="stat-box">
-                <div class="value"><?php echo number_format($totalCustomers); ?></div>
+                <div class="value" id="stat-total-customers">-</div>
                 <div class="label">Customers</div>
             </div>
             <div class="stat-box">
-                <div class="value"><?php echo number_format($activeProducts); ?></div>
+                <div class="value" id="stat-active-products">-</div>
                 <div class="label">Active Products</div>
             </div>
             <div class="stat-box">
-                <div class="value"><?php echo number_format($lowStockProducts); ?></div>
+                <div class="value" id="stat-low-stock-products">-</div>
                 <div class="label">Low Stock</div>
             </div>
             <div class="stat-box">
-                <div class="value"><?php echo number_format($outOfStockProducts); ?></div>
+                <div class="value" id="stat-out-of-stock-products">-</div>
                 <div class="label">Out of Stock</div>
             </div>
         </div>
@@ -311,20 +271,8 @@ $lowStock = $db->fetchAll(
                     <th>Date</th>
                 </tr>
             </thead>
-            <tbody>
-                <?php foreach ($recentOrders as $order): ?>
-                <tr>
-                    <td>#<?php echo $order['id']; ?></td>
-                    <td><?php echo htmlspecialchars($order['first_name'] . ' ' . $order['last_name']); ?></td>
-                    <td><?php echo htmlspecialchars($order['email']); ?></td>
-                    <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
-                    <td><span class="badge badge-<?php echo $order['status'] === 'delivered' ? 'success' : ($order['status'] === 'pending' ? 'warning' : 'info'); ?>"><?php echo ucfirst($order['status']); ?></span></td>
-                    <td><?php echo date('M j, Y', strtotime($order['created_at'])); ?></td>
-                </tr>
-                <?php endforeach; ?>
-                <?php if (empty($recentOrders)): ?>
-                <tr><td colspan="6" style="text-align: center; color: #999;">No orders found</td></tr>
-                <?php endif; ?>
+            <tbody id="recent-orders-tbody">
+                <!-- Recent orders will be loaded via API -->
             </tbody>
         </table>
     </div>
@@ -342,19 +290,8 @@ $lowStock = $db->fetchAll(
                     <th>Total Sold</th>
                 </tr>
             </thead>
-            <tbody>
-                <?php foreach ($topProducts as $product): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($product['name']); ?></td>
-                    <td>$<?php echo number_format($product['price'], 2); ?></td>
-                    <td><?php echo $product['stock_quantity']; ?></td>
-                    <td><?php echo $product['order_count'] ?? 0; ?></td>
-                    <td><?php echo $product['total_sold'] ?? 0; ?></td>
-                </tr>
-                <?php endforeach; ?>
-                <?php if (empty($topProducts)): ?>
-                <tr><td colspan="5" style="text-align: center; color: #999;">No products found</td></tr>
-                <?php endif; ?>
+            <tbody id="top-products-tbody">
+                <!-- Top products will be calculated and populated via API -->
             </tbody>
         </table>
     </div>
@@ -372,19 +309,8 @@ $lowStock = $db->fetchAll(
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody>
-                <?php foreach ($lowStock as $product): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($product['name']); ?></td>
-                    <td><?php echo htmlspecialchars($product['sku']); ?></td>
-                    <td><span class="badge badge-<?php echo $product['stock_quantity'] <= 5 ? 'danger' : 'warning'; ?>"><?php echo $product['stock_quantity']; ?></span></td>
-                    <td>$<?php echo number_format($product['price'], 2); ?></td>
-                    <td><?php echo $product['stock_quantity'] <= 5 ? 'Critical' : 'Low'; ?></td>
-                </tr>
-                <?php endforeach; ?>
-                <?php if (empty($lowStock)): ?>
-                <tr><td colspan="5" style="text-align: center; color: #999;">All products have sufficient stock</td></tr>
-                <?php endif; ?>
+            <tbody id="low-stock-tbody">
+                <!-- Low stock products will be loaded via API -->
             </tbody>
         </table>
     </div>
@@ -396,4 +322,83 @@ $lowStock = $db->fetchAll(
         <p style="margin-top: 10px;">Report generated by <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></p>
     </div>
 </body>
+<script>
+// Same client-side loader as frontend version
+async function loadReportData() {
+    try {
+        const [productsRes, categoriesRes, ordersRes, customersRes] = await Promise.all([
+            apiGet('/api/index.php?request=products&per_page=1000'),
+            apiGet('/api/index.php?request=categories&per_page=1000'),
+            apiGet('/api/index.php?request=orders&per_page=1000'),
+            apiGet('/api/index.php?request=customers&per_page=1000')
+        ]);
+        const products = Array.isArray(productsRes) ? productsRes : (productsRes.data || []);
+        const categories = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes.data || []);
+        const orders = Array.isArray(ordersRes) ? ordersRes : (ordersRes.data || []);
+        const customers = Array.isArray(customersRes) ? customersRes : (customersRes.data || []);
+
+        document.getElementById('stat-total-products').textContent = (productsRes.pagination?.total ?? products.length) || 0;
+        document.getElementById('stat-total-categories').textContent = (categoriesRes.pagination?.total ?? categories.length) || 0;
+        document.getElementById('stat-total-orders').textContent = (ordersRes.pagination?.total ?? orders.length) || 0;
+        const totalRevenue = orders.reduce((acc, o) => acc + (parseFloat(o.total_amount) || 0), 0);
+        document.getElementById('stat-total-revenue').textContent = '$' + totalRevenue.toFixed(2);
+        document.getElementById('stat-total-customers').textContent = (customersRes.pagination?.total ?? customers.length) || 0;
+        document.getElementById('stat-active-products').textContent = (products.filter(p => p.is_active == 1).length) || 0;
+        document.getElementById('stat-low-stock-products').textContent = (products.filter(p => p.stock_quantity > 0 && p.stock_quantity <= 10).length) || 0;
+        document.getElementById('stat-out-of-stock-products').textContent = (products.filter(p => p.stock_quantity == 0).length) || 0;
+
+        const recentOrders = orders.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10);
+        const recentTbody = document.getElementById('recent-orders-tbody');
+        recentTbody.innerHTML = recentOrders.map(order => `
+            <tr>
+                <td>#${order.id}</td>
+                <td>${(order.first_name || '') + ' ' + (order.last_name || '')}</td>
+                <td>${order.email || ''}</td>
+                <td>$${(parseFloat(order.total_amount) || 0).toFixed(2)}</td>
+                <td><span class="badge ${order.status === 'delivered' ? 'badge-success' : (order.status === 'pending' ? 'badge-warning' : 'badge-secondary')}" style="padding:6px;">${(order.status || '').charAt(0).toUpperCase() + (order.status || '').slice(1)}</span></td>
+                <td>${new Date(order.created_at).toLocaleDateString()}</td>
+            </tr>`).join('');
+
+        const productMap = {};
+        orders.forEach(order => {
+            if (Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    const id = item.product_id || item.id;
+                    if (!id) return;
+                    if (!productMap[id]) {
+                        productMap[id] = { id, name: item.name || item.product_name || item.title || 'Unknown', total_sold: 0, order_count: 0, price: item.price || item.unit_price || 0, stock_quantity: item.stock_quantity || 0 };
+                    }
+                    productMap[id].total_sold += parseInt(item.quantity || 0);
+                    productMap[id].order_count += 1;
+                });
+            }
+        });
+        const topProducts = Object.values(productMap).sort((a,b) => b.order_count - a.order_count).slice(0, 10);
+        document.getElementById('top-products-tbody').innerHTML = topProducts.map(p => `
+            <tr>
+                <td>${p.name}</td>
+                <td>$${(parseFloat(p.price) || 0).toFixed(2)}</td>
+                <td>${p.stock_quantity || '-'}</td>
+                <td>${p.order_count}</td>
+                <td>${p.total_sold}</td>
+            </tr>
+        `).join('');
+
+        const lowStockProducts = products.filter(p => p.stock_quantity > 0 && p.stock_quantity <= 10).slice(0, 10);
+        document.getElementById('low-stock-tbody').innerHTML = lowStockProducts.map(p => `
+            <tr>
+                <td>${p.name}</td>
+                <td>${p.sku || '-'}</td>
+                <td><span class="badge ${p.stock_quantity <= 5 ? 'badge-danger' : 'badge-warning'}">${p.stock_quantity}</span></td>
+                <td>$${(parseFloat(p.price) || 0).toFixed(2)}</td>
+                <td>${p.stock_quantity <= 5 ? 'Critical' : 'Low'}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error('Error loading report data:', err);
+    }
+}
+
+loadReportData();
+</script>
 </html>

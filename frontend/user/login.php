@@ -154,7 +154,7 @@
                     if (redirect) {
                         window.location.href = BASE_PATH + redirect;
                     } else {
-                        window.location.href = BASE_PATH + 'index.php';
+                        window.location.href = BASE_PATH + 'index';
                     }
                 } else {
                     document.getElementById('loginError').textContent = result.message || 'Login failed';
@@ -196,7 +196,7 @@
                         if (redirect) {
                             window.location.href = BASE_PATH + redirect;
                         } else {
-                            window.location.href = BASE_PATH + 'index.php';
+                            window.location.href = BASE_PATH + 'index';
                         }
                     }, 1500);
                 } else {

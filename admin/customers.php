@@ -1,6 +1,6 @@
 <?php
 require_once '../frontend/config.php';
-require_once '../components/date-helper.php';
+require_once '../frontend/components/date-helper.php';
 
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -17,32 +17,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     exit;
 }
 
-require_once '../../backend/config/database.php';
-$db = Database::getInstance();
-
-// Get customer statistics
-$stats = [
-    'total_customers' => $db->fetchOne("SELECT COUNT(*) as count FROM users WHERE role = 'customer'")['count'] ?? 0,
-    'active_customers' => $db->fetchOne("SELECT COUNT(*) as count FROM users WHERE role = 'customer' AND status = 'active'")['count'] ?? 0,
-    'total_orders' => $db->fetchOne(
-        "SELECT COUNT(*) as count FROM orders o 
-         INNER JOIN users u ON o.user_id = u.id 
-         WHERE u.role = 'customer'"
-    )['count'] ?? 0,
-    'with_orders' => $db->fetchOne("SELECT COUNT(DISTINCT user_id) as count FROM orders WHERE user_id IS NOT NULL")['count'] ?? 0,
-];
-
-// Get all customers with order counts
-$customers = $db->fetchAll(
-    "SELECT u.*, 
-     COUNT(DISTINCT o.id) as order_count,
-     COALESCE(SUM(o.total_amount), 0) as total_spent
-     FROM users u
-     LEFT JOIN orders o ON u.id = o.user_id
-     WHERE u.role = 'customer'
-     GROUP BY u.id
-     ORDER BY u.created_at DESC"
-);
+// No direct DB connection - admin UI fetches data from API via client-side JS
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +26,7 @@ $customers = $db->fetchAll(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customers Management - Demolition Traders</title>
     <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="admin/admin-style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="assets/js/api-helper.js"></script>
     <style>
@@ -187,22 +162,22 @@ $customers = $db->fetchAll(
     <div class="stats-grid">
         <div class="stat-card">
             <i class="fas fa-users"></i>
-            <h3><?php echo $stats['total_customers']; ?></h3>
+            <h3 id="stat-total-customers">-</h3>
             <p>Total Customers</p>
         </div>
         <div class="stat-card">
             <i class="fas fa-check-circle"></i>
-            <h3><?php echo $stats['active_customers']; ?></h3>
+            <h3 id="stat-active-customers">-</h3>
             <p>Active Customers</p>
         </div>
         <div class="stat-card">
             <i class="fas fa-shopping-bag"></i>
-            <h3><?php echo $stats['total_orders']; ?></h3>
+            <h3 id="stat-total-orders">-</h3>
             <p>Total Orders</p>
         </div>
         <div class="stat-card">
             <i class="fas fa-user-check"></i>
-            <h3><?php echo $stats['with_orders']; ?></h3>
+            <h3 id="stat-with-orders">-</h3>
             <p>Customers with Orders</p>
         </div>
     </div>
@@ -272,52 +247,7 @@ $customers = $db->fetchAll(
                 </tr>
             </thead>
             <tbody id="customers-tbody">
-                <?php if (empty($customers)): ?>
-                <tr>
-                    <td colspan="10" style="text-align: center; padding: 40px;">
-                        <i class="fas fa-users" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
-                        <p>No customers found.</p>
-                    </td>
-                </tr>
-                <?php else: ?>
-                    <?php foreach ($customers as $customer): ?>
-                    <tr data-customer-id="<?php echo $customer['id']; ?>">
-                        <td data-label="Select"><input type="checkbox" class="customer-checkbox" value="<?php echo $customer['id']; ?>" onchange="updateBulkActions()"></td>
-                        <td data-label="ID"><?php echo $customer['id']; ?></td>
-                        <td data-label="Name"><strong><?php echo htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']); ?></strong></td>
-                        <td data-label="Email"><?php echo htmlspecialchars($customer['email']); ?></td>
-                        <td data-label="Phone"><?php echo htmlspecialchars($customer['phone'] ?? '-'); ?></td>
-                        <td data-label="Status">
-                            <span class="badge badge-<?php echo $customer['status']; ?>">
-                                <?php echo ucfirst($customer['status']); ?>
-                            </span>
-                        </td>
-                        <td data-label="Registered"><?php echo formatDate($customer['created_at'], 'long'); ?></td>
-                        <td data-label="Orders"><strong><?php echo $customer['order_count']; ?></strong></td>
-                        <td data-label="Total Spent"><strong>$<?php echo number_format($customer['total_spent'], 2); ?></strong></td>
-                        <td data-label="Actions">
-                            <button class="btn btn-sm btn-primary" onclick="viewCustomer(<?php echo $customer['id']; ?>)" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-info" onclick="resetPassword(<?php echo $customer['id']; ?>, '<?php echo htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']); ?>')" title="Reset Password">
-                                <i class="fas fa-key"></i>
-                            </button>
-                            <?php if ($customer['status'] === 'active'): ?>
-                            <button class="btn btn-sm btn-warning" onclick="suspendCustomer(<?php echo $customer['id']; ?>)" title="Suspend Account">
-                                <i class="fas fa-ban"></i>
-                            </button>
-                            <?php elseif ($customer['status'] === 'suspended'): ?>
-                            <button class="btn btn-sm btn-success" onclick="activateCustomer(<?php echo $customer['id']; ?>)" title="Activate Account">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <?php endif; ?>
-                            <button class="btn btn-sm btn-danger" onclick="deleteCustomer(<?php echo $customer['id']; ?>)" title="Delete Account">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                <!-- Customers will be loaded via client-side API calls -->
             </tbody>
         </table>
     </div>
@@ -1265,6 +1195,59 @@ async function submitResetPassword() {
 </script>
         </main>
     </div>
-    <?php include '../components/toast-notification.php'; ?>
+    <?php include '../frontend/components/toast-notification.php'; ?>
+    <script>
+    // Load customers and stats via API
+    async function loadCustomers() {
+        try {
+            const res = await apiGet('/api/index.php?request=customers&per_page=1000');
+            const customers = Array.isArray(res) ? res : (res.data || []);
+
+            // Update stats
+            const totalCustomers = res.pagination?.total ?? customers.length;
+            document.getElementById('stat-total-customers').textContent = totalCustomers;
+            const activeCustomers = customers.filter(c => c.status === 'active').length;
+            document.getElementById('stat-active-customers').textContent = activeCustomers;
+            const withOrders = customers.filter(c => (c.order_count && c.order_count > 0) || (c.total_spent && parseFloat(c.total_spent) > 0)).length;
+            document.getElementById('stat-with-orders').textContent = withOrders;
+            const totalOrdersEl = document.getElementById('stat-total-orders');
+            if (totalOrdersEl) totalOrdersEl.textContent = '-';
+
+            // Populate table
+            const tbody = document.getElementById('customers-tbody');
+            if (!customers || customers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:40px;"><i class="fas fa-users" style="font-size:48px; color:#ccc; margin-bottom:16px;"></i><p>No customers found.</p></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = customers.map(customer => `
+                <tr data-customer-id="${customer.id}">
+                    <td data-label="Select"><input type="checkbox" class="customer-checkbox" value="${customer.id}" onchange="updateBulkActions()"></td>
+                    <td data-label="ID">${customer.id}</td>
+                    <td data-label="Name"><strong>${(customer.first_name || '') + ' ' + (customer.last_name || '')}</strong></td>
+                    <td data-label="Email">${customer.email || ''}</td>
+                    <td data-label="Phone">${customer.phone || '-'}</td>
+                    <td data-label="Status"><span class="badge badge-${customer.status || 'unknown'}">${(customer.status || 'unknown').charAt(0).toUpperCase() + (customer.status || 'unknown').slice(1)}</span></td>
+                    <td data-label="Registered">${customer.created_at ? formatDate(customer.created_at, 'long') : '-'}</td>
+                    <td data-label="Orders"><strong>${customer.order_count || '-'}</strong></td>
+                    <td data-label="Total Spent"><strong>$${customer.total_spent ? parseFloat(customer.total_spent).toFixed(2) : '-'}</strong></td>
+                    <td data-label="Actions">
+                        <button class="btn btn-sm btn-primary" onclick="viewCustomer(${customer.id})" title="View Details"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm btn-info" onclick="resetPassword(${customer.id}, '${(customer.first_name || '') + ' ' + (customer.last_name || '')}')" title="Reset Password"><i class="fas fa-key"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCustomer(${customer.id})" title="Delete Account"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+        } catch (err) {
+            console.error('Error loading customers:', err);
+            const tbody = document.getElementById('customers-tbody');
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:40px;">Error loading customers.</td></tr>`;
+        }
+    }
+
+    // Initialize
+    loadCustomers();
+    </script>
 </body>
 </html>

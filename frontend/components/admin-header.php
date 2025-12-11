@@ -27,7 +27,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <base href="<?php echo FRONTEND_PATH; ?>">
     
     <script src="<?php echo asset('assets/js/api-helper.js?v=1'); ?>"></script>
-    <link rel="stylesheet" href="<?php echo asset('admin/admin-style.css'); ?>">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <?php if (isset($additionalCSS)) echo $additionalCSS; ?>

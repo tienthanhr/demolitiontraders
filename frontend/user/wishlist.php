@@ -109,7 +109,7 @@
                 const inCart = cartProductIds.has(item.product_id);
                 
                 return `
-                <div class="product-card" onclick="window.location.href = BASE_PATH + 'product-detail.php?id=${item.product_id}'" style="cursor:pointer">
+                <div class="product-card" onclick="window.location.href = BASE_PATH + 'product-detail?id=${item.product_id}'" style="cursor:pointer">
                     <div class="product-image">
                         <img src="${imagePath}" alt="${item.name}" onerror="this.src='assets/images/logo.png'">
                         <button class="btn-remove-wishlist" onclick="event.stopPropagation(); removeFromWishlist(${item.product_id})">
@@ -122,7 +122,7 @@
                         <p class="product-price">$${parseFloat(item.price).toFixed(2)}</p>
                         <div class="product-actions">
                             ${inCart 
-                                ? `<button class="btn-add-cart" onclick="event.stopPropagation(); window.location.href = BASE_PATH + 'cart.php'" style="background:#28a745;">
+                                ? `<button class="btn-add-cart" onclick="event.stopPropagation(); window.location.href = BASE_PATH + 'cart'" style="background:#28a745;">
                                     <i class="fa-solid fa-cart-shopping"></i> Go to Cart
                                 </button>`
                                 : `<button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${item.product_id})">

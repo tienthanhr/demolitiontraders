@@ -26,7 +26,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     exit;
 }
 
-require_once '../../backend/config/database.php';
+// No server DB include required - page uses API endpoints via JS
 
 $pageTitle = 'Sell to Us Management';
 $additionalCSS = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">

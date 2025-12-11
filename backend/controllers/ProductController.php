@@ -137,7 +137,7 @@ class ProductController {
 if (isset($params['is_featured']) || isset($params['featured'])) {
     $featuredValue = $params['is_featured'] ?? $params['featured'];
     if ($featuredValue == '1' || $featuredValue === 1 || $featuredValue === true) {
-        $where[] = 'p.is_featured = 1';
+        $where[] = 'p.is_featured = 1 AND p.stock_quantity > 0';
     }
 }
         // Price range

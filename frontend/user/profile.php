@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ' . BASE_PATH . 'login.php?redirect=profile.php');
+    header('Location: ' . BASE_PATH . 'login?redirect=profile');
     exit;
 }
 

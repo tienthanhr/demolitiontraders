@@ -242,7 +242,7 @@
                     // Trigger cart update event
                     localStorage.setItem('cartUpdated', Date.now());
                     // Redirect to cart page
-                    window.location.href = BASE_PATH + '.php';
+                    window.location.href = BASE_PATH + 'cart';
                 } else {
                     alert('Failed to add product to cart');
                 }

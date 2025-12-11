@@ -27,26 +27,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     exit;
 }
 
-require_once '../../backend/config/database.php';
-$db = Database::getInstance();
-
-// Get admin statistics
-$stats = [
-    'total_admins' => $db->fetchOne("SELECT COUNT(*) as count FROM users WHERE role = 'admin'")['count'] ?? 0,
-    'total_customers' => $db->fetchOne("SELECT COUNT(*) as count FROM users WHERE role = 'customer'")['count'] ?? 0,
-    'total_users' => $db->fetchOne("SELECT COUNT(*) as count FROM users")['count'] ?? 0,
-];
-
-// Get all admin users
-$admins = $db->fetchAll(
-    "SELECT u.*, 
-     COUNT(DISTINCT o.id) as managed_orders
-     FROM users u
-     LEFT JOIN orders o ON o.updated_at >= u.created_at
-     WHERE u.role = 'admin'
-     GROUP BY u.id
-     ORDER BY u.created_at DESC"
-);
+// No direct DB connection - use backend API endpoints from client-side
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -55,7 +36,7 @@ $admins = $db->fetchAll(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Management - Demolition Traders</title>
     <base href="<?php echo FRONTEND_PATH; ?>">
-    <link rel="stylesheet" href="admin/admin-style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="assets/js/api-helper.js"></script>
     <style>
@@ -104,17 +85,17 @@ $admins = $db->fetchAll(
     <div class="stats-grid">
         <div class="stat-card" onclick="filterUsers('admin')">
             <i class="fas fa-user-shield"></i>
-            <h3><?php echo $stats['total_admins']; ?></h3>
+            <h3 id="stat-total-admins">-</h3>
             <p>Total Admins</p>
         </div>
-        <div class="stat-card" onclick="window.location.href='admin/customers.php'">
+        <div class="stat-card" onclick="window.location.href='<?php echo ADMIN_SCRIPT; ?>?path=customers.php'">
             <i class="fas fa-users"></i>
-            <h3><?php echo $stats['total_customers']; ?></h3>
+            <h3 id="stat-total-customers">-</h3>
             <p>Total Customers</p>
         </div>
         <div class="stat-card" onclick="showAllUsers()">
             <i class="fas fa-user-friends"></i>
-            <h3><?php echo $stats['total_users']; ?></h3>
+            <h3 id="stat-total-users">-</h3>
             <p>Total Users</p>
         </div>
     </div>
@@ -143,49 +124,7 @@ $admins = $db->fetchAll(
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($admins)): ?>
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px;">
-                        <i class="fas fa-user-shield" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
-                        <p>No admin users found.</p>
-                    </td>
-                </tr>
-                <?php else: ?>
-                    <?php foreach ($admins as $admin): ?>
-                    <tr>
-                        <td><?php echo $admin['id']; ?></td>
-                        <td>
-                            <strong><?php echo htmlspecialchars($admin['first_name'] . ' ' . $admin['last_name']); ?></strong>
-                            <?php if ($admin['id'] == $_SESSION['user_id']): ?>
-                                <span class="badge badge-you">YOU</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?php echo htmlspecialchars($admin['email']); ?></td>
-                        <td><?php echo htmlspecialchars($admin['phone'] ?? '-'); ?></td>
-                        <td>
-                            <span class="badge badge-<?php echo $admin['status']; ?>">
-                                <?php echo ucfirst($admin['status']); ?>
-                            </span>
-                        </td>
-                        <td><?php echo formatDate($admin['created_at'], 'long'); ?></td>
-                        <td><?php echo $admin['last_login'] ? formatDate($admin['last_login'], 'long') : 'Never'; ?></td>
-                        <td>
-                            <?php if ($admin['id'] != $_SESSION['user_id']): ?>
-                                <button class="btn btn-sm btn-info" onclick="resetPassword(<?php echo $admin['id']; ?>, '<?php echo htmlspecialchars($admin['first_name'] . ' ' . $admin['last_name']); ?>')" title="Reset Password">
-                                    <i class="fas fa-key"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="demoteAdmin(<?php echo $admin['id']; ?>, '<?php echo htmlspecialchars($admin['first_name'] . ' ' . $admin['last_name']); ?>')" title="Demote to Customer">
-                                    <i class="fas fa-arrow-down"></i> Demote
-                                </button>
-                            <?php else: ?>
-                                <button class="btn btn-sm" disabled>
-                                    <i class="fas fa-lock"></i> You
-                                </button>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                <!-- Admins will be loaded via client-side API calls -->
             </tbody>
         </table>
     </div>
@@ -363,9 +302,9 @@ async function showAllUsers() {
 
 function viewUserPage(role, userId) {
     if (role === 'admin') {
-        window.location.href = 'admin/admins.php';
+        window.location.href = '<?php echo ADMIN_SCRIPT; ?>?path=admins.php';
     } else {
-        window.location.href = 'admin/customers.php';
+        window.location.href = '<?php echo ADMIN_SCRIPT; ?>?path=customers.php';
     }
 }
 
@@ -517,5 +456,56 @@ async function demoteAdmin(adminId, adminName) {
         </main>
     </div>
     <?php include '../components/toast-notification.php'; ?>
+    <script>
+    // Load admins and stats via API
+    async function loadAdmins() {
+        try {
+            // Fetch all users via admin endpoint; compute stats
+            const res = await fetch(getApiUrl('/api/admin/all-users.php'));
+            const text = await res.text();
+            let payload;
+            try { payload = JSON.parse(text); } catch(e) { payload = text; }
+
+            const users = payload && payload.data ? payload.data : (Array.isArray(payload) ? payload : []);
+
+            const totalUsers = users.length;
+            const totalAdmins = users.filter(u => u.role === 'admin').length;
+            const totalCustomers = users.filter(u => u.role === 'customer').length;
+
+            document.getElementById('stat-total-users').textContent = totalUsers;
+            document.getElementById('stat-total-admins').textContent = totalAdmins;
+            document.getElementById('stat-total-customers').textContent = totalCustomers;
+
+            // Populate admins table
+            const tbody = document.querySelector('table tbody');
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px;"><i class="fas fa-user-shield" style="font-size:48px; color:#ccc; margin-bottom:16px;"></i><p>No users found.</p></td></tr>`;
+                return;
+            }
+
+            const rows = users.filter(u => u.role === 'admin').map(admin => `
+                <tr>
+                    <td>${admin.id}</td>
+                    <td><strong>${(admin.first_name || '') + ' ' + (admin.last_name || '')}</strong> ${admin.id == window.__USER_ID ? '<span class="badge badge-you">YOU</span>' : ''}</td>
+                    <td>${admin.email || ''}</td>
+                    <td>${admin.phone || '-'}</td>
+                    <td><span class="badge badge-${admin.status || 'unknown'}">${(admin.status || 'unknown').charAt(0).toUpperCase() + (admin.status || 'unknown').slice(1)}</span></td>
+                    <td>${admin.created_at ? formatDate(admin.created_at, 'long') : '-'}</td>
+                    <td>${admin.last_login ? formatDate(admin.last_login, 'long') : 'Never'}</td>
+                    <td>${admin.id != <?php echo json_encode($_SESSION['user_id'] ?? null); ?> ? `<button class="btn btn-sm btn-info" onclick="resetPassword(${admin.id}, '${(admin.first_name || '') + ' ' + (admin.last_name || '')}')"><i class="fas fa-key"></i></button> <button class="btn btn-sm btn-danger" onclick="demoteAdmin(${admin.id}, '${(admin.first_name || '') + ' ' + (admin.last_name || '')}')"><i class="fas fa-arrow-down"></i> Demote</button>` : `<button class="btn btn-sm" disabled><i class="fas fa-lock"></i> You</button>`}</td>
+                </tr>
+            `).join('');
+
+            tbody.innerHTML = rows;
+
+        } catch (err) {
+            console.error('Error loading admins:', err);
+            const tbody = document.querySelector('table tbody');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px;">Error loading admins.</td></tr>`;
+        }
+    }
+
+    loadAdmins();
+    </script>
 </body>
 </html>

@@ -316,7 +316,7 @@ function displayProduct(product, cartQty = 0) {
         function buyNow(productId, goDirectlyToCart = false) {
             // If already at max stock, just go to cart
             if (goDirectlyToCart) {
-                window.location.href = BASE_PATH + 'cart.php';
+                window.location.href = BASE_PATH + 'cart';
                 return;
             }
             
@@ -341,7 +341,7 @@ function displayProduct(product, cartQty = 0) {
                     localStorage.setItem('cartUpdated', Date.now());
                     document.dispatchEvent(new Event('cartUpdated'));
                     // Redirect to cart page
-                    window.location.href = BASE_PATH + 'cart.php';
+                    window.location.href = BASE_PATH + 'cart';
                 } else {
                     showNotification(data.message || 'Failed to add product to cart', true);
                     buyButton.style.pointerEvents = '';

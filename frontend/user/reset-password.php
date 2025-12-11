@@ -119,7 +119,7 @@
                     
                     // Redirect to login after 2 seconds
                     setTimeout(() => {
-                        window.location.href = BASE_PATH + '.php';
+                        window.location.href = BASE_PATH + 'login';
                     }, 2000);
                 } else {
                     document.getElementById('resetError').textContent = result.message || 'Password reset failed';

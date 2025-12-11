@@ -483,7 +483,7 @@
                 container.innerHTML = products.map(product => `
                     <div class="product-card">
                         <div class="product-image">
-                            <a href="${BASE_PATH}product-detail.php?id=${product.id}">
+                            <a href="${BASE_PATH}product-detail?id=${product.id}">
                                 <img src="${product.image || DEFAULT_IMAGE}" 
                                      alt="${product.name}"
                                      onerror="this.onerror=null;this.src='assets/images/logo.png'">
@@ -492,7 +492,7 @@
                                 <button class="wishlist-btn" onclick="addToWishlist(${product.id})">
                                     <i class="far fa-heart"></i>
                                 </button>
-                                <a href="${BASE_PATH}product-detail.php?id=${product.id}" class="view-btn">
+                                <a href="${BASE_PATH}product-detail?id=${product.id}" class="view-btn">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </div>
@@ -500,7 +500,7 @@
                             ${product.condition_type === 'recycled' ? '<span class="badge badge-recycled">Recycled</span>' : ''}
                         </div>
                         <div class="product-info">
-                            <a href="${BASE_PATH}product-detail.php?id=${product.id}">
+                            <a href="${BASE_PATH}product-detail?id=${product.id}">
                                 <h4>${product.name.length > 60 ? product.name.substring(0, 60) + '...' : product.name}</h4>
                             </a>
                             <div class="product-price">

@@ -22,9 +22,10 @@ header('X-Admin-Origin: frontend');
 $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || ($_SESSION['user_role'] ?? '') === 'admin' || ($_SESSION['is_admin'] ?? false) === true;
 
 if (!isset($_SESSION['user_id']) || !$isAdmin) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'];
-    header('Location: ' . $protocol . $host . BASE_PATH . 'admin-login');
+    // Access Denied: session not present or not admin
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "Access Denied\n\n";
+    echo "Session: none or not admin\n";
     exit;
 }
 ?>
@@ -35,7 +36,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Demolition Traders</title>
     <base href="<?php echo BASE_PATH; ?>">
-    <link rel="stylesheet" href="admin/admin-style.css">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="assets/js/api-helper.js"></script>
     <script>
