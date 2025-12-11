@@ -5,7 +5,7 @@
  */
 
 // Load the Config helper (reads from environment/ini)
-require_once __DIR__ . '/backend/config/Config.php';
+require_once __DIR__ . '/backend/config/config.php';
 Config::load();
 
 // Path configuration
