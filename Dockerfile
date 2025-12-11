@@ -12,10 +12,12 @@ RUN apt-get update && apt-get install -y \
 # Enable required PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql gd zip
 
-# Ensure only a single MPM is enabled (prefork for mod_php) and enable Apache modules
-RUN a2dismod mpm_event mpm_worker || true \
-    && rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf || true \
+
+# Remove ALL MPM symlinks except mpm_prefork, then enable mpm_prefork and rewrite
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf || true \
     && a2enmod mpm_prefork rewrite \
+    && echo "MPM symlinks after cleanup:" \
+    && ls -la /etc/apache2/mods-enabled | grep mpm_ || true \
     && sed -ri 's#/var/www/html#/var/www/html#g' /etc/apache2/sites-available/000-default.conf \
     && printf "<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n</Directory>\n" > /etc/apache2/conf-available/override.conf \
     && a2enconf override
