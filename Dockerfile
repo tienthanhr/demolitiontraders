@@ -37,6 +37,10 @@ EXPOSE 80
 # Verify Apache configuration during build (fail fast if misconfigured)
 RUN apache2ctl -t
 
+
+# Thêm cấu hình ServerName để xử lý cảnh báo
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 # Entrypoint: Xóa toàn bộ symlink MPM, bật lại mpm_prefork, in ra danh sách MPM đã bật trước khi start Apache
 ENTRYPOINT bash -c "\
     rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf; \
