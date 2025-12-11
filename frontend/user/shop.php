@@ -503,182 +503,181 @@
         async function loadProducts() {
             console.log('[SHOP] loadProducts called, currentPage:', currentPage);
             try {
-                const params = new URLSearchParams(window.location.search);
-                params.set('page', currentPage);
-                
-                // Get selected category
-                const categorySelect = document.getElementById('category-select');
-                if (categorySelect && categorySelect.value) {
-                    params.set('category', categorySelect.value);
-                }
-                
-                // Get treatment filter
-                const treatmentSelect = document.getElementById('treatment-select');
-                if (treatmentSelect && treatmentSelect.value) {
-                    params.set('treatment', treatmentSelect.value);
-                }
-                
-                // Get price range (slider)
-                if (window.priceSlider) {
-                    const priceVals = priceSlider.get();
-                    params.set('min_price', Math.round(priceVals[0]));
-                    params.set('max_price', Math.round(priceVals[1]));
-                }
-                // Get measurements (sliders)
-                if (window.widthSlider && window.widthSlider.target.parentElement.style.display !== 'none') {
-                    const widthVals = widthSlider.get();
-                    params.set('min_width', Math.round(widthVals[0]));
-                    params.set('max_width', Math.round(widthVals[1]));
-                }
-                if (window.heightSlider && window.heightSlider.target.parentElement.style.display !== 'none') {
-                    const heightVals = heightSlider.get();
-                    params.set('min_height', Math.round(heightVals[0]));
-                    params.set('max_height', Math.round(heightVals[1]));
-                }
-                
-                // Get keywords
-                const keywordsInput = document.getElementById('keywords-input');
-                if (keywordsInput && keywordsInput.value) {
-                    params.set('search', keywordsInput.value);
-                }
-                
-                // Get sort
-                const sortBy = document.getElementById('sort-by');
-                if (sortBy && sortBy.value) params.set('sort', sortBy.value);
-                
-                console.log('Fetching products with params:', params.toString());
+            const params = new URLSearchParams(window.location.search);
+            params.set('page', currentPage);
+            
+            // Get selected category
+            const categorySelect = document.getElementById('category-select');
+            if (categorySelect && categorySelect.value) {
+                params.set('category', categorySelect.value);
+            }
+            
+            // Get treatment filter
+            const treatmentSelect = document.getElementById('treatment-select');
+            if (treatmentSelect && treatmentSelect.value) {
+                params.set('treatment', treatmentSelect.value);
+            }
+            
+            // Get price range (slider)
+            if (window.priceSlider) {
+                const priceVals = priceSlider.get();
+                params.set('min_price', Math.round(priceVals[0]));
+                params.set('max_price', Math.round(priceVals[1]));
+            }
+            // Get measurements (sliders)
+            if (window.widthSlider && window.widthSlider.target.parentElement.style.display !== 'none') {
+                const widthVals = widthSlider.get();
+                params.set('min_width', Math.round(widthVals[0]));
+                params.set('max_width', Math.round(widthVals[1]));
+            }
+            if (window.heightSlider && window.heightSlider.target.parentElement.style.display !== 'none') {
+                const heightVals = heightSlider.get();
+                params.set('min_height', Math.round(heightVals[0]));
+                params.set('max_height', Math.round(heightVals[1]));
+            }
+            
+            // Get keywords
+            const keywordsInput = document.getElementById('keywords-input');
+            if (keywordsInput && keywordsInput.value) {
+                params.set('search', keywordsInput.value);
+            }
+            
+            // Get sort
+            const sortBy = document.getElementById('sort-by');
+            if (sortBy && sortBy.value) params.set('sort', sortBy.value);
+            
+            console.log('Fetching products with params:', params.toString());
 
-                const apiPath = '/api/index.php?request=products&' + params.toString();
-                const apiUrl = getApiUrl(apiPath);
-                console.log('API URL:', apiUrl);
-                const data = await apiFetch(apiUrl);
-                
-                console.log('Products response:', data);
-                
-                // Parse width/height from product name if needed
-                function parseWidthHeight(name) {
-                    // Tìm pattern A x B (A là width, B là height)
-                    const regex = /([0-9]{3,5})\s*[xX×]\s*([0-9]{3,5})/;
-                    const match = name.match(regex);
-                    if (match) {
-                        return {
-                            width: parseInt(match[1], 10),
-                            height: parseInt(match[2], 10)
-                        };
-                    }
-                    return null;
+            const apiPath = '/api/index.php?request=products&' + params.toString();
+            const apiUrl = getApiUrl(apiPath);
+            console.log('API URL:', apiUrl);
+            const data = await apiFetch(apiUrl);
+            
+            console.log('Products response:', data);
+            
+            // Parse width/height from product name if needed
+            function parseWidthHeight(name) {
+                // Tìm pattern A x B (A là width, B là height)
+                const regex = /([0-9]{3,5})\s*[xX×]\s*([0-9]{3,5})/;
+                const match = name.match(regex);
+                if (match) {
+                return {
+                    width: parseInt(match[1], 10),
+                    height: parseInt(match[2], 10)
+                };
                 }
+                return null;
+            }
 
-                // Lọc sản phẩm theo width/height nếu filter đang bật
-                // Default width/height range
-                let minWidth = 0, maxWidth = 8000, minHeight = 0, maxHeight = 8000;
-                let filterWidth = false, filterHeight = false;
-                if (window.widthSlider && window.widthSlider.target.parentElement.style.display !== 'none') {
-                    const widthVals = widthSlider.get();
-                    minWidth = Math.round(widthVals[0]);
-                    maxWidth = Math.round(widthVals[1]);
-                    // Only filter if user changed from default
-                    filterWidth = !(minWidth === 0 && maxWidth === 8000);
-                }
-                if (window.heightSlider && window.heightSlider.target.parentElement.style.display !== 'none') {
-                    const heightVals = heightSlider.get();
-                    minHeight = Math.round(heightVals[0]);
-                    maxHeight = Math.round(heightVals[1]);
-                    filterHeight = !(minHeight === 0 && maxHeight === 8000);
-                }
+            // Lọc sản phẩm theo width/height nếu filter đang bật
+            // Default width/height range
+            let minWidth = 0, maxWidth = 8000, minHeight = 0, maxHeight = 8000;
+            let filterWidth = false, filterHeight = false;
+            if (window.widthSlider && window.widthSlider.target.parentElement.style.display !== 'none') {
+                const widthVals = widthSlider.get();
+                minWidth = Math.round(widthVals[0]);
+                maxWidth = Math.round(widthVals[1]);
+                // Only filter if user changed from default
+                filterWidth = !(minWidth === 0 && maxWidth === 8000);
+            }
+            if (window.heightSlider && window.heightSlider.target.parentElement.style.display !== 'none') {
+                const heightVals = heightSlider.get();
+                minHeight = Math.round(heightVals[0]);
+                maxHeight = Math.round(heightVals[1]);
+                filterHeight = !(minHeight === 0 && maxHeight === 8000);
+            }
 
-                // Hiển thị sản phẩm
-                const container = document.getElementById('products-grid');
-                let products = data.data || [];
-                // Chỉ lọc nếu user đã chỉnh filter width/height
-                if (filterWidth || filterHeight) {
-                    products = products.filter(product => {
-                        const dims = parseWidthHeight(product.name);
-                        if (!dims) return false;
-                        let ok = true;
-                        if (filterWidth) {
-                            ok = ok && dims.width >= minWidth && dims.width <= maxWidth;
-                        }
-                        if (filterHeight) {
-                            ok = ok && dims.height >= minHeight && dims.height <= maxHeight;
-                        }
-                        return ok;
-                    });
+            // Hiển thị sản phẩm
+            const container = document.getElementById('products-grid');
+            let products = data.data || [];
+            // Chỉ lọc nếu user đã chỉnh filter width/height
+            if (filterWidth || filterHeight) {
+                products = products.filter(product => {
+                const dims = parseWidthHeight(product.name);
+                if (!dims) return false;
+                let ok = true;
+                if (filterWidth) {
+                    ok = ok && dims.width >= minWidth && dims.width <= maxWidth;
                 }
-                    // Ẩn hoàn toàn sản phẩm hết hàng
-                    const inStockProducts = products.filter(product => product.stock_quantity > 0);
-                    if (!inStockProducts.length) {
-                        container.innerHTML = '<p class="no-results">No products found matching your criteria.</p>';
+                if (filterHeight) {
+                    ok = ok && dims.height >= minHeight && dims.height <= maxHeight;
+                }
+                return ok;
+                });
+            }
+            // Ẩn hoàn toàn sản phẩm hết hàng
+            const inStockProducts = products.filter(product => product.stock_quantity > 0);
+            if (!inStockProducts.length) {
+                container.innerHTML = '<p class="no-results">No products found matching your criteria.</p>';
+            } else {
+                container.innerHTML = inStockProducts.map(product => {
+                // Handle image with fallback - check for old/invalid paths
+                let imageUrl = product.image;
+                const logoPath = 'assets/images/logo.png';
+                // Use logo for missing, invalid, or old upload paths
+                if (!imageUrl || 
+                    imageUrl.trim() === '' || 
+                    imageUrl === 'assets/images/logo.png' ||
+                    imageUrl.includes('null') ||
+                    imageUrl === 'null') {
+                    imageUrl = logoPath;
+                } else if (imageUrl.startsWith('/')) {
+                    // If path starts with /, use it as-is (it's already absolute from root)
+                }
+                
+                const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
+                const recycledBadge = product.condition_type === 'recycled' ? '<span class="badge badge-recycled">RECYCLED</span>' : '';
+                const outOfStockBadge = product.stock_quantity === 0 ? '<span class="badge badge-out-of-stock">Out of Stock</span>' : '';
+                const badgesBlock = [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).length
+                    ? '<div class="product-badges">' + [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).join('') + '</div>'
+                    : '';
+                
+                // Check if product is in cart
+                const isInCart = cartItems.includes(product.id);
+                let cartButton = '';
+                if (product.stock_quantity > 0) {
+                    if (isInCart) {
+                    cartButton = '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> Already in Cart</button>';
                     } else {
-                        container.innerHTML = inStockProducts.map(product => {
-                            // Handle image with fallback - check for old/invalid paths
-                            let imageUrl = product.image;
-                            const logoPath = 'assets/images/logo.png';
-                            // Use logo for missing, invalid, or old upload paths
-                            if (!imageUrl || 
-                                imageUrl.trim() === '' || 
-                                imageUrl === 'assets/images/logo.png' ||
-                                imageUrl.includes('null') ||
-                                imageUrl === 'null') {
-                                imageUrl = logoPath;
-                            } else if (imageUrl.startsWith('/')) {
-                                // If path starts with /, use it as-is (it's already absolute from root)
-                            }
-                        
-                            const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
-                            const recycledBadge = product.condition_type === 'recycled' ? '<span class="badge badge-recycled">RECYCLED</span>' : '';
-                            const outOfStockBadge = product.stock_quantity === 0 ? '<span class="badge badge-out-of-stock">Out of Stock</span>' : '';
-                            const badgesBlock = [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).length
-                                ? '<div class="product-badges">' + [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).join('') + '</div>'
-                                : '';
-                        
-                            // Check if product is in cart
-                            const isInCart = cartItems.includes(product.id);
-                            let cartButton = '';
-                            if (product.stock_quantity > 0) {
-                                if (isInCart) {
-                                    cartButton = '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> Already in Cart</button>';
-                                } else {
-                                    cartButton = '<button class="btn btn-cart" onclick="addToCart(' + product.id + ')"><i class="fas fa-shopping-cart"></i> Add to Cart</button>';
-                                }
-                            }
-                        
-                            // Escape HTML to prevent XSS
-                            const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-                        
-                            return '<div class="product-card">' +
-                                '<a href="' + BASE_PATH + 'product-detail.php?id=' + product.id + '">' +
-                                    '<div class="product-image">' +
-                                        badgesBlock +
-                                        '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +
-                                    '</div>' +
-                                    '<div class="product-info">' +
-                                        '<h3 class="product-name">' + escapedName + '</h3>' +
-                                        '<p class="product-price">$' + parseFloat(product.price).toFixed(2) + '</p>' +
-                                    '</div>' +
-                                '</a>' +
-                                cartButton +
-                            '</div>';
-                        }).join('');
+                    cartButton = '<button class="btn btn-cart" onclick="addToCart(' + product.id + ')"><i class="fas fa-shopping-cart"></i> Add to Cart</button>';
                     }
                 }
                 
-                // Update results count
-                if (data.pagination) {
-                    document.getElementById('results-count').textContent = 
-                        'Showing ' + data.data.length + ' of ' + data.pagination.total + ' products';
-                    
-                    // Update pagination
-                    updatePagination(data.pagination);
-                } else {
-                    document.getElementById('results-count').textContent = 
-                        'Showing ' + (data.data ? data.data.length : 0) + ' products';
-                }
+                // Escape HTML to prevent XSS
+                const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
                 
+                return '<div class="product-card">' +
+                    '<a href="' + BASE_PATH + 'product-detail.php?id=' + product.id + '">' +
+                    '<div class="product-image">' +
+                        badgesBlock +
+                        '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +
+                    '</div>' +
+                    '<div class="product-info">' +
+                        '<h3 class="product-name">' + escapedName + '</h3>' +
+                        '<p class="product-price">$' + parseFloat(product.price).toFixed(2) + '</p>' +
+                    '</div>' +
+                    '</a>' +
+                    cartButton +
+                '</div>';
+                }).join('');
+            }
+            
+            // Update results count
+            if (data.pagination) {
+                document.getElementById('results-count').textContent = 
+                'Showing ' + data.data.length + ' of ' + data.pagination.total + ' products';
+                
+                // Update pagination
+                updatePagination(data.pagination);
+            } else {
+                document.getElementById('results-count').textContent = 
+                'Showing ' + (data.data ? data.data.length : 0) + ' products';
+            }
+            
             } catch (error) {
-                console.error('Error loading products:', error);
-                document.getElementById('products-grid').innerHTML = 
-                    '<p class="error">Error loading products: ' + error.message + '<br>Please check console for details.</p>';
+            console.error('Error loading products:', error);
+            document.getElementById('products-grid').innerHTML = 
+                '<p class="error">Error loading products: ' + error.message + '<br>Please check console for details.</p>';
             }
         }
         
