@@ -5,6 +5,9 @@
 RewriteEngine On
 RewriteBase /
 
+# Redirect any frontend admin request to canonical root admin route
+RewriteRule ^admin/(.*)$ /admin/$1 [R=302,L]
+
 # ============================================================================
 # SECURITY & GENERAL RULES
 # ============================================================================

@@ -22,7 +22,7 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Demolition Traders</title>
-    <base href="<?php echo FRONTEND_PATH; ?>">
+    <base href="<?php echo BASE_PATH; ?>">
     <link rel="stylesheet" href="admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="assets/js/api-helper.js"></script>
