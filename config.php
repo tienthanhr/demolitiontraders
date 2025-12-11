@@ -56,22 +56,28 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Database connection (legacy direct usage)
-try {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, (int) DB_PORT);
-    if ($conn->connect_error) {
+// On some hosts (e.g., minimal PHP builds) mysqli extension may be unavailable.
+$conn = null;
+if (class_exists('mysqli')) {
+    try {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, (int) DB_PORT);
+        if ($conn->connect_error) {
+            if (APP_DEBUG) {
+                die("Connection failed: " . $conn->connect_error);
+            } else {
+                die("Database connection error. Please contact administrator.");
+            }
+        }
+        $conn->set_charset("utf8mb4");
+    } catch (Exception $e) {
         if (APP_DEBUG) {
-            die("Connection failed: " . $conn->connect_error);
+            die("Database error: " . $e->getMessage());
         } else {
             die("Database connection error. Please contact administrator.");
         }
     }
-    $conn->set_charset("utf8mb4");
-} catch (Exception $e) {
-    if (APP_DEBUG) {
-        die("Database error: " . $e->getMessage());
-    } else {
-        die("Database connection error. Please contact administrator.");
-    }
+} else {
+    error_log('mysqli extension not available; skipping direct mysqli connection. API will use its own DB layer.');
 }
 
 // Timezone
