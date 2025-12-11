@@ -108,6 +108,15 @@ $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
 // Route requests
 try {
+    // Session info endpoint: Returns session info if logged in, otherwise 401
+    if ($resource === 'session') {
+        header('Content-Type: application/json');
+        $sessInfo = ['is_admin' => $_SESSION['is_admin'] ?? false, 'user_id' => $_SESSION['user_id'] ?? null];
+        if (!isset($_SESSION['user_id'])) {
+            sendError('Authentication required', 401);
+        }
+        send_json_response(['success' => true, 'session' => $sessInfo]);
+    }
     switch ($resource) {
         case 'products':
             // Handle nextid endpoint

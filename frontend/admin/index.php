@@ -26,6 +26,16 @@ if (!isset($_SESSION['user_id']) || !$isAdmin) {
     <link rel="stylesheet" href="admin/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="assets/js/api-helper.js"></script>
+    <script>
+        // Immediately check session on admin pages — triggers client redirect on 401 via api-helper
+        (async function() {
+            try {
+                await apiGet('/api/index.php?request=session');
+            } catch (e) {
+                console.warn('Session check failed:', e);
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="admin-wrapper">
