@@ -9,15 +9,17 @@ ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
-// Enable error logging
+// Enable error logging (prefer writable dir)
 ini_set('log_errors', '1');
-ini_set('error_log', __DIR__ . '/logs/php-errors.log');
-
-// Create logs directory if it doesn't exist
-$logsDir = __DIR__ . '/logs';
+$logsDir = getenv('LOG_PATH') ?: (__DIR__ . '/logs');
 if (!is_dir($logsDir)) {
-    mkdir($logsDir, 0755, true);
+    // Fallback to /tmp if not writable
+    if (!@mkdir($logsDir, 0755, true)) {
+        $logsDir = '/tmp/dt-logs';
+        @mkdir($logsDir, 0755, true);
+    }
 }
+ini_set('error_log', $logsDir . '/php-errors.log');
 
 // Set timezone
 date_default_timezone_set('Pacific/Auckland');
