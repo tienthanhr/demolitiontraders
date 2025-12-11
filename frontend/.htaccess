@@ -48,14 +48,14 @@ RewriteRule ^logout\.php$ - [L]
 # ADMIN ROUTES (/admin/... → frontend/admin/...)
 # ============================================================================
 
-# /admin → /frontend/admin/index.php
-RewriteRule ^admin/?$ frontend/admin/index.php [L]
+# /admin → redirect to root admin (to keep single canonical admin route)
+RewriteRule ^admin/?$ /admin/ [R=302,L]
 
 # /admin-login → /frontend/admin-login.php
 RewriteRule ^admin-login/?$ frontend/admin-login.php [L]
 
-# /admin/* → /frontend/admin/*
-RewriteRule ^admin/(.+)$ frontend/admin/$1 [L]
+# /admin/* → redirect to root admin/*
+RewriteRule ^admin/(.+)$ /admin/$1 [R=302,L]
 
 # ============================================================================
 # USER PAGES & PUBLIC ROUTES (/page → /frontend/user/page.php)
