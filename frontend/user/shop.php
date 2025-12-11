@@ -605,60 +605,62 @@
                         return ok;
                     });
                 }
-                if (!products.length) {
-                    container.innerHTML = '<p class="no-results">No products found matching your criteria.</p>';
-                } else {
-                    container.innerHTML = products.map(product => {
-                        // Handle image with fallback - check for old/invalid paths
-                        let imageUrl = product.image;
-                        const logoPath = 'assets/images/logo.png';
-                        
-                        // Use logo for missing, invalid, or old upload paths
-                        if (!imageUrl || 
-                            imageUrl.trim() === '' || 
-                            imageUrl === 'assets/images/logo.png' ||
-                            imageUrl.includes('null') ||
-                            imageUrl === 'null') {
-                            imageUrl = logoPath;
-                        } else if (imageUrl.startsWith('/')) {
-                            // If path starts with /, use it as-is (it's already absolute from root)
-                        }
-                        
-                        const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
-                        const recycledBadge = product.condition_type === 'recycled' ? '<span class="badge badge-recycled">RECYCLED</span>' : '';
-                        const outOfStockBadge = product.stock_quantity === 0 ? '<span class="badge badge-out-of-stock">Out of Stock</span>' : '';
-                        const badgesBlock = [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).length
-                            ? '<div class="product-badges">' + [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).join('') + '</div>'
-                            : '';
-                        
-                        // Check if product is in cart
-                        const isInCart = cartItems.includes(product.id);
-                        let cartButton = '';
-                        if (product.stock_quantity > 0) {
-                            if (isInCart) {
-                                cartButton = '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> Already in Cart</button>';
-                            } else {
-                                cartButton = '<button class="btn btn-cart" onclick="addToCart(' + product.id + ')"><i class="fas fa-shopping-cart"></i> Add to Cart</button>';
+                    // Ẩn hoàn toàn sản phẩm hết hàng
+                    const inStockProducts = products.filter(product => product.stock_quantity > 0);
+                    if (!inStockProducts.length) {
+                        container.innerHTML = '<p class="no-results">No products found matching your criteria.</p>';
+                    } else {
+                        container.innerHTML = inStockProducts.map(product => {
+                            // Handle image with fallback - check for old/invalid paths
+                            let imageUrl = product.image;
+                            const logoPath = 'assets/images/logo.png';
+                            // Use logo for missing, invalid, or old upload paths
+                            if (!imageUrl || 
+                                imageUrl.trim() === '' || 
+                                imageUrl === 'assets/images/logo.png' ||
+                                imageUrl.includes('null') ||
+                                imageUrl === 'null') {
+                                imageUrl = logoPath;
+                            } else if (imageUrl.startsWith('/')) {
+                                // If path starts with /, use it as-is (it's already absolute from root)
                             }
-                        }
                         
-                        // Escape HTML to prevent XSS
-                        const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                            const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
+                            const recycledBadge = product.condition_type === 'recycled' ? '<span class="badge badge-recycled">RECYCLED</span>' : '';
+                            const outOfStockBadge = product.stock_quantity === 0 ? '<span class="badge badge-out-of-stock">Out of Stock</span>' : '';
+                            const badgesBlock = [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).length
+                                ? '<div class="product-badges">' + [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).join('') + '</div>'
+                                : '';
                         
-                        return '<div class="product-card">' +
-                            '<a href="' + BASE_PATH + 'product-detail.php?id=' + product.id + '">' +
-                                '<div class="product-image">' +
-                                    badgesBlock +
-                                    '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +
-                                '</div>' +
-                                '<div class="product-info">' +
-                                    '<h3 class="product-name">' + escapedName + '</h3>' +
-                                    '<p class="product-price">$' + parseFloat(product.price).toFixed(2) + '</p>' +
-                                '</div>' +
-                            '</a>' +
-                            cartButton +
-                        '</div>';
-                    }).join('');
+                            // Check if product is in cart
+                            const isInCart = cartItems.includes(product.id);
+                            let cartButton = '';
+                            if (product.stock_quantity > 0) {
+                                if (isInCart) {
+                                    cartButton = '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> Already in Cart</button>';
+                                } else {
+                                    cartButton = '<button class="btn btn-cart" onclick="addToCart(' + product.id + ')"><i class="fas fa-shopping-cart"></i> Add to Cart</button>';
+                                }
+                            }
+                        
+                            // Escape HTML to prevent XSS
+                            const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                        
+                            return '<div class="product-card">' +
+                                '<a href="' + BASE_PATH + 'product-detail.php?id=' + product.id + '">' +
+                                    '<div class="product-image">' +
+                                        badgesBlock +
+                                        '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +
+                                    '</div>' +
+                                    '<div class="product-info">' +
+                                        '<h3 class="product-name">' + escapedName + '</h3>' +
+                                        '<p class="product-price">$' + parseFloat(product.price).toFixed(2) + '</p>' +
+                                    '</div>' +
+                                '</a>' +
+                                cartButton +
+                            '</div>';
+                        }).join('');
+                    }
                 }
                 
                 // Update results count
