@@ -965,19 +965,29 @@ async function saveRole() {
     if (!confirm(`Change customer role to "${newRole.toUpperCase()}"?`)) return;
     
       try {
-          const res = await fetch(getApiUrl('/api/admin/update-user-role.php'), {
-              method: 'POST',
-              headers: { 
-                  'Content-Type': 'application/json',
-                  'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
-              },
-              body: JSON.stringify({ 
-                  user_id: currentCustomer.id, 
-                  role: newRole 
-              })
-          });
+        const res = await fetch(getApiUrl('/api/admin/update-user-role.php'), {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
+            body: JSON.stringify({ 
+                user_id: currentCustomer.id, 
+                role: newRole 
+            })
+        });
         
-        const result = await res.json();
+        let result;
+        try {
+            result = await res.clone().json();
+        } catch (parseErr) {
+            const fallbackText = await res.text();
+            console.error('Role update non-JSON response:', fallbackText);
+            result = { success: false, message: fallbackText || 'Invalid server response' };
+        }
+        if (!res.ok) {
+            throw new Error(result.message || `Request failed (${res.status})`);
+        }
         
         if (result.success) {
             alert('✓ Role updated successfully!');
