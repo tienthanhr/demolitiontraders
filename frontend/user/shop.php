@@ -432,7 +432,7 @@
             }
             
             // Update filters based on main category
-            updateDynamicFilters(selectedId);
+            updateDynamicFilters(selectedId, null);
             
             // Update URL with Main Category ID (initially)
             updateUrlAndFilter(selectedId);
@@ -446,12 +446,12 @@
             const subId = subCategorySelect.value;
             
             // Update filters based on sub category (or main if sub is empty)
-            updateDynamicFilters(subId || mainId);
+            updateDynamicFilters(subId || mainId, subId ? subId : null);
             
             updateUrlAndFilter(subId || mainId);
         }
 
-        function updateDynamicFilters(catId) {
+        function updateDynamicFilters(catId, subCatId = null) {
             // Hide all dynamic filter groups by default
             const treatmentGroup = document.getElementById('treatment-group');
             const thicknessGroup = document.getElementById('thickness-group');
@@ -485,6 +485,11 @@
             if ((matches(name) || matches(parentName)) && !hasTreatmentChoiceInSubs) {
                 if (treatmentGroup) treatmentGroup.style.display = 'block';
                 if (thicknessGroup) thicknessGroup.style.display = 'block';
+            } else {
+                // If user selected a specific subcategory that is treated/untreated, keep hidden
+                if (!subCatId) {
+                    // keep hidden (already hidden above)
+                }
             }
             if (matchesDoor(name) || matchesDoor(parentName)) {
                 if (dimensionRow) dimensionRow.style.display = 'flex';
