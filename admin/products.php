@@ -375,7 +375,14 @@ async function loadProducts(page = 1) {
             url += `&is_active=${isActive}`;
         }
 
-        const response = await fetch(url);
+        if (productsAbortController) {
+            productsAbortController.abort();
+        }
+        const controller = new AbortController();
+        productsAbortController = controller;
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
         const responseText = await response.text();
         const data = JSON.parse(responseText);
 
@@ -427,6 +434,8 @@ async function loadProducts(page = 1) {
     } catch (error) {
         console.error('Error loading products:', error);
         tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: red;">Error loading products</td></tr>';
+    } finally {
+        productsAbortController = null;
     }
 }
 
@@ -1033,25 +1042,66 @@ async function deleteProduct(id, name) {
     }
 }
 
-async function loadCategories() {
+const ADMIN_CATEGORY_CACHE_KEY = 'dt_admin_categories_v1';
+const ADMIN_CATEGORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let productsAbortController = null;
+
+function getCachedAdminCategories() {
     try {
-        const response = await fetch(getApiUrl('/api/index.php?request=categories'));
+        const raw = localStorage.getItem(ADMIN_CATEGORY_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed.data || !parsed.ts) return null;
+        if (Date.now() - parsed.ts > ADMIN_CATEGORY_CACHE_TTL) return null;
+        return parsed.data;
+    } catch (e) {
+        return null;
+    }
+}
+
+function setCachedAdminCategories(data) {
+    try {
+        localStorage.setItem(ADMIN_CATEGORY_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    } catch (e) {
+        // ignore storage errors
+    }
+}
+
+async function loadCategories() {
+    const cached = getCachedAdminCategories();
+    if (cached) {
+        populateCategorySelects(cached);
+    }
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const response = await fetch(getApiUrl('/api/index.php?request=categories'), { signal: controller.signal });
+        clearTimeout(timeoutId);
         const responseText = await response.text();
         const data = JSON.parse(responseText);
         const categories = data.data || data;
-
-        const filterSelect = document.getElementById('filter-category');
-        const formSelect = document.getElementById('product-category');
-
-        const options = categories.map(cat => 
-            `<option value="${cat.id}">${cat.name}</option>`
-        ).join('');
-
-        filterSelect.innerHTML = '<option value="">All Categories</option>' + options;
-        formSelect.innerHTML = '<option value="">Select Category</option>' + options;
+        populateCategorySelects(categories);
+        setCachedAdminCategories(categories);
     } catch (error) {
         console.error('Error loading categories:', error);
+        if (!cached) {
+            const filterSelect = document.getElementById('filter-category');
+            const formSelect = document.getElementById('product-category');
+            if (filterSelect) filterSelect.innerHTML = '<option value=\"\">All Categories</option>';
+            if (formSelect) formSelect.innerHTML = '<option value=\"\">Select Category</option>';
+        }
     }
+}
+
+function populateCategorySelects(categories) {
+    const filterSelect = document.getElementById('filter-category');
+    const formSelect = document.getElementById('product-category');
+    if (!filterSelect || !formSelect) return;
+    const options = categories.map(cat =>
+        `<option value=\"${cat.id}\">${cat.name}</option>`
+    ).join('');
+    filterSelect.innerHTML = '<option value=\"\">All Categories</option>' + options;
+    formSelect.innerHTML = '<option value=\"\">Select Category</option>' + options;
 }
 
 // Initialize
@@ -1061,10 +1111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // If already loaded, run immediately
-if (document.readyState === 'loading') {
-    // Still loading, wait for DOMContentLoaded
-} else {
-    // Already loaded
+if (document.readyState !== 'loading') {
     loadCategories();
     loadProducts();
 }
