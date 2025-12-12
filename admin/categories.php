@@ -730,6 +730,7 @@ async function saveOrder(silent = false) {
         console.error('Failed to save order', err);
         if (!silent) alert('Failed to save order. Please try again.');
     }
+}
 
 function toggleSelectAll(checkbox) {
     const checkboxes = document.querySelectorAll('.category-checkbox');
