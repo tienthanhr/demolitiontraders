@@ -3,6 +3,11 @@ require_once '../config.php';
 require_once 'auth-check.php';
 require_once '../frontend/components/date-helper.php';
 
+// Ensure CSRF token for admin actions
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
@@ -18,6 +23,10 @@ header('Expires: 0');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Management - Demolition Traders</title>
+    <?php if (!empty($_SESSION['csrf_token'])): ?>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>">
+    <script>window.CSRF_TOKEN = '<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>';</script>
+    <?php endif; ?>
     <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
