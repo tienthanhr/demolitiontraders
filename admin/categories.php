@@ -719,9 +719,9 @@ async function saveOrder(silent = false) {
     walk(root, 0);
 
     try {
-        await Promise.all(updates.map(item => {
+        await Promise.all(updates.map(async item => {
             const url = getApiUrl(`/api/index.php?request=categories/${item.id}`);
-            return fetch(url, {
+            const res = await fetch(url, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -729,13 +729,17 @@ async function saveOrder(silent = false) {
                     display_order: item.display_order
                 })
             });
+            if (!res.ok) {
+                const txt = await res.text();
+                throw new Error(`Save failed for ID ${item.id}: ${txt || res.status}`);
+            }
         }));
         if (!silent) alert('Order saved');
         renderHeaderPreview();
         renderCategories();
     } catch (err) {
         console.error('Failed to save order', err);
-        if (!silent) alert('Failed to save order. Please try again.');
+        if (!silent) alert('Failed to save order. Please try again.\n' + (err && err.message ? err.message : ''));
     }
 }
 
