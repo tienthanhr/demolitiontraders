@@ -601,6 +601,12 @@ function renderHeaderPreview() {
     const preview = document.getElementById('header-preview');
     if (!preview) return;
 
+    const decodeHtml = (str) => {
+        const el = document.createElement('textarea');
+        el.innerHTML = str || '';
+        return el.value;
+    };
+
     const items = categoriesData
         .filter(c => parseInt(c.is_active ?? 0) === 1 && parseInt(c.show_in_header ?? 1) === 1);
     if (!items.length) {
@@ -630,11 +636,12 @@ function renderHeaderPreview() {
         const childHtml = children.length
             ? `<ul class="preview-tree">${children.map(renderNode).join('')}</ul>`
             : '';
+        const displayName = decodeHtml(cat.name || '');
         return `
             <li class="preview-node" data-id="${cat.id}" data-parent="${cat.parent_id || 0}">
                 <div class="node-row">
                     <span class="drag-handle" title="Drag to reorder">&#8942;</span>
-                    <span class="node-name">${cat.name}</span>
+                    <span class="node-name">${displayName}</span>
                     <span class="node-meta">${cat.slug || ''}</span>
                 </div>
                 ${childHtml}

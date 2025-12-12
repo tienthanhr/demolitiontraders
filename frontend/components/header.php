@@ -194,6 +194,12 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         : '<?php echo rtrim(SITE_URL, '/'); ?>/backend/api/index.php?request=categories';
     const SHOP_URL = '<?php echo userUrl('shop.php'); ?>';
 
+    function decodeHtml(str) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str || '';
+        return txt.value;
+    }
+
     // Build desktop & mobile menus from categories (ordered by display_order/name from API)
     async function loadHeaderCategories() {
         try {
@@ -245,10 +251,11 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
             const hasChild = children.length > 0;
             const slug = cat.slug ? encodeURIComponent(cat.slug) : '';
             const link = slug ? `${SHOP_URL}?category=${slug}` : '#';
+            const displayName = decodeHtml(cat.name || '');
             const childHtml = hasChild
                 ? `<ul class="dropdown">${children.map(renderDesktop).join('')}</ul>`
                 : '';
-            return `<li class="${hasChild ? 'has-dropdown' : ''}"><a href="${link}">${cat.name}</a>${childHtml}</li>`;
+            return `<li class="${hasChild ? 'has-dropdown' : ''}"><a href="${link}">${displayName}</a>${childHtml}</li>`;
         };
 
         const renderMobile = (cat) => {
@@ -256,12 +263,13 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
             const hasChild = children.length > 0;
             const slug = cat.slug ? encodeURIComponent(cat.slug) : '';
             const link = slug ? `${SHOP_URL}?category=${slug}` : '#';
+            const displayName = decodeHtml(cat.name || '');
             const childHtml = hasChild
                 ? `<div class="mobile-nav-submenu">${children.map(c => renderMobile(c)).join('')}</div>`
                 : '';
             return `<div class="mobile-nav-item ${hasChild ? 'has-dropdown' : ''}">
                         <a href="${link}" class="mobile-nav-link">
-                            ${cat.name}${hasChild ? ' <i class="fa-solid fa-plus toggle-icon"></i>' : ''}
+                            ${displayName}${hasChild ? ' <i class="fa-solid fa-plus toggle-icon"></i>' : ''}
                         </a>
                         ${childHtml}
                     </div>`;
