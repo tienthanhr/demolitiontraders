@@ -452,10 +452,13 @@
         }
 
         function updateDynamicFilters(catId) {
-            // Hide all dynamic filter groups
-            document.getElementById('treatment-group').style.display = 'none';
-            document.getElementById('thickness-group').style.display = 'none';
-            document.getElementById('dimension-row').style.display = 'none';
+            // Hide all dynamic filter groups by default
+            const treatmentGroup = document.getElementById('treatment-group');
+            const thicknessGroup = document.getElementById('thickness-group');
+            const dimensionRow = document.getElementById('dimension-row');
+            if (treatmentGroup) treatmentGroup.style.display = 'none';
+            if (thicknessGroup) thicknessGroup.style.display = 'none';
+            if (dimensionRow) dimensionRow.style.display = 'none';
 
             if (!catId) return;
 
@@ -474,12 +477,17 @@
             const matches = (text) => text.includes('plywood') || text.includes('timber') || text.includes('wood');
             const matchesDoor = (text) => text.includes('door') || text.includes('window') || text.includes('sliding door');
 
-            if (matches(name) || matches(parentName)) {
-                document.getElementById('treatment-group').style.display = 'block';
-                document.getElementById('thickness-group').style.display = 'block';
+            const hasTreatmentSub = allCategories.some(c => c.parent_id == catId && /treated/i.test(c.name) );
+            const hasUntreatmentSub = allCategories.some(c => c.parent_id == catId && /untreated/i.test(c.name));
+            const hasTreatmentChoiceInSubs = hasTreatmentSub || hasUntreatmentSub;
+
+            // Only show treatment filter if no explicit treated/untreated subcats
+            if ((matches(name) || matches(parentName)) && !hasTreatmentChoiceInSubs) {
+                if (treatmentGroup) treatmentGroup.style.display = 'block';
+                if (thicknessGroup) thicknessGroup.style.display = 'block';
             }
             if (matchesDoor(name) || matchesDoor(parentName)) {
-                document.getElementById('dimension-row').style.display = 'flex';
+                if (dimensionRow) dimensionRow.style.display = 'flex';
             }
         }
 
