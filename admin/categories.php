@@ -110,10 +110,17 @@ header('Expires: 0');
 
     <!-- Header Preview -->
     <div style="margin-top: 10px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fafafa;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h4 style="margin: 0;">Header Preview (follows sorted order)</h4>
-            <small style="color: #6c757d;">Only categories that are Active &amp; Show in Header</small>
-            <button class="btn btn-light btn-sm" onclick="togglePreview()" id="toggle-preview-btn">Hide</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 12px; flex-wrap: wrap;">
+            <div>
+                <h4 style="margin: 0;">Header Preview (follows sorted order)</h4>
+                <small style="color: #6c757d;">Only categories that are Active &amp; Show in Header</small>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="saveOrder()" title="Save current order & parents from preview">
+                    <i class="fas fa-save"></i> Save Order
+                </button>
+                <button class="btn btn-light btn-sm" onclick="togglePreview()" id="toggle-preview-btn">Hide</button>
+            </div>
         </div>
         <div id="header-preview" class="header-preview-card">
             <p style="margin: 0; color: #6c757d;">Loading preview...</p>
@@ -501,8 +508,14 @@ async function saveCategory(event) {
             loadCategories();
         } else {
             const responseText = await response.text();
-            const error = JSON.parse(responseText);
-            alert('Error: ' + (error.error || 'Failed to save category'));
+            let msg = 'Failed to save category';
+            try {
+                const error = JSON.parse(responseText);
+                msg = error.error || error.message || msg;
+            } catch (e) {
+                msg = responseText || msg;
+            }
+            alert('Error: ' + msg);
         }
     } catch (error) {
         alert('Error saving category: ' + error.message);
@@ -672,8 +685,34 @@ async function handlePreviewReorder(evt) {
     });
 
     // Persist to API
+    // Auto-save this branch
+    await saveOrder(true);
+}
+
+async function saveOrder(silent = false) {
+    // Collect order from DOM (preview tree)
+    const root = document.querySelector('#header-preview ul.preview-tree.root');
+    if (!root) {
+        if (!silent) alert('Nothing to save.');
+        return;
+    }
+    const updates = [];
+    const walk = (ul, parentId) => {
+        Array.from(ul.children).forEach((li, idx) => {
+            const id = parseInt(li.dataset.id);
+            updates.push({
+                id,
+                parent_id: parentId === 0 ? null : parentId,
+                display_order: idx
+            });
+            const childUl = li.querySelector(':scope > ul.preview-tree');
+            if (childUl) walk(childUl, id);
+        });
+    };
+    walk(root, 0);
+
     try {
-        await Promise.all(siblings.map(item => {
+        await Promise.all(updates.map(item => {
             const url = getApiUrl(`/api/index.php?request=categories/${item.id}`);
             return fetch(url, {
                 method: 'PUT',
@@ -684,14 +723,13 @@ async function handlePreviewReorder(evt) {
                 })
             });
         }));
-        // Re-render to ensure order reflects any server changes
+        if (!silent) alert('Order saved');
         renderHeaderPreview();
         renderCategories();
     } catch (err) {
         console.error('Failed to save order', err);
-        alert('Failed to save new order. Please try again.');
+        if (!silent) alert('Failed to save order. Please try again.');
     }
-}
 
 function toggleSelectAll(checkbox) {
     const checkboxes = document.querySelectorAll('.category-checkbox');
