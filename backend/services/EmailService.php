@@ -386,6 +386,7 @@ class EmailService {
                 // If SMTP failed and fallback is explicitly allowed, try Brevo as a fallback
                 // Pull allow_brevo_fallback from config here; it may not be available from setupMailer() local var
                 $allowBrevoFallback = !empty($this->config['allow_brevo_fallback']) && !empty($this->config['brevo_api_key']);
+                $usedBrevoFallback = false;
                 if (empty($sendResult) && $allowBrevoFallback) {
                     try {
                         error_log('[DemolitionTraders] sendTaxInvoice: SMTP failed, falling back to Brevo API.');
@@ -409,6 +410,10 @@ class EmailService {
                         ]);
                         // Set sendResult to indicate success if Brevo succeeded
                         $sendResult = !empty($brevoResp['success']);
+                        if (!empty($sendResult)) {
+                            $smtpErr = null; // clear SMTP error because fallback succeeded
+                        }
+                        $usedBrevoFallback = true;
                     } catch (Exception $brevoEx) {
                         error_log('[DemolitionTraders] Brevo fallback failed: ' . $brevoEx->getMessage());
                     }
@@ -419,19 +424,22 @@ class EmailService {
                 // Ensure we pick up the latest mailer error info for diagnostics
                 $smtpErr = $smtpErr ?? ($this->mailer->ErrorInfo ?? null);
 
-                $this->logEmail([
-                    'order_id' => $order['id'] ?? null,
-                    'user_id' => $triggeredBy ?? null,
-                    'type' => 'tax_invoice',
-                    'send_method' => 'smtp',
-                    'to_email' => $toEmail,
-                    'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
-                    'subject' => $subject,
-                    'status' => (!empty($sendResult) && empty($smtpErr)) ? 'success' : 'failure',
-                    'error_message' => $smtpErr ?? null,
-                    'response' => $this->debugLog ?? null,
-                    'resend_reason' => $resendReason ?? null,
-                ]);
+                // Only log SMTP attempt if fallback didn't already succeed
+                if (!$usedBrevoFallback || (empty($sendResult) || !empty($smtpErr))) {
+                    $this->logEmail([
+                        'order_id' => $order['id'] ?? null,
+                        'user_id' => $triggeredBy ?? null,
+                        'type' => 'tax_invoice',
+                        'send_method' => 'smtp',
+                        'to_email' => $toEmail,
+                        'from_email' => $this->config['from_email'] ?? $this->config['smtp_username'],
+                        'subject' => $subject,
+                        'status' => (!empty($sendResult) && empty($smtpErr)) ? 'success' : 'failure',
+                        'error_message' => $smtpErr ?? null,
+                        'response' => $this->debugLog ?? null,
+                        'resend_reason' => $resendReason ?? null,
+                    ]);
+                }
                 error_log('[DemolitionTraders] sendTaxInvoice: SMTP send finished');
             }
             
