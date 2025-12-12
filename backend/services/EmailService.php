@@ -1407,7 +1407,9 @@ HTML;
         }
         
         try {
-            $toEmail = $this->config['dev_mode'] ? $this->config['dev_email'] : $email;
+            // Always send to the customer address; optionally BCC dev inbox for testing
+            $toEmail = $email;
+            $bccEmail = ($this->config['dev_mode'] ?? false) ? ($this->config['dev_email'] ?? null) : null;
             
             $html = <<<HTML
 <!DOCTYPE html>
@@ -1462,11 +1464,15 @@ HTML;
             
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($toEmail, $name);
+            if (!empty($bccEmail) && filter_var($bccEmail, FILTER_VALIDATE_EMAIL)) {
+                $this->mailer->addBCC($bccEmail);
+            }
             $this->mailer->Subject = "Your Wanted Listing - Demolition Traders";
             $this->mailer->Body = $html;
             $this->mailer->send();
             
-            error_log("Wanted listing confirmation sent to: $toEmail");
+            $logTarget = $toEmail . ($bccEmail ? " (bcc: $bccEmail)" : '');
+            error_log("Wanted listing confirmation sent to: $logTarget");
             return ['success' => true, 'message' => 'Confirmation email sent'];
             
         } catch (Exception $e) {
