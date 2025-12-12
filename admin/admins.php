@@ -488,9 +488,12 @@ async function demoteAdmin(adminId, adminName) {
 
               const currentUserId = <?php echo json_encode($_SESSION['user_id'] ?? null); ?>;
               const rows = users.filter(u => u.role === 'admin').map(admin => {
-                  const lastLoginDisplay = admin.last_login
-                      ? formatDate(admin.last_login, 'long')
-                      : (admin.id == currentUserId ? 'Just now' : 'Never');
+                  let lastLoginDisplay = 'Never';
+                  if (admin.id == currentUserId) {
+                      lastLoginDisplay = 'Active now';
+                  } else if (admin.last_login) {
+                      lastLoginDisplay = formatDate(admin.last_login, 'long');
+                  }
                   const adminSinceDisplay = admin.created_at ? formatDate(admin.created_at, 'long') : '-';
                   return `
                   <tr>
