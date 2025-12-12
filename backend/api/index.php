@@ -246,6 +246,9 @@ try {
                 
                 if ($method === 'GET' && !$id) {
                     send_json_response($controller->index());
+                } elseif ($method === 'GET' && $id) {
+                    // Get single category by id or slug
+                    send_json_response($controller->show($id));
                 } elseif ($method === 'POST' && !$id) {
                     send_json_response($controller->create($input), 201);
                 } elseif ($method === 'PUT' && $id) {

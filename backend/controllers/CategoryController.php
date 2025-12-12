@@ -42,15 +42,19 @@ class CategoryController {
      * Get single category
      */
     public function show($id) {
+        $isAdmin = ($_SESSION['role'] ?? '') === 'admin' || 
+                   ($_SESSION['user_role'] ?? '') === 'admin' || 
+                   ($_SESSION['is_admin'] ?? false) === true;
+
         // Get by ID or slug
         if (is_numeric($id)) {
             $category = $this->db->fetchOne(
-                "SELECT * FROM categories WHERE id = :id AND is_active = 1",
+                "SELECT * FROM categories WHERE id = :id" . ($isAdmin ? "" : " AND is_active = 1"),
                 ['id' => $id]
             );
         } else {
             $category = $this->db->fetchOne(
-                "SELECT * FROM categories WHERE slug = :slug AND is_active = 1",
+                "SELECT * FROM categories WHERE slug = :slug" . ($isAdmin ? "" : " AND is_active = 1"),
                 ['slug' => $id]
             );
         }
@@ -231,4 +235,3 @@ class CategoryController {
         return $slug;
     }
 }
-
