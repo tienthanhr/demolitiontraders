@@ -343,7 +343,7 @@
     <?php if (!is_mobile_device()): ?>
     <!-- Hero Banner -->
     <section class="hero-banner">
-        <video id="hero-video" autoplay muted loop playsinline>
+        <video id="hero-video" autoplay muted playsinline preload="auto">
             <source src="assets/images/homepage-intro@1920.mp4" type="video/mp4">
         </video>
         <audio id="hero-audio" loop>
@@ -592,16 +592,25 @@
             updateWishlistCount();
             
             // Sound toggle
-            const soundToggle = document.getElementById('soundToggle');
-            const heroAudio = document.getElementById('hero-audio');
-            const heroVideo = document.getElementById('hero-video');
-            
-            if (soundToggle && heroAudio && heroVideo) {
-                let soundEnabled = false;
-                soundToggle.addEventListener('click', function() {
-                    soundEnabled = !soundEnabled;
-                    if (soundEnabled) {
-                        heroAudio.play();
+        const soundToggle = document.getElementById('soundToggle');
+        const heroAudio = document.getElementById('hero-audio');
+        const heroVideo = document.getElementById('hero-video');
+        
+        if (soundToggle && heroAudio && heroVideo) {
+            // Ensure video only runs once and stays paused after finishing
+            heroVideo.loop = false;
+            heroVideo.addEventListener('ended', function() {
+                heroVideo.pause();
+                // Keep last frame to avoid flashing black
+                heroVideo.currentTime = Math.max(heroVideo.duration - 0.1, 0);
+                heroAudio.pause();
+            });
+
+            let soundEnabled = false;
+            soundToggle.addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                if (soundEnabled) {
+                    heroAudio.play();
                         heroVideo.muted = false;
                         soundToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
                     } else {
