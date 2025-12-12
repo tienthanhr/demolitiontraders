@@ -41,24 +41,47 @@ try {
     
     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
     
-    // Get submissions
-    $submissions = $db->fetchAll("
-        SELECT * FROM sell_to_us_submissions
-        $whereClause
-        ORDER BY created_at DESC
-        LIMIT :limit OFFSET :offset
-    ", array_merge($params, ['limit' => $limit, 'offset' => $offset]));
-    
-    // Get total count
-    $totalCount = $db->fetchOne("
-        SELECT COUNT(*) as count FROM sell_to_us_submissions
-        $whereClause
-    ", $params)['count'];
-    
-    // Parse JSON photos
-    foreach ($submissions as &$submission) {
-        if ($submission['photos']) {
-            $submission['photos'] = json_decode($submission['photos'], true);
+    try {
+        // New table
+        $submissions = $db->fetchAll("
+            SELECT * FROM sell_to_us_submissions
+            $whereClause
+            ORDER BY created_at DESC
+            LIMIT :limit OFFSET :offset
+        ", array_merge($params, ['limit' => $limit, 'offset' => $offset]));
+        
+        $totalCount = $db->fetchOne("
+            SELECT COUNT(*) as count FROM sell_to_us_submissions
+            $whereClause
+        ", $params)['count'];
+        
+        foreach ($submissions as &$submission) {
+            if (!empty($submission['photos'])) {
+                $submission['photos'] = json_decode($submission['photos'], true);
+            }
+        }
+    } catch (Exception $newTableError) {
+        // Fallback to legacy sell_items table if new table missing
+        $submissions = $db->fetchAll("
+            SELECT id, name, email, phone, description, images, status, created_at
+            FROM sell_items
+            " . ($whereClause ? $whereClause : '') . "
+            ORDER BY created_at DESC
+            LIMIT :limit OFFSET :offset
+        ", array_merge($params, ['limit' => $limit, 'offset' => $offset]));
+        
+        $totalCount = $db->fetchOne("
+            SELECT COUNT(*) as count FROM sell_items
+            " . ($whereClause ? $whereClause : '') . "
+        ", $params)['count'];
+        
+        // Map legacy fields to match new schema expectations
+        foreach ($submissions as &$submission) {
+            $submission['photos'] = !empty($submission['images']) ? json_decode($submission['images'], true) : [];
+            $submission['item_name'] = '';
+            $submission['quantity'] = '';
+            $submission['pickup_delivery'] = '';
+            $submission['pickup_date'] = null;
         }
     }
     
