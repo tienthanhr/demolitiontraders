@@ -2186,13 +2186,21 @@ async function doResend() {
         if (btn) btn.disabled = false;
         return;
     }
-    const btn = document.querySelector('#resendConfirmModal .btn-danger');
-    if (btn) btn.disabled = true;
-    try {
-        // Use apiFetch helper (which sets credentials: 'include') to ensure cookies/session are sent
-        let data;
-        try {
-            data = await window.apiFetch(getApiUrl(`/api/index.php?request=orders/${orderId}/resend-email`), {
+  const btn = document.querySelector('#resendConfirmModal .btn-danger');
+  if (btn) btn.disabled = true;
+  const modalBody = document.querySelector('#resendConfirmModal .dt-modal-body');
+  let spinner;
+  if (modalBody) {
+      spinner = document.createElement('div');
+      spinner.style.cssText = 'margin-top:8px;color:#6c757d;font-size:13px;';
+      spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+      modalBody.appendChild(spinner);
+  }
+  try {
+      // Use apiFetch helper (which sets credentials: 'include') to ensure cookies/session are sent
+      let data;
+      try {
+          data = await window.apiFetch(getApiUrl(`/api/index.php?request=orders/${orderId}/resend-email`), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ log_id: logId, resend_reason: reason, to_email: toEmail })
@@ -2224,14 +2232,15 @@ async function doResend() {
             } catch (e) {
                 console.error('Error verifying log after resend:', e);
             }
-        } else {
-            alert('Resend error: ' + (data.message || 'Unknown'));
-        }
-    } catch (e) {
-        alert('Error resending: ' + e.message);
-    } finally {
-        if (btn) btn.disabled = false;
-    }
+      } else {
+          alert('Resend error: ' + (data.message || 'Unknown'));
+      }
+  } catch (e) {
+      alert('Error resending: ' + e.message);
+  } finally {
+      if (btn) btn.disabled = false;
+      if (spinner) spinner.remove();
+  }
 }
 
 function closeEmailLogs() {
