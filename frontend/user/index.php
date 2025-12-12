@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demolition Traders Hamilton - NZ's Largest Demolition Yard</title>
+    <title>Demolition Traders</title>
     <meta name="description" content="Browse thousands of new & recycled renovation materials. New Zealand's largest supplier of demolition materials.">
     <base href="<?php echo FRONTEND_PATH; ?>">
     <link rel="icon" type="image/png" href="<?php echo asset('assets/images/favicon.png?v=1'); ?>">

@@ -18,6 +18,17 @@ if (!defined('FRONTEND_URL')) {
 if (!defined('BASE_PATH')) {
     define('BASE_PATH', __DIR__ . '/..');
 }
+$faviconBasePath = '/frontend/';
+$serverName = $_SERVER['SERVER_NAME'] ?? '';
+$isLocalHost = $serverName === 'localhost' || $serverName === '127.0.0.1' || strpos($serverName, 'localhost') !== false;
+if ($isLocalHost) {
+    // Keep XAMPP-style subfolder support for local development
+    $faviconBasePath = '/demolitiontraders/frontend/';
+}
+$protoHeader = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
+$faviconScheme = $protoHeader ? explode(',', $protoHeader)[0] : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+$faviconHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$faviconAbsoluteFallback = $faviconScheme . '://' . $faviconHost . rtrim($faviconBasePath, '/');
 ?>
 <!-- Header Component -->
 <!-- Load API Helper First -->
@@ -28,15 +39,31 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
 
 // Ensure favicon is registered (works on localhost and production)
 (function() {
-    const href = '<?php echo rtrim(FRONTEND_URL, '/'); ?>/assets/images/favicon.png?v=1';
-    let link = document.querySelector('link[rel="icon"]');
-    if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        link.type = 'image/png';
-        document.head.appendChild(link);
+    // Use base href when available to respect subfolder setups (e.g., /demolitiontraders)
+    const baseHref = document.querySelector('base')?.href || '';
+    const originBase = window.location.origin || '';
+    const fallbackBase = originBase + '<?php echo rtrim($faviconBasePath, '/'); ?>/';
+    let href;
+    try {
+        href = new URL('assets/images/favicon.png?v=1', baseHref || fallbackBase).toString();
+    } catch (err) {
+        href = '<?php echo $faviconAbsoluteFallback; ?>/assets/images/favicon.png?v=1';
     }
-    link.href = href;
+    const iconRels = [
+        ['icon', 'image/png'],
+        ['shortcut icon', 'image/png']
+    ];
+    iconRels.forEach(([rel, type]) => {
+        let link = document.querySelector(`link[rel="${rel}"]`);
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = rel;
+            if (type) link.type = type;
+            document.head.appendChild(link);
+        }
+        link.href = href;
+        if (type) link.type = type;
+    });
 })();
 </script>
 

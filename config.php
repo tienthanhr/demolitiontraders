@@ -15,7 +15,33 @@ define('FRONTEND_PATH', BASE_PATH . '/frontend');
 define('BACKEND_PATH', BASE_PATH . '/backend');
 
 // Site configuration
-define('SITE_URL', rtrim(Config::get('APP_URL', 'http://localhost/demolitiontraders'), '/'));
+$appUrlFromEnv = trim(Config::get('APP_URL', ''));
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$isRemoteHost = $host && stripos($host, 'localhost') === false && $host !== '127.0.0.1';
+
+// Detect scheme (works behind proxies like Railway/Fly/Render)
+$forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
+$httpsOn = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+$scheme = $forwardedProto
+    ? explode(',', $forwardedProto)[0]
+    : ($httpsOn ? 'https' : 'http');
+
+// Build a detected URL from the current request
+$detectedUrl = $host ? $scheme . '://' . $host : '';
+if ($host && stripos($host, 'localhost') !== false) {
+    // Keep legacy local subfolder for XAMPP installs
+    $detectedUrl .= '/demolitiontraders';
+}
+
+// Prefer env APP_URL when provided; otherwise fall back to detected host
+$appUrl = $appUrlFromEnv ?: $detectedUrl ?: 'http://localhost/demolitiontraders';
+
+// If APP_URL still points to localhost but we're on a remote host, prefer the detected host
+if ($isRemoteHost && stripos($appUrl, 'localhost') !== false && $detectedUrl) {
+    $appUrl = $detectedUrl;
+}
+
+define('SITE_URL', rtrim($appUrl, '/'));
 define('ADMIN_URL', SITE_URL . '/admin');
 define('FRONTEND_URL', SITE_URL . '/frontend');
 
