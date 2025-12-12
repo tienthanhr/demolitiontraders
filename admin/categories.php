@@ -202,6 +202,20 @@ header('Expires: 0');
                 <textarea class="form-control" id="category-description"></textarea>
             </div>
 
+            <div class="form-group" style="display:flex; gap:12px; align-items:center;">
+                <div style="flex:1;">
+                    <label class="form-label">Display Order</label>
+                    <input type="number" class="form-control" id="category-order" placeholder="0">
+                </div>
+                <div style="flex:1;">
+                    <label class="form-label">Show in Header</label>
+                    <select class="form-control" id="category-show-header">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label class="form-label">Status *</label>
                 <select class="form-control" id="category-status" required>
@@ -431,6 +445,8 @@ async function editCategory(id) {
         document.getElementById('category-name').value = category.name;
         document.getElementById('category-slug').value = category.slug;
         document.getElementById('category-description').value = category.description || '';
+        document.getElementById('category-order').value = category.display_order || 0;
+        document.getElementById('category-show-header').value = category.show_in_header ?? 1;
         document.getElementById('category-status').value = category.is_active;
         // Set parent
         populateParentSelect();
@@ -453,6 +469,8 @@ async function saveCategory(event) {
         slug: document.getElementById('category-slug').value || null,
         description: document.getElementById('category-description').value,
         parent_id: (document.getElementById('category-parent').value ? parseInt(document.getElementById('category-parent').value) : null),
+        display_order: document.getElementById('category-order').value ? parseInt(document.getElementById('category-order').value) : 0,
+        show_in_header: parseInt(document.getElementById('category-show-header').value || 0),
         is_active: document.getElementById('category-status').value
     };
 

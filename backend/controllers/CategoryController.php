@@ -125,7 +125,8 @@ class CategoryController {
             'description' => $data['description'] ?? null,
             'parent_id' => $data['parent_id'] ?? null,
             'display_order' => $data['display_order'] ?? 0,
-            'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1
+            'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1,
+            'show_in_header' => isset($data['show_in_header']) ? (int)$data['show_in_header'] : 1
         ];
         
         // Insert category
@@ -176,7 +177,8 @@ class CategoryController {
             'description' => $data['description'] ?? $category['description'],
             'parent_id' => $data['parent_id'] ?? $category['parent_id'],
             'display_order' => $data['display_order'] ?? $category['display_order'],
-            'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : $category['is_active']
+            'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : $category['is_active'],
+            'show_in_header' => isset($data['show_in_header']) ? (int)$data['show_in_header'] : $category['show_in_header']
         ];
         
         $this->db->update('categories', $updateData, 'id = :id', ['id' => $id]);
