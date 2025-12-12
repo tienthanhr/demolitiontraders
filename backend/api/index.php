@@ -431,18 +431,23 @@ try {
                     }
                     // For admin-initiated sends, bypass dev_mode so email goes to the actual customer
                     $triggeredBy = $_SESSION['user_id'] ?? null;
-                    $result = $emailService->sendTaxInvoice($order, $customerEmail, true, $triggeredBy);
-                    error_log('[DemolitionTraders] sendTaxInvoice returned: ' . print_r($result, true));
-                    if ($result['success']) {
-                        // Update tax_invoice_sent_at
-                        try {
-                            $db->query('UPDATE orders SET tax_invoice_sent_at = NOW() WHERE id = :id', ['id' => $id]);
-                        } catch (Exception $ex) {
-                            error_log('Failed to update tax_invoice_sent_at for order ' . $id . ': ' . $ex->getMessage());
+                    try {
+                        $result = $emailService->sendTaxInvoice($order, $customerEmail, true, $triggeredBy);
+                        error_log('[DemolitionTraders] sendTaxInvoice returned: ' . print_r($result, true));
+                        if ($result['success']) {
+                            // Update tax_invoice_sent_at
+                            try {
+                                $db->query('UPDATE orders SET tax_invoice_sent_at = NOW() WHERE id = :id', ['id' => $id]);
+                            } catch (Exception $ex) {
+                                error_log('Failed to update tax_invoice_sent_at for order ' . $id . ': ' . $ex->getMessage());
+                            }
+                            send_json_response($result);
+                        } else {
+                            sendError($result['error'], 500);
                         }
-                        send_json_response($result);
-                    } else {
-                        sendError($result['error'], 500);
+                    } catch (Throwable $te) {
+                        error_log('sendTaxInvoice fatal for order ' . $id . ': ' . $te->getMessage());
+                        sendError('Failed to send tax invoice: ' . $te->getMessage(), 500);
                     }
                 } elseif ($method === 'PUT' && $id) {
                     send_json_response($controller->update($id, $input));
