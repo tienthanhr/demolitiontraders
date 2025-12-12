@@ -128,6 +128,17 @@ header('Expires: 0');
             </tbody>
         </table>
     </div>
+
+    <!-- Header Preview -->
+    <div style="margin-top: 25px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fafafa;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="margin: 0;">Header Preview (follows sorted order)</h4>
+            <small style="color: #6c757d;">Only categories that are Active &amp; Show in Header</small>
+        </div>
+        <div id="header-preview" style="background: #fff; border: 1px solid #eaeaea; border-radius: 8px; padding: 12px; overflow-x: auto;">
+            <p style="margin: 0; color: #6c757d;">Loading preview...</p>
+        </div>
+    </div>
 </div>
 
 <!-- Category Modal -->
@@ -259,6 +270,7 @@ function renderCategories() {
         </tr>
     `).join('');
     updateBulkActions();
+    renderHeaderPreview();
 }
 
 // Sort categories by dropdown
@@ -529,6 +541,47 @@ function populateParentSelect() {
         html += `<option value="${c.id}">${c.name}</option>`;
     });
     select.innerHTML = html;
+}
+
+// Header preview builder using current sorted data
+function renderHeaderPreview() {
+    const preview = document.getElementById('header-preview');
+    if (!preview) return;
+
+    const items = categoriesData.filter(c => parseInt(c.is_active ?? 0) === 1 && parseInt(c.show_in_header ?? 1) === 1);
+    if (!items.length) {
+        preview.innerHTML = '<p style="margin:0;color:#6c757d;">No active categories selected for header.</p>';
+        return;
+    }
+
+    // Build lookup by parent
+    const byParent = {};
+    items.forEach(c => {
+        const pid = c.parent_id || 0;
+        if (!byParent[pid]) byParent[pid] = [];
+        byParent[pid].push(c);
+    });
+
+    // Helper to render submenu
+    const renderChildren = (parentId) => {
+        const kids = byParent[parentId] || [];
+        if (!kids.length) return '';
+        const lis = kids.map(k => {
+            const childMenu = renderChildren(k.id);
+            const hasChild = childMenu !== '';
+            return `<li class="${hasChild ? 'has-dropdown' : ''}"><a href="#">${k.name}</a>${childMenu}</li>`;
+        }).join('');
+        return `<ul class="dropdown">${lis}</ul>`;
+    };
+
+    const top = byParent[0] || byParent[null] || [];
+    const navLis = top.map(t => {
+        const childHtml = renderChildren(t.id);
+        const hasChild = childHtml !== '';
+        return `<li class="${hasChild ? 'has-dropdown' : ''}"><a href="#">${t.name}</a>${childHtml}</li>`;
+    }).join('') || '<li><em>No top-level categories</em></li>';
+
+    preview.innerHTML = `<ul class="nav-menu preview-nav" style="display:flex; gap:12px; flex-wrap:wrap; list-style:none; padding:0; margin:0;">${navLis}</ul>`;
 }
 
 function toggleSelectAll(checkbox) {
