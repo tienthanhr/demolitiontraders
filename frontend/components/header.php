@@ -36,6 +36,32 @@ $faviconAbsoluteFallback = $faviconScheme . '://' . $faviconHost . rtrim($favico
 <script>
 // Set base URL for user pages
 const USER_BASE = '<?php echo BASE_PATH; ?>';
+const CATEGORY_CACHE_KEY = 'dt_header_categories_v1';
+const CATEGORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCachedCategories() {
+    try {
+        const raw = localStorage.getItem(CATEGORY_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed.data || !parsed.cachedAt) return null;
+        if (Date.now() - parsed.cachedAt > CATEGORY_CACHE_TTL) return null;
+        return parsed.data;
+    } catch (err) {
+        return null;
+    }
+}
+
+function setCachedCategories(data) {
+    try {
+        localStorage.setItem(CATEGORY_CACHE_KEY, JSON.stringify({
+            data,
+            cachedAt: Date.now()
+        }));
+    } catch (err) {
+        // ignore storage failures
+    }
+}
 
 // Ensure favicon is registered (works on localhost and production)
 (function() {
@@ -242,8 +268,15 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
 
     // Build desktop & mobile menus from categories (ordered by display_order/name from API)
     async function loadHeaderCategories() {
+        const cached = getCachedCategories();
+        if (cached && cached.length) {
+            buildMenus(cached);
+        }
         try {
-            const res = await fetch(CATEGORY_API, { credentials: 'include' });
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 3000);
+            const res = await fetch(CATEGORY_API, { credentials: 'include', signal: controller.signal });
+            clearTimeout(timeout);
             const raw = await res.text();
             let data;
             try {
@@ -263,12 +296,17 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
                     return (a.name || '').localeCompare(b.name || '');
                 });
             buildMenus(filtered);
+            if (filtered.length) {
+                setCachedCategories(filtered);
+            }
         } catch (e) {
             console.error('Failed to load categories for header', e);
-            const navMenu = document.getElementById('nav-menu-dynamic');
-            if (navMenu) navMenu.innerHTML = '<li><span style="color:#c00;">Menu unavailable</span></li>';
-            const mobileContent = document.getElementById('mobile-nav-content');
-            if (mobileContent) mobileContent.innerHTML = '<div class="mobile-nav-item"><span style="color:#c00;">Menu unavailable</span></div>';
+            if (!cached || !cached.length) {
+                const navMenu = document.getElementById('nav-menu-dynamic');
+                if (navMenu) navMenu.innerHTML = '<li><span style="color:#c00;">Menu unavailable</span></li>';
+                const mobileContent = document.getElementById('mobile-nav-content');
+                if (mobileContent) mobileContent.innerHTML = '<div class="mobile-nav-item"><span style="color:#c00;">Menu unavailable</span></div>';
+            }
         }
     }
 
