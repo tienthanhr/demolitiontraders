@@ -171,12 +171,14 @@ class CategoryController {
         }
         
         // Update category
+        $parentId = array_key_exists('parent_id', $data) ? $data['parent_id'] : $category['parent_id'];
+        $displayOrder = array_key_exists('display_order', $data) ? $data['display_order'] : $category['display_order'];
         $updateData = [
             'name' => $data['name'] ?? $category['name'],
             'slug' => $slug,
             'description' => $data['description'] ?? $category['description'],
-            'parent_id' => $data['parent_id'] ?? $category['parent_id'],
-            'display_order' => $data['display_order'] ?? $category['display_order'],
+            'parent_id' => $parentId,
+            'display_order' => $displayOrder,
             'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : $category['is_active'],
             'show_in_header' => isset($data['show_in_header']) ? (int)$data['show_in_header'] : $category['show_in_header']
         ];
