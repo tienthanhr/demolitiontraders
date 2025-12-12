@@ -94,49 +94,57 @@ header('Expires: 0');
         </div>
     </div>
 
-    <div class="table-container">
-        <table id="categories-table">
-            <thead>
-                <tr>
-                    <th style="width: 40px;">
-                        <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)">
-                    </th>
-                    <th onclick="sortTable('id')" style="cursor: pointer;" title="Click to sort">
-                        ID <i class="fas fa-sort" style="opacity: 0.3;"></i>
-                    </th>
-                    <th onclick="sortTable('name')" style="cursor: pointer;" title="Click to sort">
-                        Name <i class="fas fa-sort" style="opacity: 0.3;"></i>
-                    </th>
-                    <th>Slug</th>
-                    <th>Parent</th>
-                    <th onclick="sortTable('count')" style="cursor: pointer;" title="Click to sort">
-                        Products Count <i class="fas fa-sort" style="opacity: 0.3;"></i>
-                    </th>
-                    <th onclick="sortTable('status')" style="cursor: pointer;" title="Click to sort">
-                        Status <i class="fas fa-sort" style="opacity: 0.3;"></i>
-                    </th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="categories-tbody">
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px;">
-                        <div class="spinner"></div>
-                        <p>Loading categories...</p>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
     <!-- Header Preview -->
-    <div style="margin-top: 25px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fafafa;">
+    <div style="margin-top: 10px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fafafa;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h4 style="margin: 0;">Header Preview (follows sorted order)</h4>
             <small style="color: #6c757d;">Only categories that are Active &amp; Show in Header</small>
+            <button class="btn btn-light btn-sm" onclick="togglePreview()" id="toggle-preview-btn">Hide</button>
         </div>
         <div id="header-preview" style="background: #fff; border: 1px solid #eaeaea; border-radius: 8px; padding: 12px; overflow-x: auto;">
             <p style="margin: 0; color: #6c757d;">Loading preview...</p>
+        </div>
+    </div>
+
+    <!-- Categories Table -->
+    <div style="margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h4 style="margin:0;">Categories</h4>
+            <button class="btn btn-light btn-sm" onclick="toggleCategoriesTable()" id="toggle-table-btn">Hide</button>
+        </div>
+        <div class="table-container" id="categories-table-wrapper">
+            <table id="categories-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)">
+                        </th>
+                        <th onclick="sortTable('id')" style="cursor: pointer;" title="Click to sort">
+                            ID <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                        </th>
+                        <th onclick="sortTable('name')" style="cursor: pointer;" title="Click to sort">
+                            Name <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                        </th>
+                        <th>Slug</th>
+                        <th>Parent</th>
+                        <th onclick="sortTable('count')" style="cursor: pointer;" title="Click to sort">
+                            Products Count <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                        </th>
+                        <th onclick="sortTable('status')" style="cursor: pointer;" title="Click to sort">
+                            Status <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="categories-tbody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px;">
+                            <div class="spinner"></div>
+                            <p>Loading categories...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -588,6 +596,24 @@ function toggleSelectAll(checkbox) {
     const checkboxes = document.querySelectorAll('.category-checkbox');
     checkboxes.forEach(cb => cb.checked = checkbox.checked);
     updateBulkActions();
+}
+
+function togglePreview() {
+    const preview = document.getElementById('header-preview');
+    const btn = document.getElementById('toggle-preview-btn');
+    if (!preview || !btn) return;
+    const hidden = preview.style.display === 'none';
+    preview.style.display = hidden ? 'block' : 'none';
+    btn.textContent = hidden ? 'Hide' : 'Show';
+}
+
+function toggleCategoriesTable() {
+    const wrap = document.getElementById('categories-table-wrapper');
+    const btn = document.getElementById('toggle-table-btn');
+    if (!wrap || !btn) return;
+    const hidden = wrap.style.display === 'none';
+    wrap.style.display = hidden ? 'block' : 'none';
+    btn.textContent = hidden ? 'Hide' : 'Show';
 }
 
 function clearSelection() {

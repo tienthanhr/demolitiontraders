@@ -176,7 +176,13 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         try {
             const res = await fetch(CATEGORY_API, { credentials: 'include' });
             const raw = await res.text();
-            const data = JSON.parse(raw);
+            let data;
+            try {
+                data = JSON.parse(raw);
+            } catch (err) {
+                console.error('Header categories JSON parse failed', err, raw);
+                throw err;
+            }
             const cats = data.data || data || [];
             // Keep only active + show_in_header
             const filtered = cats
@@ -212,7 +218,8 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         const renderDesktop = (cat) => {
             const children = byParent[cat.id] || [];
             const hasChild = children.length > 0;
-            const link = `${SHOP_URL}?category=${encodeURIComponent(cat.slug)}`;
+            const slug = cat.slug ? encodeURIComponent(cat.slug) : '';
+            const link = slug ? `${SHOP_URL}?category=${slug}` : '#';
             const childHtml = hasChild
                 ? `<ul class="dropdown">${children.map(renderDesktop).join('')}</ul>`
                 : '';
@@ -222,7 +229,8 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
         const renderMobile = (cat) => {
             const children = byParent[cat.id] || [];
             const hasChild = children.length > 0;
-            const link = `${SHOP_URL}?category=${encodeURIComponent(cat.slug)}`;
+            const slug = cat.slug ? encodeURIComponent(cat.slug) : '';
+            const link = slug ? `${SHOP_URL}?category=${slug}` : '#';
             const childHtml = hasChild
                 ? `<div class="mobile-nav-submenu">${children.map(c => renderMobile(c)).join('')}</div>`
                 : '';
