@@ -1407,7 +1407,7 @@ HTML;
         }
         
         try {
-            // Always send to the customer address; optionally BCC dev inbox for testing
+            // Always send to customer; if dev_mode, also send a copy to dev inbox for visibility
             $toEmail = $email;
             $bccEmail = ($this->config['dev_mode'] ?? false) ? ($this->config['dev_email'] ?? null) : null;
             
@@ -1462,14 +1462,47 @@ HTML;
 </html>
 HTML;
             
-            $this->mailer->clearAddresses();
-            $this->mailer->addAddress($toEmail, $name);
-            if (!empty($bccEmail) && filter_var($bccEmail, FILTER_VALIDATE_EMAIL)) {
-                $this->mailer->addBCC($bccEmail);
+            $subject = "Your Wanted Listing - Demolition Traders";
+            $fromEmail = $this->config['force_from_email'] ?? $this->config['from_email'] ?? $this->config['smtp_username'];
+
+            // Prefer Brevo API if available so we can see logs in dashboard
+            if (!empty($this->config['brevo_api_key'])) {
+                $this->sendViaBrevoApi($toEmail, $name, $subject, $html);
+                if (!empty($bccEmail) && filter_var($bccEmail, FILTER_VALIDATE_EMAIL)) {
+                    $this->sendViaBrevoApi($bccEmail, 'Dev Copy', $subject . ' [DEV COPY]', $html);
+                }
+                $this->logEmail([
+                    'order_id' => null,
+                    'user_id' => null,
+                    'type' => 'wanted_listing_confirmation',
+                    'send_method' => 'brevo',
+                    'to_email' => $toEmail,
+                    'from_email' => $fromEmail,
+                    'subject' => $subject,
+                    'status' => 'success',
+                    'resend_reason' => null,
+                ]);
+            } else {
+                $this->mailer->clearAddresses();
+                $this->mailer->addAddress($toEmail, $name);
+                if (!empty($bccEmail) && filter_var($bccEmail, FILTER_VALIDATE_EMAIL)) {
+                    $this->mailer->addBCC($bccEmail);
+                }
+                $this->mailer->Subject = $subject;
+                $this->mailer->Body = $html;
+                $this->mailer->send();
+                $this->logEmail([
+                    'order_id' => null,
+                    'user_id' => null,
+                    'type' => 'wanted_listing_confirmation',
+                    'send_method' => 'smtp',
+                    'to_email' => $toEmail,
+                    'from_email' => $fromEmail,
+                    'subject' => $subject,
+                    'status' => 'success',
+                    'resend_reason' => null,
+                ]);
             }
-            $this->mailer->Subject = "Your Wanted Listing - Demolition Traders";
-            $this->mailer->Body = $html;
-            $this->mailer->send();
             
             $logTarget = $toEmail . ($bccEmail ? " (bcc: $bccEmail)" : '');
             error_log("Wanted listing confirmation sent to: $logTarget");
@@ -1477,6 +1510,17 @@ HTML;
             
         } catch (Exception $e) {
             error_log("Failed to send wanted listing confirmation: " . $e->getMessage());
+            $this->logEmail([
+                'order_id' => null,
+                'user_id' => null,
+                'type' => 'wanted_listing_confirmation',
+                'send_method' => !empty($this->config['brevo_api_key']) ? 'brevo' : 'smtp',
+                'to_email' => $email,
+                'from_email' => $this->config['from_email'] ?? null,
+                'subject' => "Your Wanted Listing - Demolition Traders",
+                'status' => 'failure',
+                'error_message' => $e->getMessage(),
+            ]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
