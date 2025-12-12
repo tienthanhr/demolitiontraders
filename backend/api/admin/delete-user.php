@@ -2,8 +2,9 @@
 /**
  * Admin Delete User API
  */
-require_once '../../core/bootstrap.php'; // Ensures session is started securely
-require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../core/bootstrap.php'; // Ensures session is started securely
+require_once __DIR__ . '/csrf_middleware.php';   // Handles admin auth and CSRF validation
 
 header('Content-Type: application/json');
 try {

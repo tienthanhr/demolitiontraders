@@ -542,7 +542,10 @@ async function applyBulkAction() {
                 
                 const response = await fetch(url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
                     body: JSON.stringify(payload)
                 });
                 
@@ -818,11 +821,14 @@ async function bulkDeleteCustomers() {
         let failCount = 0;
         
         for (const customerId of customerIds) {
-            const res = await fetch(getApiUrl('/api/admin/delete-user.php'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: customerId })
-            });
+                const res = await fetch(getApiUrl('/api/admin/delete-user.php'), {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify({ user_id: customerId })
+                });
             
             const result = await res.json();
             if (result.success) {
@@ -1071,20 +1077,23 @@ async function deleteCustomer(customerId) {
     );
     if (!confirmed) return;
     
-    try {
-        // Get customer data before deletion for undo
-        const customerRow = document.querySelector(`tr[data-customer-id="${customerId}"]`);
-        const email = customerRow?.querySelector('td:nth-child(4)')?.textContent || '';
-        const firstName = customerRow?.querySelector('td:nth-child(3)')?.textContent?.split(' ')[0] || '';
-        const lastName = customerRow?.querySelector('td:nth-child(3)')?.textContent?.split(' ').slice(1).join(' ') || '';
-        const phone = customerRow?.querySelector('td:nth-child(5)')?.textContent || '';
-        const status = customerRow?.querySelector('.badge')?.textContent?.toLowerCase() || 'active';
+        try {
+            // Get customer data before deletion for undo
+            const customerRow = document.querySelector(`tr[data-customer-id="${customerId}"]`);
+            const email = customerRow?.querySelector('td:nth-child(4)')?.textContent || '';
+            const firstName = customerRow?.querySelector('td:nth-child(3)')?.textContent?.split(' ')[0] || '';
+            const lastName = customerRow?.querySelector('td:nth-child(3)')?.textContent?.split(' ').slice(1).join(' ') || '';
+            const phone = customerRow?.querySelector('td:nth-child(5)')?.textContent || '';
+            const status = customerRow?.querySelector('.badge')?.textContent?.toLowerCase() || 'active';
 
-        const res = await fetch(getApiUrl('/api/admin/delete-user.php'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: customerId })
-        });
+            const res = await fetch(getApiUrl('/api/admin/delete-user.php'), {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({ user_id: customerId })
+            });
         
         const result = await res.json();
         
