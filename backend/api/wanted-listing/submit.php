@@ -135,10 +135,8 @@ try {
         error_log("Wanted listing email failed: " . $emailResult['error']);
     }
     
-    // Send confirmation email to user if they want notifications
-    if ($notify) {
-        $emailService->sendWantedListingConfirmationEmail($email, $name, $description);
-    }
+    // Always send a confirmation email to the customer (even if they opt out of future notifications)
+    $emailService->sendWantedListingConfirmationEmail($email, $name, $description);
     
     $response = [
         'success' => true,
