@@ -326,11 +326,13 @@
         }
         
         let allCategories = [];
-        const decodeHtml = (str) => {
-            const el = document.createElement('textarea');
-            el.innerHTML = str || '';
-            return el.value;
-        };
+        if (!window.decodeHtml) {
+            window.decodeHtml = (str) => {
+                const el = document.createElement('textarea');
+                el.innerHTML = str || '';
+                return el.value;
+            };
+        }
 
         // Load categories
         async function loadCategories() {
@@ -353,7 +355,7 @@
                     let html = '<option value="">All Categories</option>';
                     
                     mainCategories.forEach(main => {
-                        html += `<option value="${main.id}" data-slug="${main.slug}">${decodeHtml(main.name)}</option>`;
+                        html += `<option value="${main.id}" data-slug="${main.slug}">${window.decodeHtml(main.name)}</option>`;
                     });
 
                     categorySelect.innerHTML = html;
@@ -422,7 +424,7 @@
             
             if (subCats.length > 0) {
                 subCats.forEach(sub => {
-                    subCategorySelect.innerHTML += `<option value="${sub.id}" data-slug="${sub.slug}">${decodeHtml(sub.name)}</option>`;
+                    subCategorySelect.innerHTML += `<option value="${sub.id}" data-slug="${sub.slug}">${window.decodeHtml(sub.name)}</option>`;
                 });
                 subCategoryGroup.style.display = 'block';
             } else {
