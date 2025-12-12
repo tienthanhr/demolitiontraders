@@ -55,6 +55,8 @@ header('Expires: 0');
             <option value="name-desc">Name (Z-A)</option>
             <option value="count-asc">Products (Low to High)</option>
             <option value="count-desc">Products (High to Low)</option>
+            <option value="status-asc">Status (Inactive → Active)</option>
+            <option value="status-desc">Status (Active → Inactive)</option>
         </select>
     </div>
 
@@ -110,7 +112,9 @@ header('Expires: 0');
                     <th onclick="sortTable('count')" style="cursor: pointer;" title="Click to sort">
                         Products Count <i class="fas fa-sort" style="opacity: 0.3;"></i>
                     </th>
-                    <th>Status</th>
+                    <th onclick="sortTable('status')" style="cursor: pointer;" title="Click to sort">
+                        Status <i class="fas fa-sort" style="opacity: 0.3;"></i>
+                    </th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -277,6 +281,10 @@ function sortCategories() {
         } else if (column === 'count') {
             aVal = productCounts[a.id] || 0;
             bVal = productCounts[b.id] || 0;
+        } else if (column === 'status') {
+            // Treat active (1) > inactive (0) for desc
+            aVal = parseInt(a.is_active ?? 0);
+            bVal = parseInt(b.is_active ?? 0);
         }
 
         if (direction === 'asc') {
@@ -312,6 +320,9 @@ function sortTable(column) {
         } else if (column === 'count') {
             aVal = productCounts[a.id] || 0;
             bVal = productCounts[b.id] || 0;
+        } else if (column === 'status') {
+            aVal = parseInt(a.is_active ?? 0);
+            bVal = parseInt(b.is_active ?? 0);
         }
 
         if (currentSort.direction === 'asc') {
