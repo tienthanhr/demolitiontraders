@@ -394,7 +394,10 @@ async function submitResetPassword() {
     try {
         const res = await fetch(getApiUrl('/api/admin/reset-user-password.php'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
             body: JSON.stringify({ 
                 user_id: resetPasswordUserId,
                 new_password: newPassword
