@@ -1887,61 +1887,51 @@ async function doSendTaxInvoice(id) {
         // Continue without check
     }
     
-    try {
-        // Disable button to prevent duplicate clicks
-        const btn2 = document.getElementById('sendTaxInvoiceBtn-' + id);
-        if (btn2) btn2.disabled = true;
-        const sendingMsg = document.createElement('div');
-        sendingMsg.className = 'alert alert-info';
-        sendingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #6c757d; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-        sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending tax invoice email...`;
-        document.body.appendChild(sendingMsg);
+      try {
+          // Disable button to prevent duplicate clicks
+          const btn2 = document.getElementById('sendTaxInvoiceBtn-' + id);
+          if (btn2) btn2.disabled = true;
+          const sendingMsg = document.createElement('div');
+          sendingMsg.className = 'alert alert-info';
+          sendingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #6c757d; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+          sendingMsg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending tax invoice email...`;
+          document.body.appendChild(sendingMsg);
 
-        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-tax-invoice`;return getApiUrl(p);})(), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ force: shouldForce })
-        });
+          const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}/send-tax-invoice`;return getApiUrl(p);})(), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ force: shouldForce })
+          });
 
-        sendingMsg.remove();
-        if (btn2) btn2.disabled = false;
+          const responseText = await response.text();
+          sendingMsg.remove();
+          if (btn2) btn2.disabled = false;
 
-        if (response.ok) {
-            try {
-                const responseText = await response.text();
-                const result = JSON.parse(responseText);
-                const successMsg = document.createElement('div');
-                successMsg.className = 'alert alert-success';
-                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-                successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Tax invoice email sent successfully!`;
-                document.body.appendChild(successMsg);
-                setTimeout(() => successMsg.remove(), 3000);
-            } catch (jsonError) {
-                // Success but no JSON response
-                const successMsg = document.createElement('div');
-                successMsg.className = 'alert alert-success';
-                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-                successMsg.innerHTML = `<i class="fas fa-check-circle"></i> Tax invoice email sent successfully!`;
-                document.body.appendChild(successMsg);
-                setTimeout(() => successMsg.remove(), 3000);
-            }
-        } else {
-            try {
-                const text = await response.text();
-                try {
-                    const error = JSON.parse(text);
-                    alert('Error sending tax invoice: ' + (error.error || 'Unknown error'));
-                } catch (jsonError) {
-                    alert('Error sending tax invoice: ' + (text || 'Unknown error'));
-                }
-            } catch (textError) {
-                alert('Error sending tax invoice: Unable to read response');
-            }
-        }
-    } catch (error) {
-        alert('Error: ' + error.message);
-    }
-}
+          let payload;
+          try {
+              payload = JSON.parse(responseText);
+          } catch (_) {
+              payload = null;
+          }
+
+          if (response.ok && payload && payload.success) {
+              const successMsg = document.createElement('div');
+              successMsg.className = 'alert alert-success';
+              successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 20px; background: #28a745; color: white; border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+              const msg = payload.message || (payload.skipped ? 'Tax invoice was already sent recently.' : 'Tax invoice email sent successfully!');
+              successMsg.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
+              document.body.appendChild(successMsg);
+              setTimeout(() => successMsg.remove(), 3000);
+              return;
+          }
+
+          // Handle non-200 or success=false
+          const errMsg = (payload && (payload.message || payload.error)) || responseText || 'Unknown error';
+          alert('Error sending tax invoice: ' + errMsg);
+      } catch (error) {
+          alert('Error: ' + error.message);
+      }
+  }
 
 // View Email Logs for an order (admin)
 async function viewEmailLogs(orderId) {
