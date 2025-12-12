@@ -326,6 +326,11 @@
         }
         
         let allCategories = [];
+        const decodeHtml = (str) => {
+            const el = document.createElement('textarea');
+            el.innerHTML = str || '';
+            return el.value;
+        };
 
         // Load categories
         async function loadCategories() {
@@ -334,7 +339,7 @@
                 
                 console.log('Categories response:', data);
                 
-                allCategories = data.data || data;
+                allCategories = (data.data || data || []).filter(c => parseInt(c.is_active ?? 0) === 1);
                 
                 // Populate category dropdown (Main Categories only)
                 const categorySelect = document.getElementById('category-select');
@@ -348,7 +353,7 @@
                     let html = '<option value="">All Categories</option>';
                     
                     mainCategories.forEach(main => {
-                        html += `<option value="${main.id}" data-slug="${main.slug}">${main.name}</option>`;
+                        html += `<option value="${main.id}" data-slug="${main.slug}">${decodeHtml(main.name)}</option>`;
                     });
 
                     categorySelect.innerHTML = html;
@@ -417,7 +422,7 @@
             
             if (subCats.length > 0) {
                 subCats.forEach(sub => {
-                    subCategorySelect.innerHTML += `<option value="${sub.id}" data-slug="${sub.slug}">${sub.name}</option>`;
+                    subCategorySelect.innerHTML += `<option value="${sub.id}" data-slug="${sub.slug}">${decodeHtml(sub.name)}</option>`;
                 });
                 subCategoryGroup.style.display = 'block';
             } else {
