@@ -1,3 +1,24 @@
+<?php
+// Ensure core config is loaded even if the including page forgot to require it
+if (!defined('BASE_PATH')) {
+    $configPath = __DIR__ . '/../../config.php';
+    if (file_exists($configPath)) {
+        require_once $configPath;
+    }
+}
+// Basic fallbacks to avoid undefined constants in production
+if (!defined('SITE_URL')) {
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    define('SITE_URL', $scheme . '://' . $host);
+}
+if (!defined('FRONTEND_URL')) {
+    define('FRONTEND_URL', SITE_URL . '/frontend');
+}
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', __DIR__ . '/..');
+}
+?>
 <!-- Header Component -->
 <!-- Load API Helper First -->
 <script src="assets/js/api-helper.js?v=1"></script>
