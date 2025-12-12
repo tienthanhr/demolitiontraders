@@ -6,8 +6,12 @@ require_once '../../core/bootstrap.php'; // Ensures session is started securely
 require_once 'csrf_middleware.php';   // Handles admin auth and CSRF validation
 
 header('Content-Type: application/json');
+
 try {
     $data = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($data)) {
+        throw new Exception('Invalid JSON payload');
+    }
     
     if (empty($data['user_id']) || empty($data['role'])) {
         throw new Exception('User ID and role are required');
@@ -18,12 +22,12 @@ try {
     
     // Validate role - only customer and admin allowed
     $validRoles = ['customer', 'admin'];
-    if (!in_array($role, $validRoles)) {
+    if (!in_array($role, $validRoles, true)) {
         throw new Exception('Invalid role. Only customer and admin roles are allowed.');
     }
     
     // Prevent admin from changing their own role
-    if ($userId === $_SESSION['user_id']) {
+    if ($userId === ($_SESSION['user_id'] ?? null)) {
         throw new Exception('You cannot change your own role');
     }
     
@@ -48,15 +52,17 @@ try {
     );
     
     // Log the action
-    error_log("Admin " . $_SESSION['user_id'] . " changed role of user " . $userId . " from " . $user['role'] . " to " . $role);
+    error_log("Admin " . ($_SESSION['user_id'] ?? 'unknown') . " changed role of user " . $userId . " from " . ($user['role'] ?? 'unknown') . " to " . $role);
     
     echo json_encode([
         'success' => true,
         'message' => 'User role updated to ' . $role
     ]);
     
-} catch (Exception $e) {
-    http_response_code(400);
+} catch (Throwable $e) {
+    $status = ($e instanceof Exception) ? 400 : 500;
+    http_response_code($status);
+    error_log('update-user-role error: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage()
