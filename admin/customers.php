@@ -964,15 +964,18 @@ async function saveRole() {
     
     if (!confirm(`Change customer role to "${newRole.toUpperCase()}"?`)) return;
     
-    try {
-        const res = await fetch(getApiUrl('/api/admin/update-user-role.php'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                user_id: currentCustomer.id, 
-                role: newRole 
-            })
-        });
+      try {
+          const res = await fetch(getApiUrl('/api/admin/update-user-role.php'), {
+              method: 'POST',
+              headers: { 
+                  'Content-Type': 'application/json',
+                  'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+              },
+              body: JSON.stringify({ 
+                  user_id: currentCustomer.id, 
+                  role: newRole 
+              })
+          });
         
         const result = await res.json();
         
