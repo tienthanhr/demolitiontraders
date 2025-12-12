@@ -6,6 +6,9 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
+// Force NZ timezone so "today" lines up with the yard's hours even on UTC hosts (e.g., Railway)
+date_default_timezone_set('Pacific/Auckland');
+
 $placeId = "ChIJc1ALl_ohbW0RmiN-1qTBniI";
 $apiKey = "AIzaSyBJPrspkS9hp6p1_iD3LIJU7V72PY32pZk";
 

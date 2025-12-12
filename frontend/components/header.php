@@ -25,6 +25,19 @@ if (!defined('BASE_PATH')) {
 <script>
 // Set base URL for user pages
 const USER_BASE = '<?php echo BASE_PATH; ?>';
+
+// Ensure favicon is registered (works on localhost and production)
+(function() {
+    const href = '<?php echo rtrim(FRONTEND_URL, '/'); ?>/assets/images/favicon.png?v=1';
+    let link = document.querySelector('link[rel="icon"]');
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        document.head.appendChild(link);
+    }
+    link.href = href;
+})();
 </script>
 
 <!-- Top Navigation Bar -->

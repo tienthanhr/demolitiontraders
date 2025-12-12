@@ -18,6 +18,7 @@ if (empty($_SESSION['csrf_token'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle ?? 'Admin Dashboard'; ?> - Demolition Traders</title>
+    <link rel="icon" type="image/png" href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/assets/images/favicon.png?v=1">
     <?php if (!empty($_SESSION['csrf_token'])): ?>
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>">
     <script>window.CSRF_TOKEN = '<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>';</script>
