@@ -302,7 +302,10 @@ async function promoteToAdmin(email) {
     try {
         const result = await apiFetch(getApiUrl('/api/admin/promote-to-admin.php'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
             body: JSON.stringify({ email: email }),
             credentials: 'include'
         });
@@ -411,14 +414,26 @@ async function demoteAdmin(adminId, adminName) {
     try {
         const res = await fetch(getApiUrl('/api/admin/update-user-role.php'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
             body: JSON.stringify({ 
                 user_id: adminId, 
                 role: 'customer' 
             })
         });
-        
-        const result = await res.json();
+        let result;
+        try {
+            result = await res.clone().json();
+        } catch (parseErr) {
+            const fallbackText = await res.text();
+            console.error('Demote non-JSON response:', fallbackText);
+            result = { success: false, message: fallbackText || 'Invalid server response' };
+        }
+        if (!res.ok) {
+            throw new Error(result.message || `Request failed (${res.status})`);
+        }
         
         if (result.success) {
             alert('✓ Admin demoted to Customer successfully!');
@@ -484,4 +499,3 @@ async function demoteAdmin(adminId, adminName) {
     </script>
 </body>
 </html>
-
