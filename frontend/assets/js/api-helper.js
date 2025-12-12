@@ -17,7 +17,7 @@
      */
     window.getApiUrl = function(path) {
         const base = document.querySelector('base');
-        if (base) {
+        if (base && /^https?:\/\//i.test(base.href)) {
             const baseUrl = base.href.replace(/\/frontend\/?$/, '');
             return baseUrl + '/backend' + path;
         }
@@ -139,4 +139,3 @@
     };
 
 })();
-
