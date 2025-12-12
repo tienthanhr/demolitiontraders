@@ -83,6 +83,12 @@ if (class_exists('mysqli')) {
 // Timezone
 date_default_timezone_set(Config::get('APP_TIMEZONE', 'Pacific/Auckland'));
 
+// Global favicon header (helps when HTML head tags are cached or missing)
+if (php_sapi_name() !== 'cli') {
+    $faviconUrl = SITE_URL . '/frontend/assets/images/favicon.png?v=1';
+    header('Link: <' . $faviconUrl . '>; rel="icon"', false);
+}
+
 // Error reporting based on environment
 if (APP_DEBUG) {
     error_reporting(E_ALL);

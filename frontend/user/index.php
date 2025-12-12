@@ -7,6 +7,7 @@
     <title>Demolition Traders Hamilton - NZ's Largest Demolition Yard</title>
     <meta name="description" content="Browse thousands of new & recycled renovation materials. New Zealand's largest supplier of demolition materials.">
     <base href="<?php echo FRONTEND_PATH; ?>">
+    <link rel="icon" type="image/png" href="<?php echo asset('assets/images/favicon.png?v=1'); ?>">
     
     <!-- Load API Helper -->
     <script src="<?php echo asset('assets/js/api-helper.js?v=1'); ?>"></script>
