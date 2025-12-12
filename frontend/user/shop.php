@@ -456,7 +456,7 @@
             const treatmentGroup = document.getElementById('treatment-group');
             const thicknessGroup = document.getElementById('thickness-group');
             const dimensionRow = document.getElementById('dimension-row');
-            if (treatmentGroup) treatmentGroup.style.display = 'none';
+            if (treatmentGroup) treatmentGroup.style.display = 'none'; // Always hide treated/untreated dropdown
             if (thicknessGroup) thicknessGroup.style.display = 'none';
             if (dimensionRow) dimensionRow.style.display = 'none';
 
@@ -477,19 +477,9 @@
             const matches = (text) => text.includes('plywood') || text.includes('timber') || text.includes('wood');
             const matchesDoor = (text) => text.includes('door') || text.includes('window') || text.includes('sliding door');
 
-            const hasTreatmentSub = allCategories.some(c => c.parent_id == catId && /treated/i.test(c.name) );
-            const hasUntreatmentSub = allCategories.some(c => c.parent_id == catId && /untreated/i.test(c.name));
-            const hasTreatmentChoiceInSubs = hasTreatmentSub || hasUntreatmentSub;
-
-            // Only show treatment filter if no explicit treated/untreated subcats
-            if ((matches(name) || matches(parentName)) && !hasTreatmentChoiceInSubs) {
-                if (treatmentGroup) treatmentGroup.style.display = 'block';
+            // Always show thickness for plywood/wood/timber categories (regardless of subs)
+            if (matches(name) || matches(parentName)) {
                 if (thicknessGroup) thicknessGroup.style.display = 'block';
-            } else {
-                // If user selected a specific subcategory that is treated/untreated, keep hidden
-                if (!subCatId) {
-                    // keep hidden (already hidden above)
-                }
             }
             if (matchesDoor(name) || matchesDoor(parentName)) {
                 if (dimensionRow) dimensionRow.style.display = 'flex';
