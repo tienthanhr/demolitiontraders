@@ -19,6 +19,20 @@ header('Expires: 0');
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="<?php echo FRONTEND_URL; ?>/assets/js/api-helper.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <style>
+        /* Header preview styling */
+        .header-preview-card { background:#fff; border:1px solid #e0e0e0; border-radius:10px; padding:12px; }
+        .header-preview-meta { color:#6c757d; font-size:12px; }
+        .preview-tree.root { display:flex; flex-wrap:wrap; gap:12px; padding-left:0; list-style:none; }
+        .preview-tree.root > li { min-width:210px; flex:1 1 210px; }
+        .preview-tree { list-style:none; padding-left:14px; margin:4px 0 0 0; }
+        .preview-node > .node-row { display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid #eaeaea; border-radius:8px; background:#f9fbff; }
+        .drag-handle { cursor:grab; color:#8c97a2; font-size:14px; user-select:none; }
+        .node-name { font-weight:600; color:#1f2a44; }
+        .node-meta { color:#6c757d; font-size:12px; }
+        .preview-tree .preview-tree { margin-left:14px; }
+    </style>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -101,7 +115,7 @@ header('Expires: 0');
             <small style="color: #6c757d;">Only categories that are Active &amp; Show in Header</small>
             <button class="btn btn-light btn-sm" onclick="togglePreview()" id="toggle-preview-btn">Hide</button>
         </div>
-        <div id="header-preview" style="background: #fff; border: 1px solid #eaeaea; border-radius: 8px; padding: 12px; overflow-x: auto;">
+        <div id="header-preview" class="header-preview-card">
             <p style="margin: 0; color: #6c757d;">Loading preview...</p>
         </div>
     </div>
@@ -556,13 +570,13 @@ function renderHeaderPreview() {
     const preview = document.getElementById('header-preview');
     if (!preview) return;
 
-    const items = categoriesData.filter(c => parseInt(c.is_active ?? 0) === 1 && parseInt(c.show_in_header ?? 1) === 1);
+    const items = categoriesData
+        .filter(c => parseInt(c.is_active ?? 0) === 1 && parseInt(c.show_in_header ?? 1) === 1);
     if (!items.length) {
         preview.innerHTML = '<p style="margin:0;color:#6c757d;">No active categories selected for header.</p>';
         return;
     }
 
-    // Build lookup by parent
     const byParent = {};
     items.forEach(c => {
         const pid = c.parent_id || 0;
@@ -570,26 +584,95 @@ function renderHeaderPreview() {
         byParent[pid].push(c);
     });
 
-    // Helper to render submenu
-    const renderChildren = (parentId) => {
-        const kids = byParent[parentId] || [];
-        if (!kids.length) return '';
-        const lis = kids.map(k => {
-            const childMenu = renderChildren(k.id);
-            const hasChild = childMenu !== '';
-            return `<li class="${hasChild ? 'has-dropdown' : ''}"><a href="#">${k.name}</a>${childMenu}</li>`;
-        }).join('');
-        return `<ul class="dropdown">${lis}</ul>`;
+    // Sort children by display_order then name for stable view
+    Object.keys(byParent).forEach(pid => {
+        byParent[pid].sort((a,b) => {
+            const ao = parseInt(a.display_order ?? 0);
+            const bo = parseInt(b.display_order ?? 0);
+            if (ao !== bo) return ao - bo;
+            return (a.name || '').localeCompare(b.name || '');
+        });
+    });
+
+    const renderNode = (cat) => {
+        const children = byParent[cat.id] || [];
+        const childHtml = children.length
+            ? `<ul class="preview-tree">${children.map(renderNode).join('')}</ul>`
+            : '';
+        return `
+            <li class="preview-node" data-id="${cat.id}" data-parent="${cat.parent_id || 0}">
+                <div class="node-row">
+                    <span class="drag-handle" title="Drag to reorder">&#8942;</span>
+                    <span class="node-name">${cat.name}</span>
+                    <span class="node-meta">${cat.slug || ''}</span>
+                </div>
+                ${childHtml}
+            </li>
+        `;
     };
 
     const top = byParent[0] || byParent[null] || [];
-    const navLis = top.map(t => {
-        const childHtml = renderChildren(t.id);
-        const hasChild = childHtml !== '';
-        return `<li class="${hasChild ? 'has-dropdown' : ''}"><a href="#">${t.name}</a>${childHtml}</li>`;
-    }).join('') || '<li><em>No top-level categories</em></li>';
+    const html = top.length
+        ? `<ul class="preview-tree root">${top.map(renderNode).join('')}</ul><div class="header-preview-meta">Drag to reorder. Drop onto another item to change parent.</div>`
+        : '<p style="margin:0;color:#6c757d;">No top-level categories</p>';
 
-    preview.innerHTML = `<ul class="nav-menu preview-nav" style="display:flex; gap:12px; flex-wrap:wrap; list-style:none; padding:0; margin:0;">${navLis}</ul>`;
+    preview.innerHTML = html;
+    setupPreviewSortables();
+}
+
+function setupPreviewSortables() {
+    if (typeof Sortable === 'undefined') return;
+    document.querySelectorAll('#header-preview ul.preview-tree').forEach(list => {
+        new Sortable(list, {
+            group: 'cats',
+            handle: '.drag-handle',
+            animation: 150,
+            fallbackOnBody: true,
+            swapThreshold: 0.65,
+            onEnd: handlePreviewReorder
+        });
+    });
+}
+
+async function handlePreviewReorder(evt) {
+    const parentUl = evt.to;
+    const parentLi = parentUl.closest('li.preview-node');
+    const newParentId = parentLi ? parseInt(parentLi.dataset.id) : 0;
+    const siblings = Array.from(parentUl.children).map((li, idx) => ({
+        id: parseInt(li.dataset.id),
+        parent_id: newParentId === 0 ? null : newParentId,
+        display_order: idx
+    }));
+
+    // Update local data immediately
+    siblings.forEach(item => {
+        const cat = categoriesData.find(c => parseInt(c.id) === item.id);
+        if (cat) {
+            cat.parent_id = item.parent_id;
+            cat.display_order = item.display_order;
+        }
+    });
+
+    // Persist to API
+    try {
+        await Promise.all(siblings.map(item => {
+            const url = getApiUrl(`/api/index.php?request=categories/${item.id}`);
+            return fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    parent_id: item.parent_id,
+                    display_order: item.display_order
+                })
+            });
+        }));
+        // Re-render to ensure order reflects any server changes
+        renderHeaderPreview();
+        renderCategories();
+    } catch (err) {
+        console.error('Failed to save order', err);
+        alert('Failed to save new order. Please try again.');
+    }
 }
 
 function toggleSelectAll(checkbox) {
