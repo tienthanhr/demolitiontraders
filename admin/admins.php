@@ -486,18 +486,24 @@ async function demoteAdmin(adminId, adminName) {
                 return;
             }
 
-            const rows = users.filter(u => u.role === 'admin').map(admin => `
-                <tr>
-                    <td>${admin.id}</td>
-                    <td><strong>${(admin.first_name || '') + ' ' + (admin.last_name || '')}</strong> ${admin.id == <?php echo json_encode($_SESSION['user_id'] ?? null); ?> ? '<span class="badge badge-you">YOU</span>' : ''}</td>
-                    <td>${admin.email || ''}</td>
-                    <td>${admin.phone || '-'}</td>
-                    <td><span class="badge badge-${admin.status || 'unknown'}">${(admin.status || 'unknown').charAt(0).toUpperCase() + (admin.status || 'unknown').slice(1)}</span></td>
-                    <td>${admin.created_at ? formatDate(admin.created_at, 'long') : '-'}</td>
-                    <td>${admin.last_login ? formatDate(admin.last_login, 'long') : 'Never'}</td>
-                    <td>${admin.id != <?php echo json_encode($_SESSION['user_id'] ?? null); ?> ? `<button class="btn btn-sm btn-info" onclick="resetPassword(${admin.id}, '${(admin.first_name || '') + ' ' + (admin.last_name || '')}')"><i class="fas fa-key"></i></button> <button class="btn btn-sm btn-danger" onclick="demoteAdmin(${admin.id}, '${(admin.first_name || '') + ' ' + (admin.last_name || '')}')"><i class="fas fa-arrow-down"></i> Demote</button>` : `<button class="btn btn-sm" disabled><i class="fas fa-lock"></i> You</button>`}</td>
-                </tr>
-            `).join('');
+              const currentUserId = <?php echo json_encode($_SESSION['user_id'] ?? null); ?>;
+              const rows = users.filter(u => u.role === 'admin').map(admin => {
+                  const lastLoginDisplay = admin.last_login
+                      ? formatDate(admin.last_login, 'long')
+                      : (admin.id == currentUserId ? 'Just now' : 'Never');
+                  const adminSinceDisplay = admin.created_at ? formatDate(admin.created_at, 'long') : '-';
+                  return `
+                  <tr>
+                      <td>${admin.id}</td>
+                      <td><strong>${(admin.first_name || '') + ' ' + (admin.last_name || '')}</strong> ${admin.id == currentUserId ? '<span class="badge badge-you">YOU</span>' : ''}</td>
+                      <td>${admin.email || ''}</td>
+                      <td>${admin.phone || '-'}</td>
+                      <td><span class="badge badge-${admin.status || 'unknown'}">${(admin.status || 'unknown').charAt(0).toUpperCase() + (admin.status || 'unknown').slice(1)}</span></td>
+                      <td>${adminSinceDisplay}</td>
+                      <td>${lastLoginDisplay}</td>
+                      <td>${admin.id != currentUserId ? `<button class="btn btn-sm btn-info" onclick="resetPassword(${admin.id}, '${(admin.first_name || '') + ' ' + (admin.last_name || '')}')"><i class="fas fa-key"></i></button> <button class="btn btn-sm btn-danger" onclick="demoteAdmin(${admin.id}, '${(admin.first_name || '') + ' ' + (admin.last_name || '')}')"><i class="fas fa-arrow-down"></i> Demote</button>` : `<button class="btn btn-sm" disabled><i class="fas fa-lock"></i> You</button>`}</td>
+                  </tr>`;
+              }).join('');
 
             tbody.innerHTML = rows;
         } catch (err) {
