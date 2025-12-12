@@ -280,6 +280,20 @@
     <script>
         let currentPage = 1;
         let cartItems = [];
+        const PRODUCT_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+        const PRODUCT_CACHE = {};
+        let productsAbortController = null;
+
+        function getCachedProducts(key) {
+            const entry = PRODUCT_CACHE[key];
+            if (!entry) return null;
+            if (Date.now() - entry.ts > PRODUCT_CACHE_TTL) return null;
+            return entry.data;
+        }
+
+        function setCachedProducts(key, data) {
+            PRODUCT_CACHE[key] = { data, ts: Date.now() };
+        }
 
         // Toggle filter visibility
         function toggleFilterPanel() {
@@ -511,7 +525,98 @@
             updateBreadcrumb();
             applyFilters();
         }
-        
+
+        function renderProducts(data) {
+            console.log('Products response:', data);
+            function parseWidthHeight(name) {
+                const regex = /([0-9]{3,5})\s*[xXA-]\s*([0-9]{3,5})/;
+                const match = name.match(regex);
+                if (match) {
+                    return { width: parseInt(match[1], 10), height: parseInt(match[2], 10) };
+                }
+                return null;
+            }
+
+            let minWidth = 0, maxWidth = 8000, minHeight = 0, maxHeight = 8000;
+            let filterWidth = false, filterHeight = false;
+            if (window.widthSlider && window.widthSlider.target.parentElement.style.display !== 'none') {
+                const widthVals = widthSlider.get();
+                minWidth = Math.round(widthVals[0]);
+                maxWidth = Math.round(widthVals[1]);
+                filterWidth = !(minWidth === 0 && maxWidth === 8000);
+            }
+            if (window.heightSlider && window.heightSlider.target.parentElement.style.display !== 'none') {
+                const heightVals = heightSlider.get();
+                minHeight = Math.round(heightVals[0]);
+                maxHeight = Math.round(heightVals[1]);
+                filterHeight = !(minHeight === 0 && maxHeight === 8000);
+            }
+
+            const container = document.getElementById('products-grid');
+            let products = data?.data || [];
+            if (filterWidth || filterHeight) {
+                products = products.filter(product => {
+                    const dims = parseWidthHeight(product.name);
+                    if (!dims) return false;
+                    let ok = true;
+                    if (filterWidth) ok = ok && dims.width >= minWidth && dims.width <= maxWidth;
+                    if (filterHeight) ok = ok && dims.height >= minHeight && dims.height <= maxHeight;
+                    return ok;
+                });
+            }
+
+            const inStockProducts = products.filter(product => product.stock_quantity > 0);
+            if (!inStockProducts.length) {
+                container.innerHTML = '<p class="no-results">No products found matching your criteria.</p>';
+            } else {
+                container.innerHTML = inStockProducts.map(product => {
+                    let imageUrl = product.image;
+                    const logoPath = 'assets/images/logo.png';
+                    if (!imageUrl || imageUrl.trim() === '' || imageUrl === 'assets/images/logo.png' || imageUrl.includes('null') || imageUrl === 'null') {
+                        imageUrl = logoPath;
+                    }
+                    const newBadge = product.condition_type === 'new' ? '<span class="badge badge-new">NEW</span>' : '';
+                    const recycledBadge = product.condition_type === 'recycled' ? '<span class="badge badge-recycled">RECYCLED</span>' : '';
+                    const outOfStockBadge = product.stock_quantity === 0 ? '<span class="badge badge-out-of-stock">Out of Stock</span>' : '';
+                    const badgesBlock = [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).length
+                        ? '<div class="product-badges">' + [newBadge, recycledBadge, outOfStockBadge].filter(Boolean).join('') + '</div>'
+                        : '';
+                    const isInCart = cartItems.includes(product.id);
+                    let cartButton = '';
+                    if (product.stock_quantity > 0) {
+                        if (isInCart) {
+                            cartButton = '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> Already in Cart</button>';
+                        } else {
+                            cartButton = '<button class="btn btn-cart" onclick="addToCart(' + product.id + ')"><i class="fas fa-shopping-cart"></i> Add to Cart</button>';
+                        }
+                    }
+                    const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#039;');
+                    return '<div class="product-card">' +
+                        '<a href="' + BASE_PATH + 'product-detail?id=' + product.id + '">' +
+                        '<div class="product-image">' +
+                            badgesBlock +
+                            '<img src="' + imageUrl + '" alt="' + escapedName + '" onerror="this.src=\'assets/images/logo.png\'">' +
+                        '</div>' +
+                        '<div class="product-info">' +
+                            '<h3 class="product-name">' + escapedName + '</h3>' +
+                            '<p class="product-price">$' + parseFloat(product.price).toFixed(2) + '</p>' +
+                        '</div>' +
+                        '</a>' +
+                        cartButton +
+                    '</div>';
+                }).join('');
+            }
+
+            if (data?.pagination) {
+                document.getElementById('results-count').textContent =
+                    'Showing ' + inStockProducts.length + ' of ' + data.pagination.total + ' products';
+                updatePagination(data.pagination);
+            } else {
+                document.getElementById('results-count').textContent =
+                    'Showing ' + inStockProducts.length + ' products';
+            }
+        }
+
         // Load provducts
         async function loadProducts() {
             console.log('[SHOP] loadProducts called, currentPage:', currentPage);
