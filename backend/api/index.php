@@ -424,6 +424,29 @@ try {
                         sendError('No customer email found', 400);
                     }
                     error_log('[DemolitionTraders] About to call sendTaxInvoice (admin forced)');
+                    // Prevent double-send within short window unless force
+                    if (!$force) {
+                        try {
+                            $recent = $db->fetchOne(
+                                "SELECT id, created_at FROM email_logs 
+                                 WHERE order_id = :oid AND type = 'tax_invoice' 
+                                 AND created_at >= (NOW() - INTERVAL 60 SECOND) 
+                                 ORDER BY id DESC LIMIT 1",
+                                ['oid' => $id]
+                            );
+                            if ($recent) {
+                                send_json_response([
+                                    'success' => true,
+                                    'message' => 'Tax invoice already sent recently',
+                                    'already_sent' => true,
+                                    'sent_at' => $recent['created_at'],
+                                    'skipped' => true
+                                ]);
+                            }
+                        } catch (Exception $dedupeEx) {
+                            error_log('Tax invoice dedupe check failed: ' . $dedupeEx->getMessage());
+                        }
+                    }
                     // Check if tax invoice already sent - allow override via force param
                     $force = ($input['force'] ?? false) === true || ($input['force'] ?? '') === 'true';
                     if (!empty($order['tax_invoice_sent_at']) && !$force) {
