@@ -355,12 +355,12 @@
                     
                     // Check URL params
                     const urlParams = new URLSearchParams(window.location.search);
-                    const categoryId = urlParams.get('category');
+                    const categoryParam = urlParams.get('category');
                     const searchKeyword = urlParams.get('search');
                     
-                    if (categoryId) {
+                    if (categoryParam) {
                         // Find if it's a main or sub category
-                        const cat = allCategories.find(c => c.id == categoryId);
+                        const cat = allCategories.find(c => c.id == categoryParam || c.slug === categoryParam);
                         if (cat) {
                             if (!cat.parent_id || cat.parent_id == 0) {
                                 // It's a main category
@@ -490,7 +490,10 @@
                     return;
                 }
             } else {
-                url.searchParams.set('category', catId);
+                // Prefer slug in URL for consistency with header links
+                const cat = allCategories.find(c => c.id == catId || c.slug === catId);
+                const catSlug = cat ? (cat.slug || cat.id) : catId;
+                url.searchParams.set('category', catSlug);
                 if (searchVal) url.searchParams.set('search', searchVal);
             }
             
