@@ -168,7 +168,9 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
 </div>
 
 <script>
-    const CATEGORY_API = '<?php echo rtrim(SITE_URL, '/'); ?>/backend/api/index.php?request=categories';
+    const CATEGORY_API = (typeof getApiUrl === 'function')
+        ? getApiUrl('/api/index.php?request=categories')
+        : '<?php echo rtrim(SITE_URL, '/'); ?>/backend/api/index.php?request=categories';
     const SHOP_URL = '<?php echo userUrl('shop.php'); ?>';
 
     // Build desktop & mobile menus from categories (ordered by display_order/name from API)
@@ -198,6 +200,8 @@ const USER_BASE = '<?php echo BASE_PATH; ?>';
             console.error('Failed to load categories for header', e);
             const navMenu = document.getElementById('nav-menu-dynamic');
             if (navMenu) navMenu.innerHTML = '<li><span style="color:#c00;">Menu unavailable</span></li>';
+            const mobileContent = document.getElementById('mobile-nav-content');
+            if (mobileContent) mobileContent.innerHTML = '<div class="mobile-nav-item"><span style="color:#c00;">Menu unavailable</span></div>';
         }
     }
 
