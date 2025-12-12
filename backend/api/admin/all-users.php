@@ -25,7 +25,7 @@ try {
     
     echo json_encode([
         'success' => true,
-        'users' => $users
+        'data' => $users
     ]);
     
 } catch (Exception $e) {
