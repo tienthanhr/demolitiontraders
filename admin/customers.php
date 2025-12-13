@@ -738,7 +738,10 @@ async function undoLastAction() {
                     
                     const response = await fetch(url, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
                         body: JSON.stringify(payload)
                     });
                     
