@@ -449,8 +449,130 @@ let allOrders = [];
 let currentRevenuePeriodFilter = null; // { period, customDate }
 let currentRevenuePeriod = 'all';
 
-// Use native confirm to avoid any modal issues blocking the action
-function confirmAction(message) {
+// Lightweight inline confirm modal (fallback if global showConfirm is unavailable)
+function inlineConfirmModal(title, message, isDanger = false) {
+    return new Promise((resolve) => {
+        let overlay = document.getElementById('orders-inline-confirm');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'orders-inline-confirm';
+            overlay.innerHTML = `
+                <div class="orders-confirm-backdrop"></div>
+                <div class="orders-confirm-modal">
+                    <div class="orders-confirm-icon"><i class="fas fa-question-circle"></i></div>
+                    <h3 class="orders-confirm-title"></h3>
+                    <p class="orders-confirm-message"></p>
+                    <div class="orders-confirm-actions">
+                        <button type="button" class="orders-confirm-cancel">Cancel</button>
+                        <button type="button" class="orders-confirm-ok">Confirm</button>
+                    </div>
+                </div>
+            `;
+            const styles = document.createElement('style');
+            styles.textContent = `
+                #orders-inline-confirm {
+                    position: fixed; inset: 0; z-index: 100001; display: none; align-items: center; justify-content: center;
+                }
+                #orders-inline-confirm .orders-confirm-backdrop {
+                    position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+                }
+                #orders-inline-confirm .orders-confirm-modal {
+                    position: relative;
+                    background: #fff;
+                    border-radius: 12px;
+                    padding: 28px 24px;
+                    max-width: 420px;
+                    width: 92%;
+                    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+                    z-index: 1;
+                    text-align: center;
+                    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                }
+                #orders-inline-confirm .orders-confirm-icon {
+                    width: 60px; height: 60px; margin: 0 auto 16px;
+                    border-radius: 50%; display: grid; place-items: center;
+                    background: #E8F0FF; color: #2f3192; font-size: 28px;
+                }
+                #orders-inline-confirm .orders-confirm-title { margin: 0 0 8px; font-size: 20px; color: #1f2440; }
+                #orders-inline-confirm .orders-confirm-message { margin: 0 0 18px; color: #4b4f5c; font-size: 15px; line-height: 1.5; }
+                #orders-inline-confirm .orders-confirm-actions { display: flex; gap: 10px; justify-content: center; }
+                #orders-inline-confirm button {
+                    padding: 10px 16px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
+                }
+                #orders-inline-confirm .orders-confirm-cancel { background: #f1f2f6; color: #4b4f5c; }
+                #orders-inline-confirm .orders-confirm-ok { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+                #orders-inline-confirm .orders-confirm-ok.safe { background: #2f3192; border-color: #2f3192; }
+            `;
+            overlay.appendChild(styles);
+            document.body.appendChild(overlay);
+        }
+
+        const titleEl = overlay.querySelector('.orders-confirm-title');
+        const msgEl = overlay.querySelector('.orders-confirm-message');
+        const okBtn = overlay.querySelector('.orders-confirm-ok');
+        const cancelBtn = overlay.querySelector('.orders-confirm-cancel');
+        const icon = overlay.querySelector('.orders-confirm-icon');
+
+        titleEl.textContent = title || 'Confirm Action';
+        msgEl.textContent = message || '';
+        if (isDanger) {
+            okBtn.classList.remove('safe');
+            icon.style.background = '#FDECEA';
+            icon.style.color = '#e74c3c';
+        } else {
+            okBtn.classList.add('safe');
+            icon.style.background = '#E8F0FF';
+            icon.style.color = '#2f3192';
+        }
+
+        const cleanup = (result) => {
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+            resolve(result);
+        };
+
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        okBtn.focus();
+
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                cleanup(false);
+                window.removeEventListener('keydown', onKey);
+            }
+        };
+        window.addEventListener('keydown', onKey);
+
+        okBtn.onclick = () => {
+            window.removeEventListener('keydown', onKey);
+            cleanup(true);
+        };
+        cancelBtn.onclick = () => {
+            window.removeEventListener('keydown', onKey);
+            cleanup(false);
+        };
+        overlay.querySelector('.orders-confirm-backdrop').onclick = () => {
+            window.removeEventListener('keydown', onKey);
+            cleanup(false);
+        };
+    });
+}
+
+// Safe confirm helper: prefer global modal if available, else inline modal, else native confirm
+async function confirmAction(message, title = 'Confirm Action', isDanger = false) {
+    try {
+        if (typeof showConfirm === 'function' && document.getElementById('confirm-modal-overlay')) {
+            return await showConfirm(message, title, isDanger);
+        }
+    } catch (err) {
+        console.error('[Orders] showConfirm failed, fallback to inline modal', err);
+    }
+    try {
+        return await inlineConfirmModal(title, message, isDanger);
+    } catch (err) {
+        console.error('[Orders] inlineConfirmModal failed, fallback to native confirm', err);
+    }
     return window.confirm(message);
 }
 
