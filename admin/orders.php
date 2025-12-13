@@ -451,35 +451,19 @@ let currentRevenuePeriod = 'all';
 
 // Safe confirm helper: always ensure a browser confirm fires even if custom modal fails
 async function confirmAction(message, title = 'Confirm', isDanger = false) {
-    let resolved = false;
-    return new Promise(async (resolve) => {
-        const fallbackTimer = setTimeout(() => {
-            if (resolved) return;
-            console.warn('[Orders] confirm modal slow/unavailable, using window.confirm');
-            resolved = true;
-            resolve(window.confirm(message));
-        }, 700);
-
-        try {
-            if (typeof showConfirm === 'function') {
-                const res = await showConfirm(message, title, isDanger);
-                if (!resolved) {
-                    clearTimeout(fallbackTimer);
-                    resolved = true;
-                    return resolve(res);
-                }
-                return;
+    try {
+        if (typeof showConfirm === 'function') {
+            const overlay = document.getElementById('confirm-modal-overlay');
+            if (overlay) {
+                return await showConfirm(message, title, isDanger);
             }
-        } catch (err) {
-            console.error('[Orders] showConfirm failed, using window.confirm', err);
+            console.warn('[Orders] confirm overlay missing, using native confirm');
         }
-
-        if (!resolved) {
-            clearTimeout(fallbackTimer);
-            resolved = true;
-            resolve(window.confirm(message));
-        }
-    });
+    } catch (err) {
+        console.error('[Orders] showConfirm failed, using native confirm', err);
+    }
+    // Synchronous fallback to avoid browser blocking dialogs triggered outside user gesture
+    return window.confirm(message);
 }
 
 // Load orders
