@@ -449,20 +449,22 @@ let allOrders = [];
 let currentRevenuePeriodFilter = null; // { period, customDate }
 let currentRevenuePeriod = 'all';
 
-// Safe confirm helper with fallback to native confirm
+// Safe confirm helper: always ensure a browser confirm fires even if custom modal fails
 async function confirmAction(message, title = 'Confirm', isDanger = false) {
-    if (typeof showConfirm === 'function') {
-        try {
-            const overlay = document.getElementById('confirm-modal-overlay');
-            if (!overlay) {
-                console.warn('[Orders] confirm overlay missing, using window.confirm');
-                return window.confirm(message);
-            }
-            return await showConfirm(message, title, isDanger);
-        } catch (err) {
-            console.error('[Orders] showConfirm failed, using window.confirm', err);
-            return window.confirm(message);
+    try {
+        if (typeof showConfirm === 'function') {
+            // Try custom modal, but if it doesn't resolve within 500ms, fallback to native confirm
+            const modalPromise = showConfirm(message, title, isDanger);
+            const fallback = new Promise(resolve => {
+                setTimeout(() => {
+                    console.warn('[Orders] confirm modal slow/unavailable, using window.confirm');
+                    resolve(window.confirm(message));
+                }, 500);
+            });
+            return await Promise.race([modalPromise, fallback]);
         }
+    } catch (err) {
+        console.error('[Orders] showConfirm failed, using window.confirm', err);
     }
     return window.confirm(message);
 }
