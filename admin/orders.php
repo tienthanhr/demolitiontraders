@@ -561,6 +561,11 @@ function clearSelection() {
     updateBulkActions();
 }
 
+function getCsrfHeaders() {
+    const token = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+    return token ? { 'X-CSRF-Token': token } : {};
+}
+
 function applyBulkAction() {
     const action = document.getElementById('bulk-action').value;
     if (!action) {
@@ -629,57 +634,40 @@ async function bulkDeleteOrders() {
     );
     if (!confirmed) return;
     
-          try {
-              let successCount = 0;
-              let failCount = 0;
-              const deletedOrders = [];
-              
+    const loadingToast = showInfo('Deleting orders...', 0);
+    const headers = { 'Content-Type': 'application/json', ...getCsrfHeaders() };
+
+    try {
+        let successCount = 0;
+        let failCount = 0;
+        const deletedOrders = [];
+        
         // First, fetch all order data before deleting
         for (const orderId of orderIds) {
             try {
-                const orderRes = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}`;return getApiUrl(p);})());
-                if (orderRes.ok) {
-                    const orderData = await orderRes.json();
-                    const order = orderData.data || orderData;
-                    
-                    // Fetch order items
-                    const itemsRes = await fetch((()=>{const p=`/api/index.php?request=orders/${orderId}/items`;return getApiUrl(p);})());
-                    const itemsData = await itemsRes.json();
-                    order.items = itemsData.data || itemsData;
-                    
-                    deletedOrders.push(order);
-                }
+                const orderData = await apiFetch((()=>{const p=`/api/index.php?request=orders/${orderId}`;return getApiUrl(p);})(), { method: 'GET' });
+                const order = orderData.data || orderData;
+                
+                // Fetch order items
+                const itemsData = await apiFetch((()=>{const p=`/api/index.php?request=orders/${orderId}/items`;return getApiUrl(p);})(), { method: 'GET' });
+                order.items = itemsData.data || itemsData;
+                
+                deletedOrders.push(order);
             } catch (err) {
                 console.error('Error fetching order data', orderId, err);
             }
         }
         
-          // Now delete the orders
-          for (const orderId of orderIds) {
-              try {
-                  const res = await fetch((()=>{const p=`/api/index.php?request=orders&id=${orderId}`;return getApiUrl(p);})(), {
-                      method: 'DELETE',
-                      headers: { 
-                          'Content-Type': 'application/json',
-                          'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
-                      }
-                  });
+        // Now delete the orders
+        for (const orderId of orderIds) {
+            try {
+                const result = await apiFetch((()=>{const p=`/api/index.php?request=orders/${orderId}`;return getApiUrl(p);})(), {
+                    method: 'DELETE',
+                    headers,
+                    credentials: 'include'
+                });
                 
-                if (!res.ok) {
-                    failCount++;
-                    console.error('Failed to delete order', orderId, 'Status:', res.status);
-                    continue;
-                }
-                
-                const text = await res.text();
-                if (!text) {
-                    failCount++;
-                    console.error('Empty response for order', orderId);
-                    continue;
-                }
-                
-                const result = JSON.parse(text);
-                if (result.success) {
+                if (result && result.success) {
                     successCount++;
                 } else {
                     failCount++;
@@ -688,6 +676,7 @@ async function bulkDeleteOrders() {
             } catch (err) {
                 failCount++;
                 console.error('Error deleting order', orderId, err);
+                showError(`Failed to delete order #${orderId}: ${err.message || 'Unknown error'}`);
             }
         }
         
@@ -696,7 +685,7 @@ async function bulkDeleteOrders() {
         
         if (failCount > 0) {
             showError(`${successCount} deleted, ${failCount} failed`);
-        } else {
+        } else if (successCount > 0) {
             showSuccess(`Deleted ${successCount} order(s)`);
         }
         loadOrders();
@@ -704,6 +693,11 @@ async function bulkDeleteOrders() {
     } catch (err) {
         showError('Server error. Please try again.');
         console.error(err);
+    } finally {
+        if (loadingToast) {
+            loadingToast.classList.add('removing');
+            setTimeout(() => loadingToast.remove(), 300);
+        }
     }
 }
 
@@ -1769,16 +1763,24 @@ async function deleteOrder(id) {
       );
     if (!confirmed) return;
       
+      const row = document.querySelector(`tr[data-order-id="${id}"]`);
+      const deleteBtn = row?.querySelector('.btn-danger');
+      if (deleteBtn) {
+          deleteBtn.disabled = true;
+      }
+      const deletingToast = showInfo(`Deleting order #${id}...`, 0);
+      
       try {
-          const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})(), {
+          const result = await apiFetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})(), {
               method: 'DELETE',
               headers: { 
                   'Content-Type': 'application/json',
-                  'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
-              }
+                  ...getCsrfHeaders()
+              },
+              credentials: 'include'
           });
 
-        if (response.ok) {
+        if (result && result.success) {
             loadOrders();
             
             // Show success message
@@ -1789,10 +1791,16 @@ async function deleteOrder(id) {
             document.body.appendChild(successMsg);
             setTimeout(() => successMsg.remove(), 3000);
         } else {
-            alert('Error deleting order');
+            showError(result?.error || 'Error deleting order');
         }
     } catch (error) {
-        alert('Error: ' + error.message);
+        showError('Error deleting order: ' + (error?.message || 'Unknown error'));
+    } finally {
+        if (deleteBtn) deleteBtn.disabled = false;
+        if (deletingToast) {
+            deletingToast.classList.add('removing');
+            setTimeout(() => deletingToast.remove(), 300);
+        }
     }
 }
 
