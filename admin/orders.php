@@ -2,6 +2,11 @@
 require_once '../config.php';
 require_once 'auth-check.php';
 
+// Ensure CSRF token for admin actions
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Prevent caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
@@ -15,6 +20,10 @@ header('Expires: 0');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orders Management - Demolition Traders</title>
+    <?php if (!empty($_SESSION['csrf_token'])): ?>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>">
+    <script>window.CSRF_TOKEN = '<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES); ?>';</script>
+    <?php endif; ?>
     <base href="<?php echo rtrim(FRONTEND_URL, '/'); ?>/">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/admin/admin-style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -620,11 +629,11 @@ async function bulkDeleteOrders() {
     );
     if (!confirmed) return;
     
-    try {
-        let successCount = 0;
-        let failCount = 0;
-        const deletedOrders = [];
-        
+          try {
+              let successCount = 0;
+              let failCount = 0;
+              const deletedOrders = [];
+              
         // First, fetch all order data before deleting
         for (const orderId of orderIds) {
             try {
@@ -645,13 +654,16 @@ async function bulkDeleteOrders() {
             }
         }
         
-        // Now delete the orders
-        for (const orderId of orderIds) {
-            try {
-                const res = await fetch((()=>{const p=`/api/index.php?request=orders&id=${orderId}`;return getApiUrl(p);})(), {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+          // Now delete the orders
+          for (const orderId of orderIds) {
+              try {
+                  const res = await fetch((()=>{const p=`/api/index.php?request=orders&id=${orderId}`;return getApiUrl(p);})(), {
+                      method: 'DELETE',
+                      headers: { 
+                          'Content-Type': 'application/json',
+                          'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+                      }
+                  });
                 
                 if (!res.ok) {
                     failCount++;
@@ -1750,17 +1762,21 @@ function generateReceipt(order, billing) {
 
 // Delete order
 async function deleteOrder(id) {
-    const confirmed = await showConfirm(
-        `Are you sure you want to delete Order #${id}? This action cannot be undone.`,
-        'Delete Order',
-        true
-    );
+      const confirmed = await showConfirm(
+          `Are you sure you want to delete Order #${id}? This action cannot be undone.`,
+          'Delete Order',
+          true
+      );
     if (!confirmed) return;
-    
-    try {
-        const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})(), {
-            method: 'DELETE'
-        });
+      
+      try {
+          const response = await fetch((()=>{const p=`/api/index.php?request=orders/${id}`;return getApiUrl(p);})(), {
+              method: 'DELETE',
+              headers: { 
+                  'Content-Type': 'application/json',
+                  'X-CSRF-Token': window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || ''
+              }
+          });
 
         if (response.ok) {
             loadOrders();
