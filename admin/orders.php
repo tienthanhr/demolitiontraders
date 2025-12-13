@@ -451,22 +451,35 @@ let currentRevenuePeriod = 'all';
 
 // Safe confirm helper: always ensure a browser confirm fires even if custom modal fails
 async function confirmAction(message, title = 'Confirm', isDanger = false) {
-    try {
-        if (typeof showConfirm === 'function') {
-            // Try custom modal, but if it doesn't resolve within 500ms, fallback to native confirm
-            const modalPromise = showConfirm(message, title, isDanger);
-            const fallback = new Promise(resolve => {
-                setTimeout(() => {
-                    console.warn('[Orders] confirm modal slow/unavailable, using window.confirm');
-                    resolve(window.confirm(message));
-                }, 500);
-            });
-            return await Promise.race([modalPromise, fallback]);
+    let resolved = false;
+    return new Promise(async (resolve) => {
+        const fallbackTimer = setTimeout(() => {
+            if (resolved) return;
+            console.warn('[Orders] confirm modal slow/unavailable, using window.confirm');
+            resolved = true;
+            resolve(window.confirm(message));
+        }, 700);
+
+        try {
+            if (typeof showConfirm === 'function') {
+                const res = await showConfirm(message, title, isDanger);
+                if (!resolved) {
+                    clearTimeout(fallbackTimer);
+                    resolved = true;
+                    return resolve(res);
+                }
+                return;
+            }
+        } catch (err) {
+            console.error('[Orders] showConfirm failed, using window.confirm', err);
         }
-    } catch (err) {
-        console.error('[Orders] showConfirm failed, using window.confirm', err);
-    }
-    return window.confirm(message);
+
+        if (!resolved) {
+            clearTimeout(fallbackTimer);
+            resolved = true;
+            resolve(window.confirm(message));
+        }
+    });
 }
 
 // Load orders
@@ -636,6 +649,7 @@ async function bulkDeleteOrders() {
         'Delete Orders',
         true
     );
+    console.log('[Orders] Bulk delete confirm result:', confirmed);
     if (!confirmed) return;
     
     const loadingToast = showInfo('Deleting orders...', 0);
@@ -1764,6 +1778,7 @@ async function deleteOrder(id) {
           'Delete Order',
           true
       );
+    console.log('[Orders] Delete confirm result:', confirmed);
     if (!confirmed) return;
       console.log('[Orders] Delete confirmed for order', id);
       
