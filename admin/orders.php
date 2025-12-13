@@ -449,20 +449,8 @@ let allOrders = [];
 let currentRevenuePeriodFilter = null; // { period, customDate }
 let currentRevenuePeriod = 'all';
 
-// Safe confirm helper: always ensure a browser confirm fires even if custom modal fails
-async function confirmAction(message, title = 'Confirm', isDanger = false) {
-    try {
-        if (typeof showConfirm === 'function') {
-            const overlay = document.getElementById('confirm-modal-overlay');
-            if (overlay) {
-                return await showConfirm(message, title, isDanger);
-            }
-            console.warn('[Orders] confirm overlay missing, using native confirm');
-        }
-    } catch (err) {
-        console.error('[Orders] showConfirm failed, using native confirm', err);
-    }
-    // Synchronous fallback to avoid browser blocking dialogs triggered outside user gesture
+// Use native confirm to avoid any modal issues blocking the action
+function confirmAction(message) {
     return window.confirm(message);
 }
 
@@ -628,11 +616,7 @@ async function bulkDeleteOrders() {
         return;
     }
     
-    const confirmed = await confirmAction(
-        `Are you sure you want to delete ${orderIds.length} order(s)? This action cannot be undone.`,
-        'Delete Orders',
-        true
-    );
+    const confirmed = confirmAction(`Are you sure you want to delete ${orderIds.length} order(s)? This action cannot be undone.`);
     console.log('[Orders] Bulk delete confirm result:', confirmed);
     if (!confirmed) return;
     
@@ -1757,11 +1741,7 @@ function generateReceipt(order, billing) {
 // Delete order
 async function deleteOrder(id) {
       console.log('[Orders] Delete clicked for order', id);
-      const confirmed = await confirmAction(
-          `Are you sure you want to delete Order #${id}? This action cannot be undone.`,
-          'Delete Order',
-          true
-      );
+      const confirmed = confirmAction(`Are you sure you want to delete Order #${id}? This action cannot be undone.`);
     console.log('[Orders] Delete confirm result:', confirmed);
     if (!confirmed) return;
       console.log('[Orders] Delete confirmed for order', id);
