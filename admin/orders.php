@@ -604,6 +604,7 @@ async function undoLastAction() {
 async function bulkDeleteOrders() {
     const checkboxes = document.querySelectorAll('.order-checkbox:checked');
     const orderIds = Array.from(checkboxes).map(cb => cb.value);
+    console.log('[Orders] Bulk delete clicked. Selected IDs:', orderIds);
     
     if (orderIds.length === 0) {
         showWarning('Please select orders to delete');
@@ -1737,12 +1738,14 @@ function generateReceipt(order, billing) {
 
 // Delete order
 async function deleteOrder(id) {
+      console.log('[Orders] Delete clicked for order', id);
       const confirmed = await showConfirm(
           `Are you sure you want to delete Order #${id}? This action cannot be undone.`,
           'Delete Order',
           true
       );
     if (!confirmed) return;
+      console.log('[Orders] Delete confirmed for order', id);
       
       const row = document.querySelector(`tr[data-order-id="${id}"]`);
       const deleteBtn = row?.querySelector('.btn-danger');
