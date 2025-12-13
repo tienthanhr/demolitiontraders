@@ -2603,6 +2603,6 @@ loadOrders();
             </div>
     </div>
     <?php include '../frontend/components/toast-notification.php'; ?>
-    <script src="../assets/js/date-formatter.js"></script>
+    <script src="<?php echo FRONTEND_URL; ?>/assets/js/date-formatter.js"></script>
 </body>
 </html>
