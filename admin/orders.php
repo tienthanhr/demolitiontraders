@@ -461,24 +461,7 @@ async function loadOrders() {
         // Add timestamp to prevent caching
         url += `&_t=${new Date().getTime()}`;
 
-        console.log('Fetching orders from:', url);
-        const response = await fetch(url);
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        
-        const text = await response.text();
-        console.log('Response text:', text);
-        
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('JSON parse error:', e);
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: red;">Invalid JSON response. Check console.</td></tr>';
-            return;
-        }
-        
-        console.log('Parsed data:', data);
+        const data = await apiFetch(url, { method: 'GET' });
 
         if (data.error) {
             tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: red;">Error: ${data.error}</td></tr>`;
@@ -813,8 +796,6 @@ function renderOrders(orders) {
             const orderStatus = order.status && order.status.trim() !== '' ? order.status : 'pending';
             const statusColor = badgeColors[orderStatus] || { bg: '#6c757d', color: 'white' };
             const statusText = orderStatus.toUpperCase();
-            
-            console.log('Order status:', order.status, 'Normalized:', orderStatus, 'Text:', statusText);
             
             return `
             <tr data-order-id="${order.id}">
