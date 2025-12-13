@@ -449,6 +449,24 @@ let allOrders = [];
 let currentRevenuePeriodFilter = null; // { period, customDate }
 let currentRevenuePeriod = 'all';
 
+// Safe confirm helper with fallback to native confirm
+async function confirmAction(message, title = 'Confirm', isDanger = false) {
+    if (typeof showConfirm === 'function') {
+        try {
+            const overlay = document.getElementById('confirm-modal-overlay');
+            if (!overlay) {
+                console.warn('[Orders] confirm overlay missing, using window.confirm');
+                return window.confirm(message);
+            }
+            return await showConfirm(message, title, isDanger);
+        } catch (err) {
+            console.error('[Orders] showConfirm failed, using window.confirm', err);
+            return window.confirm(message);
+        }
+    }
+    return window.confirm(message);
+}
+
 // Load orders
 async function loadOrders() {
     const tbody = document.getElementById('orders-tbody');
@@ -611,7 +629,7 @@ async function bulkDeleteOrders() {
         return;
     }
     
-    const confirmed = await showConfirm(
+    const confirmed = await confirmAction(
         `Are you sure you want to delete ${orderIds.length} order(s)? This action cannot be undone.`,
         'Delete Orders',
         true
@@ -1739,7 +1757,7 @@ function generateReceipt(order, billing) {
 // Delete order
 async function deleteOrder(id) {
       console.log('[Orders] Delete clicked for order', id);
-      const confirmed = await showConfirm(
+      const confirmed = await confirmAction(
           `Are you sure you want to delete Order #${id}? This action cannot be undone.`,
           'Delete Order',
           true
